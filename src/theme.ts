@@ -38,6 +38,9 @@ export const ink = {
 
 export const font = {
   display: 'InstrumentSerif_400Regular',
+  // Prompts and headings are italic in the approved design. Use the real
+  // italic face — Android does not synthesise italic for custom fonts.
+  displayItalic: 'InstrumentSerif_400Regular_Italic',
   body: 'Manrope_500Medium',
   bodyStrong: 'Manrope_600SemiBold',
 };
