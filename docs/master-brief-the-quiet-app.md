@@ -21,7 +21,7 @@ The full build plan for taking Mentally Prepare from webapp to the app it should
 - Keep the webapp as the acquisition front door; the app is for people already inside.
 - Prereqs already agreed: push-permission ask moves to right after the first seal; SPF/DKIM on the domain so email fallback lands.
 
-> Note (2026-07-08): superseded by the decision to build a fresh Expo/React Native app instead of a Capacitor shell. Kept here for the reasoning and the server-side prereqs (FCM column, `sendGentlePush` fallback chain, deep links), which still apply.
+> Note (18 July 2026): superseded by the decision to build a fresh Expo/React Native app instead of a Capacitor shell. Kept here for the reasoning and the server-side prereqs (FCM column, `sendGentlePush` fallback chain, deep links), which still apply.
 
 ### Track B — Aliveness (weeks 1–4): the Living Night
 Execute `brief-living-night.md` phases 1–4 (presence moon, time-aware sky, constellation Journey, seal moment, the Shelf). This is what "interactive and alive" actually is: the app reacting to true things. Zero model involvement.
