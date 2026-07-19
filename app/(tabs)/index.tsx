@@ -2,20 +2,25 @@ import { View, Text, TextInput, Pressable, StyleSheet, ScrollView } from 'react-
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Moon from '../../src/components/Moon';
 import { ink, font, sky, moon, surface, layout } from '../../src/theme';
+import { arcLabel } from '../../src/arc';
 
 // Tonight. Copy is from the approved prototype.
-// TODO: night number, presence state and prompt come from /api/me.
+// TODO: night number, presence state and prompt come from /api/me;
+// the room-presence counts come from the silent-room presence endpoint.
+const NIGHT = 9;
+
 export default function Tonight() {
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <View style={styles.column}>
-          <Text style={styles.eyebrow}>NIGHT 9</Text>
+          <Text style={styles.eyebrow}>{arcLabel(NIGHT)}</Text>
 
           <View style={styles.moonWrap}>
             <Moon present />
           </View>
           <Text style={styles.presence}>your match sealed something for you.</Text>
+          <Text style={styles.roomPresence}>3 people wrote tonight. 1 is still here.</Text>
 
           <View style={styles.card}>
             <Text style={styles.prompt}>what did you not say out loud today?</Text>
@@ -50,8 +55,8 @@ const styles = StyleSheet.create({
   },
   eyebrow: {
     fontFamily: font.body,
-    fontSize: 11,
-    letterSpacing: 2.6,
+    fontSize: 12,
+    letterSpacing: 0.6,
     color: ink.mid,
   },
   moonWrap: { marginTop: 44 },
@@ -61,6 +66,14 @@ const styles = StyleSheet.create({
     fontSize: 14,
     lineHeight: 21,
     color: moon.present,
+  },
+  // Ambient, one step quieter than the match signal above it.
+  roomPresence: {
+    marginTop: 10,
+    fontFamily: font.body,
+    fontSize: 13,
+    lineHeight: 20,
+    color: ink.faint,
   },
   card: {
     marginTop: 56,

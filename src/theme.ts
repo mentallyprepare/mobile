@@ -33,6 +33,8 @@ export const ink = {
   high: '#EFEAFF',
   mid: '#8F87BB',
   low: 'rgba(239,234,255,0.5)',
+  // Ambient signals that should register without asking to be read.
+  faint: 'rgba(143,135,187,0.5)',
   line: 'rgba(239,234,255,0.08)',
 };
 
