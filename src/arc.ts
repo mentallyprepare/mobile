@@ -15,7 +15,12 @@ export function phaseForNight(night: number): Phase {
   return 'The Return';
 }
 
-/** e.g. "Day 9 of 21 — The Depth" */
+/**
+ * e.g. "Night 9 of 21 — The Depth"
+ *
+ * Nights, not days. Entries seal at midnight, the sky counts nights, and the
+ * whole product is nocturnal — "Day 9" made the app contradict itself.
+ */
 export function arcLabel(night: number, total: number = TOTAL_NIGHTS): string {
-  return `Day ${night} of ${total} — ${phaseForNight(night)}`;
+  return `Night ${night} of ${total} — ${phaseForNight(night)}`;
 }
