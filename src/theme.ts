@@ -38,11 +38,27 @@ export const ink = {
   line: 'rgba(239,234,255,0.08)',
 };
 
-// Card and panel treatment. Deliberately flat and barely-there: the surface
-// should read as a slightly lighter patch of night, not as a component.
+// Card and panel treatment, carried over from the web app. The gradient runs
+// cool-to-warm: a flat neutral fill reads grey and makes the night feel thin.
 export const surface = {
-  fill: 'rgba(255,255,255,0.03)',
-  border: 'rgba(255,255,255,0.06)',
+  gradient: ['rgba(248,242,255,0.045)', 'rgba(212,133,154,0.025)'] as [string, string],
+  border: 'rgba(248,242,255,0.105)',
+  // Flat fill for small chrome (inputs, chips) where a gradient would be noise.
+  fill: 'rgba(248,242,255,0.03)',
+};
+
+// The one saturated element on a screen. A translucent pill reads as disabled.
+export const cta = {
+  gradient: ['#B7657B', '#765996'] as [string, string],
+  shadow: 'rgba(155,79,102,0.30)',
+};
+
+// Ambient ground so cards sit on something instead of floating on black.
+export const glow = {
+  rose: '#D4859A',
+  roseOpacity: 0.14,
+  purple: '#7B5EA7',
+  purpleOpacity: 0.16,
 };
 
 // One column, centred, with real margins. Screens should feel like a room,

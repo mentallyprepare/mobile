@@ -1,6 +1,8 @@
 import { View, Text, TextInput, Pressable, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ink, font, sky, star, surface, layout } from '../../src/theme';
+import Card from '../../src/components/Card';
+import NightBackground from '../../src/components/NightBackground';
+import { ink, font, star, surface, layout } from '../../src/theme';
 
 // Placeholder content until /api/silent is wired.
 const LINES = [
@@ -11,20 +13,22 @@ const LINES = [
 
 export default function SilentRoom() {
   return (
-    <SafeAreaView style={styles.screen} edges={['top']}>
+    <View style={styles.root}>
+      <NightBackground />
+      <SafeAreaView style={styles.screen} edges={['top']}>
       <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
         <View style={styles.column}>
           <Text style={styles.title}>the silent room.</Text>
           <Text style={styles.sub}>43 awake here tonight. one line, no replies.</Text>
 
           {LINES.map((line) => (
-            <View key={line.text} style={styles.card}>
+            <Card key={line.text} style={styles.card}>
               <Text style={styles.lineText}>{line.text}</Text>
               <View style={styles.meta}>
                 <View style={[styles.dot, line.mine && styles.dotOn]} />
                 <Text style={styles.count}>{line.count}</Text>
               </View>
-            </View>
+            </Card>
           ))}
 
           <View style={styles.composer}>
@@ -40,12 +44,14 @@ export default function SilentRoom() {
           </View>
         </View>
       </ScrollView>
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: sky.late },
+  root: { flex: 1 },
+  screen: { flex: 1 },
   scroll: { paddingBottom: 56 },
   column: {
     width: '100%',
@@ -60,14 +66,7 @@ const styles = StyleSheet.create({
     color: ink.high,
   },
   sub: { marginTop: 14, fontFamily: font.body, fontSize: 13, lineHeight: 20, color: ink.mid },
-  card: {
-    marginTop: 22,
-    borderRadius: 22,
-    padding: 24,
-    backgroundColor: surface.fill,
-    borderWidth: 1,
-    borderColor: surface.border,
-  },
+  card: { marginTop: 20, padding: 24 },
   lineText: {
     fontFamily: font.displayItalic,
     fontSize: 21,

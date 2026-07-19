@@ -1,7 +1,10 @@
-import { View, Text, TextInput, Pressable, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, TextInput, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Moon from '../../src/components/Moon';
-import { ink, font, sky, moon, surface, layout } from '../../src/theme';
+import Card from '../../src/components/Card';
+import NightBackground from '../../src/components/NightBackground';
+import PrimaryButton from '../../src/components/PrimaryButton';
+import { ink, font, moon, layout } from '../../src/theme';
 import { arcLabel } from '../../src/arc';
 
 // Tonight. Copy is from the approved prototype.
@@ -11,47 +14,49 @@ const NIGHT = 9;
 
 export default function Tonight() {
   return (
-    <SafeAreaView style={styles.screen} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-        <View style={styles.column}>
-          <Text style={styles.eyebrow}>{arcLabel(NIGHT)}</Text>
+    <View style={styles.root}>
+      <NightBackground />
+      <SafeAreaView style={styles.screen} edges={['top']}>
+        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+          <View style={styles.column}>
+            <Text style={styles.eyebrow}>{arcLabel(NIGHT)}</Text>
 
-          <View style={styles.moonWrap}>
-            <Moon present />
-          </View>
-          <Text style={styles.presence}>your match sealed something for you.</Text>
-          <Text style={styles.roomPresence}>3 people wrote tonight. 1 is still here.</Text>
-
-          <View style={styles.card}>
-            <Text style={styles.prompt}>what did you not say out loud today?</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="one small sentence is enough..."
-              placeholderTextColor={ink.low}
-              multiline
-              textAlignVertical="top"
-            />
-            <View style={styles.actions}>
-              <Pressable style={styles.sealBtn}>
-                <Text style={styles.sealLabel}>seal it</Text>
-              </Pressable>
+            <View style={styles.moonWrap}>
+              <Moon present />
             </View>
+            <Text style={styles.presence}>your match sealed something for you.</Text>
+            <Text style={styles.roomPresence}>3 people wrote tonight. 1 is still here.</Text>
+
+            <Card style={styles.card}>
+              <Text style={styles.prompt}>what did you not say out loud today?</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="one small sentence is enough..."
+                placeholderTextColor={ink.low}
+                multiline
+                textAlignVertical="top"
+              />
+              <View style={styles.actions}>
+                <PrimaryButton label="seal it" />
+              </View>
+            </Card>
           </View>
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+        </ScrollView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: sky.late },
+  root: { flex: 1 },
+  screen: { flex: 1 },
   scroll: { paddingBottom: 56 },
   column: {
     width: '100%',
     maxWidth: layout.maxWidth,
     alignSelf: 'center',
     paddingHorizontal: layout.gutter,
-    paddingTop: 52,
+    paddingTop: 48,
   },
   eyebrow: {
     fontFamily: font.body,
@@ -59,30 +64,22 @@ const styles = StyleSheet.create({
     letterSpacing: 0.6,
     color: ink.mid,
   },
-  moonWrap: { marginTop: 44 },
+  moonWrap: { marginTop: 40 },
   presence: {
-    marginTop: 26,
+    marginTop: 24,
     fontFamily: font.body,
-    fontSize: 14,
-    lineHeight: 21,
+    fontSize: 14.5,
+    lineHeight: 22,
     color: moon.present,
   },
-  // Ambient, one step quieter than the match signal above it.
   roomPresence: {
-    marginTop: 10,
+    marginTop: 9,
     fontFamily: font.body,
     fontSize: 13,
     lineHeight: 20,
     color: ink.faint,
   },
-  card: {
-    marginTop: 56,
-    borderRadius: 24,
-    padding: 26,
-    backgroundColor: surface.fill,
-    borderWidth: 1,
-    borderColor: surface.border,
-  },
+  card: { marginTop: 46, padding: 26 },
   prompt: {
     fontFamily: font.displayItalic,
     fontSize: 33,
@@ -90,19 +87,12 @@ const styles = StyleSheet.create({
     color: ink.high,
   },
   input: {
-    marginTop: 32,
-    minHeight: 140,
+    marginTop: 30,
+    minHeight: 132,
     fontFamily: font.displayItalic,
     fontSize: 20,
     lineHeight: 30,
     color: ink.high,
   },
-  actions: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 16 },
-  sealBtn: {
-    paddingHorizontal: 26,
-    paddingVertical: 12,
-    borderRadius: 999,
-    backgroundColor: 'rgba(168,155,240,0.18)',
-  },
-  sealLabel: { fontFamily: font.body, fontSize: 14, color: ink.high },
+  actions: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 18 },
 });

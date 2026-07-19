@@ -1,7 +1,8 @@
 import { View, Text, StyleSheet, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, Polyline, Text as SvgText } from 'react-native-svg';
-import { ink, font, sky as skyTokens, star } from '../../src/theme';
+import NightBackground from '../../src/components/NightBackground';
+import { ink, font, star } from '../../src/theme';
 
 const VB_W = 320;
 const VB_H = 440;
@@ -40,7 +41,9 @@ export default function SkyScreen() {
   const h = (w / VB_W) * VB_H;
 
   return (
-    <SafeAreaView style={styles.screen} edges={['top']}>
+    <View style={styles.root}>
+      <NightBackground />
+      <SafeAreaView style={styles.screen} edges={['top']}>
       <View style={styles.header}>
         <Text style={styles.theirLabel}>THEIR SKY →</Text>
       </View>
@@ -89,12 +92,14 @@ export default function SkyScreen() {
       </View>
 
       <Text style={styles.caption}>8 nights written. 13 still dark.</Text>
-    </SafeAreaView>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: skyTokens.late },
+  root: { flex: 1 },
+  screen: { flex: 1 },
   header: { alignItems: 'flex-end', paddingHorizontal: 28, paddingTop: 16 },
   theirLabel: { fontFamily: font.body, fontSize: 10, letterSpacing: 1.8, color: ink.mid },
   canvas: { flex: 1, alignItems: 'center', justifyContent: 'center' },
