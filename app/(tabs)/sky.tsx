@@ -36,7 +36,7 @@ const THEIRS = [
 
 export default function SkyScreen() {
   const { width } = useWindowDimensions();
-  const w = Math.min(width - 48, 340);
+  const w = Math.min(width - 56, 320);
   const h = (w / VB_W) * VB_H;
 
   return (
@@ -57,7 +57,7 @@ export default function SkyScreen() {
             strokeDasharray="4 6"
           />
           {THEIRS.map((p) => (
-            <Circle key={`t${p.x}-${p.y}`} cx={p.x} cy={p.y} r={3} fill={star.theirs} fillOpacity={0.55} />
+            <Circle key={`t${p.x}-${p.y}`} cx={p.x} cy={p.y} r={2.2} fill={star.theirs} fillOpacity={0.5} />
           ))}
 
           {/* your sky */}
@@ -69,22 +69,22 @@ export default function SkyScreen() {
             strokeWidth={1}
           />
           {YOURS.map((p) => (
-            <Circle key={p.day} cx={p.x} cy={p.y} r={4.5} fill={star.yours} />
+            <Circle key={p.day} cx={p.x} cy={p.y} r={3.2} fill={star.yours} />
           ))}
           {YOURS.map((p) => (
             <SvgText
               key={`n${p.day}`}
-              x={p.x + 10}
+              x={p.x + 9}
               y={p.y + 4}
               fill={ink.mid}
-              fontSize={10}
+              fontSize={9}
             >
               {String(p.day)}
             </SvgText>
           ))}
 
           {/* tonight, not yet sealed */}
-          <Circle cx={PENDING.x} cy={PENDING.y} r={6} fill={star.pending} />
+          <Circle cx={PENDING.x} cy={PENDING.y} r={4.6} fill={star.pending} />
         </Svg>
       </View>
 

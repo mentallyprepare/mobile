@@ -1,6 +1,6 @@
 import { View, Text, TextInput, Pressable, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { ink, font, sky, star } from '../../src/theme';
+import { ink, font, sky, star, surface, layout } from '../../src/theme';
 
 // Placeholder content until /api/silent is wired.
 const LINES = [
@@ -12,30 +12,32 @@ const LINES = [
 export default function SilentRoom() {
   return (
     <SafeAreaView style={styles.screen} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        <Text style={styles.title}>the silent room.</Text>
-        <Text style={styles.sub}>43 awake here tonight. one line, no replies.</Text>
+      <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+        <View style={styles.column}>
+          <Text style={styles.title}>the silent room.</Text>
+          <Text style={styles.sub}>43 awake here tonight. one line, no replies.</Text>
 
-        {LINES.map((line) => (
-          <View key={line.text} style={styles.card}>
-            <Text style={styles.lineText}>{line.text}</Text>
-            <View style={styles.meta}>
-              <View style={[styles.dot, line.mine && styles.dotOn]} />
-              <Text style={styles.count}>{line.count}</Text>
+          {LINES.map((line) => (
+            <View key={line.text} style={styles.card}>
+              <Text style={styles.lineText}>{line.text}</Text>
+              <View style={styles.meta}>
+                <View style={[styles.dot, line.mine && styles.dotOn]} />
+                <Text style={styles.count}>{line.count}</Text>
+              </View>
             </View>
-          </View>
-        ))}
+          ))}
 
-        <View style={styles.composer}>
-          <TextInput
-            style={styles.input}
-            placeholder="one line. 200 characters."
-            placeholderTextColor={ink.low}
-            maxLength={200}
-          />
-          <Pressable style={styles.addBtn}>
-            <Text style={styles.addLabel}>add</Text>
-          </Pressable>
+          <View style={styles.composer}>
+            <TextInput
+              style={styles.input}
+              placeholder="one line. 200 characters."
+              placeholderTextColor={ink.low}
+              maxLength={200}
+            />
+            <Pressable style={styles.addBtn}>
+              <Text style={styles.addLabel}>add</Text>
+            </Pressable>
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -44,49 +46,56 @@ export default function SilentRoom() {
 
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: sky.late },
-  content: { paddingHorizontal: 24, paddingTop: 28, paddingBottom: 40 },
+  scroll: { paddingBottom: 56 },
+  column: {
+    width: '100%',
+    maxWidth: layout.maxWidth,
+    alignSelf: 'center',
+    paddingHorizontal: layout.gutter,
+    paddingTop: 52,
+  },
   title: {
     fontFamily: font.displayItalic,
-    fontSize: 30,
+    fontSize: 33,
     color: ink.high,
   },
-  sub: { marginTop: 10, fontFamily: font.body, fontSize: 13, color: ink.mid },
+  sub: { marginTop: 14, fontFamily: font.body, fontSize: 13, lineHeight: 20, color: ink.mid },
   card: {
-    marginTop: 18,
-    borderRadius: 18,
-    padding: 20,
-    backgroundColor: 'rgba(239,234,255,0.035)',
+    marginTop: 22,
+    borderRadius: 22,
+    padding: 24,
+    backgroundColor: surface.fill,
     borderWidth: 1,
-    borderColor: ink.line,
+    borderColor: surface.border,
   },
   lineText: {
     fontFamily: font.displayItalic,
-    fontSize: 19,
-    lineHeight: 27,
+    fontSize: 21,
+    lineHeight: 31,
     color: ink.high,
   },
-  meta: { flexDirection: 'row', alignItems: 'center', marginTop: 16, gap: 10 },
+  meta: { flexDirection: 'row', alignItems: 'center', marginTop: 20, gap: 10 },
   dot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    backgroundColor: 'rgba(239,234,255,0.28)',
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: 'rgba(255,255,255,0.22)',
   },
   dotOn: { backgroundColor: star.theirs },
   count: { fontFamily: font.body, fontSize: 12, color: ink.mid },
-  composer: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 28 },
+  composer: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 36 },
   input: {
     flex: 1,
-    height: 52,
-    paddingHorizontal: 18,
+    height: 54,
+    paddingHorizontal: 20,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: ink.line,
-    backgroundColor: 'rgba(239,234,255,0.03)',
+    borderColor: surface.border,
+    backgroundColor: surface.fill,
     fontFamily: font.body,
     fontSize: 14,
     color: ink.high,
   },
-  addBtn: { paddingHorizontal: 20, paddingVertical: 15 },
+  addBtn: { paddingHorizontal: 18, paddingVertical: 16 },
   addLabel: { fontFamily: font.body, fontSize: 14, color: ink.mid },
 });

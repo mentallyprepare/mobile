@@ -36,6 +36,20 @@ export const ink = {
   line: 'rgba(239,234,255,0.08)',
 };
 
+// Card and panel treatment. Deliberately flat and barely-there: the surface
+// should read as a slightly lighter patch of night, not as a component.
+export const surface = {
+  fill: 'rgba(255,255,255,0.03)',
+  border: 'rgba(255,255,255,0.06)',
+};
+
+// One column, centred, with real margins. Screens should feel like a room,
+// not a form: generous vertical air, nothing running edge to edge.
+export const layout = {
+  maxWidth: 400,
+  gutter: 28,
+};
+
 export const font = {
   display: 'InstrumentSerif_400Regular',
   // Prompts and headings are italic in the approved design. Use the real
