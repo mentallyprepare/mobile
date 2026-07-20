@@ -1,13 +1,15 @@
 {
   "name": "mentally-prepare-mobile",
-  "main": "expo-router/entry",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "npm@10.9.2",
+  "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
+    "build:web": "expo export --platform web --output-dir dist",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
     "test:api": "node test/client.test.js",
