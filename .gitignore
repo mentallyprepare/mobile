@@ -2,6 +2,7 @@
 node_modules/
 .expo/
 dist/
+dist-review/
 web-build/
 expo-env.d.ts
 

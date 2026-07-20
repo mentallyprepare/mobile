@@ -1,26 +1,35 @@
+import { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, useWindowDimensions, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Svg, { Circle, Polyline, Text as SvgText } from 'react-native-svg';
 import NightBackground from '../../src/components/NightBackground';
 import { ink, font, star, moon } from '../../src/theme';
-import { useMe } from '../../src/api/me';
 import { starPositions, TOTAL_NIGHTS } from '../../src/sky';
+import { getSky, type SkyData } from '../../src/backend/sky';
 
 const VB_W = 320;
 const VB_H = 440;
 
 export default function SkyScreen() {
   const { width } = useWindowDimensions();
-  const { data, loading } = useMe();
+  const [data, setData] = useState<SkyData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let active = true;
+    getSky()
+      .then((next) => { if (active) setData(next); })
+      .catch(() => { if (active) setData(null); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
 
   const w = Math.min(width - 56, 320);
   const h = (w / VB_W) * VB_H;
 
-  const userId = data?.user?.id ?? 0;
-  const mine = starPositions(data?.entries ?? [], userId, { width: VB_W, height: VB_H });
-  // Their sky: positions only, never content. Offset seed so the two skies
-  // never land on identical jitter.
-  const theirs = starPositions(data?.partnerEntries ?? [], userId + 7919, {
+  const mine = starPositions(data?.mine ?? [], data?.mySeed ?? 0, { width: VB_W, height: VB_H });
+  // Their sky is built only from the minimum presence projection, never writing.
+  const theirs = starPositions(data?.theirs ?? [], data?.partnerSeed ?? 0, {
     width: VB_W,
     height: VB_H,
   });

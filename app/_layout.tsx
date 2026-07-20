@@ -11,6 +11,7 @@ import { Manrope_500Medium, Manrope_600SemiBold } from '@expo-google-fonts/manro
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { SessionProvider, useSession } from '../src/session';
 import { sky } from '../src/theme';
+import { AuthProvider } from '../src/backend/AuthProvider';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -65,9 +66,11 @@ export default function RootLayout() {
     // SafeAreaView needs this ancestor for correct insets.
     <SafeAreaProvider>
       <StatusBar style="light" />
-      <SessionProvider>
-        <RootNavigator />
-      </SessionProvider>
+      <AuthProvider>
+        <SessionProvider>
+          <RootNavigator />
+        </SessionProvider>
+      </AuthProvider>
     </SafeAreaProvider>
   );
 }

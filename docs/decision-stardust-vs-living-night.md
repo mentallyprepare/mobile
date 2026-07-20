@@ -27,7 +27,14 @@ A "Stardust Edition" blueprint (compiled 10 July 2026) proposed a different visu
 - **Taste categories beyond the Shelf** — games and shows alongside song/song/book/film. Open product question.
 - **Cosine + Jaccard as offline machinery** for Track D compatibility matching, computed off the user's path.
 
-## 2. Compatibility score: now shown to users.
+## 2. Compatibility score: superseded on 20 July 2026.
+
+The earlier permission to show a score is superseded by the approved MP-006
+backend boundary. The current implementation stores versioned explanation
+evidence but exposes no compatibility percentage. Any future score requires a
+new product, fairness, safety, and evidence review.
+
+### Historical decision below
 
 **This reverses a standing rule.** The Master Brief's rule 3 and never-build list previously forbade showing compatibility numbers to users. As of 18 July 2026 that is overturned by Anushka's decision: a compatibility score **may** be shown.
 

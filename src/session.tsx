@@ -1,50 +1,45 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useMemo } from 'react';
 import type { ReactNode } from 'react';
-import { login as apiLogin, logout as apiLogout, hasSession } from './api/auth';
+import { requestEmailCode, signOut as backendSignOut, verifyEmailCode } from './backend/auth';
+import { useAuth } from './backend/AuthProvider';
 
 type SessionValue = {
-  /** null while we are still reading storage on cold start. */
   signedIn: boolean | null;
-  signIn: (email: string, password: string) => Promise<void>;
+  requestCode: (email: string) => Promise<void>;
+  signIn: (email: string, code: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
 const SessionContext = createContext<SessionValue | null>(null);
 
 export function SessionProvider({ children }: { children: ReactNode }) {
-  const [signedIn, setSignedIn] = useState<boolean | null>(null);
+  const { configured, loading, session } = useAuth();
+  const signedIn = loading ? null : Boolean(session);
 
-  useEffect(() => {
-    let cancelled = false;
-    hasSession()
-      .then((has) => {
-        if (!cancelled) setSignedIn(has);
-      })
-      .catch(() => {
-        if (!cancelled) setSignedIn(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const requestCode = useCallback(async (email: string) => {
+    if (!configured) throw new Error('Backend is not configured.');
+    const { error } = await requestEmailCode(email);
+    if (error) throw error;
+  }, [configured]);
 
-  const signIn = useCallback(async (email: string, password: string) => {
-    await apiLogin(email, password);
-    setSignedIn(true);
+  const signIn = useCallback(async (email: string, code: string) => {
+    const { error } = await verifyEmailCode(email, code);
+    if (error) throw error;
   }, []);
 
   const signOut = useCallback(async () => {
-    await apiLogout();
-    setSignedIn(false);
+    await backendSignOut();
   }, []);
 
-  const value = useMemo(() => ({ signedIn, signIn, signOut }), [signedIn, signIn, signOut]);
-
+  const value = useMemo(
+    () => ({ signedIn, requestCode, signIn, signOut }),
+    [signedIn, requestCode, signIn, signOut],
+  );
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }
 
 export function useSession(): SessionValue {
-  const ctx = useContext(SessionContext);
-  if (!ctx) throw new Error('useSession must be used inside a SessionProvider');
-  return ctx;
+  const context = useContext(SessionContext);
+  if (!context) throw new Error('useSession must be used inside a SessionProvider');
+  return context;
 }

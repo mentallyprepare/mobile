@@ -10,15 +10,20 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
-    "test:api": "node test/client.test.js",
     "test:sky": "node test/sky.test.js",
-    "test": "npm run test:api && npm run test:sky"
+    "test:backend": "node --test test/backend-contract.test.js",
+    "test:db": "supabase test db",
+    "test": "npm run test:backend && npm run test:sky",
+    "verify": "npm run typecheck && npm run lint && npm test",
+    "db:verify": "supabase db reset --local && supabase test db --local"
   },
   "dependencies": {
     "@expo-google-fonts/instrument-serif": "^0.4.0",
     "@expo-google-fonts/manrope": "^0.4.0",
+    "@supabase/supabase-js": "^2.110.7",
     "expo": "~56.0.11",
     "expo-constants": "~56.0.18",
+    "expo-crypto": "~56.0.4",
     "expo-font": "~56.0.6",
     "expo-linear-gradient": "~56.0.4",
     "expo-linking": "~56.0.14",
@@ -33,12 +38,14 @@
     "react-native-safe-area-context": "~5.7.0",
     "react-native-screens": "4.25.2",
     "react-native-svg": "15.15.4",
+    "react-native-url-polyfill": "^4.0.0",
     "react-native-web": "~0.21.0"
   },
   "devDependencies": {
     "@types/react": "~19.2.2",
     "eslint": "^9.39.4",
     "eslint-config-expo": "~56.0.4",
+    "supabase": "^2.109.1",
     "typescript": "~6.0.3"
   }
 }

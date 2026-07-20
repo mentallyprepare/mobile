@@ -13,8 +13,7 @@ dark so two humans can find each other.
    back, or curated human-written copy selected by rules.
 3. Attribute everything to the world, not the system. Not "we picked this for you" —
    just tonight's prompt. Other numbers about people stay in the admin panel.
-   Exception (18 Jul 2026): one rounded compatibility score may be shown. See
-   docs/decision-stardust-vs-living-night.md for the honesty requirements.
+   Compatibility claims and percentages are not part of the approved backend.
 4. Perfect timing reads as care; precision reads as surveillance. Round everything soft.
 5. Latency is atmosphere. Anything model-computed happens offline, never as a spinner.
 6. When in doubt, the human wins.
