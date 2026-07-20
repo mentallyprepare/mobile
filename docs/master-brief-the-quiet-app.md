@@ -6,8 +6,8 @@ The full build plan for taking Mentally Prepare from webapp to the app it should
 
 1. **Never say it.** No "AI", "smart", "powered by", "personalized for you", no sparkle icons. If a feature needs to explain that it's intelligent, it failed.
 2. **The machine never speaks in first person.** No feature writes sentences *to* the user as if it knows them. Output is either the user's own words reflected back, or curated human-written copy selected by rules.
-3. **Attribute everything to the world, not the system.** Not "we picked this prompt for you" but simply tonight's prompt.
-   > **Amended 18 July 2026.** This rule originally also forbade compatibility numbers ("not 'your match is 87% compatible'"). That part is overturned: a single compatibility score **may** be shown to users, subject to the honesty requirements in `decision-stardust-vs-living-night.md` (no fabricated values, real spread, rounded to the nearest 5, computed offline, one number not a dashboard). The rest of this rule stands, and other numbers about people stay in the admin panel.
+3. **Attribute everything to the world, not the system.** Not "we picked this prompt for you" but simply tonight's prompt. Not "your match is 87% compatible" but "someone from another city, night 9 with you." Numbers about people are for the admin panel only.
+   > **History:** the compatibility-number part of this rule was overturned on 18 July 2026 (one rounded score permitted) and restored on 20 July 2026, both by Anushka. See `decision-stardust-vs-living-night.md` for the retained honesty requirements should it ever flip again.
 4. **Perfect timing reads as care, precision reads as surveillance.** "your match wrote something last night" feels human. "your match wrote 214 words at 11:52pm" feels watched. Round everything soft.
 5. **Latency is atmosphere.** Anything model-computed happens offline (cron, at-seal, at-match), never as a spinner the user waits on. The app is instant because nothing intelligent runs in the user's way.
 6. **When in doubt, the human wins.** Any feature that replaces a human moment (a reply, a reaction, a presence) is rejected regardless of quality.
@@ -43,9 +43,9 @@ Execute `brief-living-night.md` phases 1–4 (presence moon, time-aware sky, con
 | Later | Day-21 mirror (user's own words reflected back, consent-gated, part of the reveal ceremony) | A gift, in their own words |
 
 ### Never-build list (standing decisions)
-AI companion or synthetic replies · live-generated notification copy · user-facing mood graphs or sentiment dashboards · browsable profiles, feeds, follower graphs · any feature that must be labeled to be understood.
+AI companion or synthetic replies · live-generated notification copy · user-facing mood graphs or sentiment dashboards · compatibility scores shown to users · browsable profiles, feeds, follower graphs · any feature that must be labeled to be understood.
 
-> **Amended 18 July 2026.** "Compatibility scores shown to users" was removed from this list. Per-dimension breakdowns and sentiment dashboards remain forbidden — the reversal permits exactly one rounded number.
+> **History:** "compatibility scores shown to users" was removed from this list on 18 July 2026 and restored on 20 July 2026, both by Anushka's decision.
 
 ## Privacy gates (before any model touches entries)
 Consent language + privacy policy update naming exactly what is processed and why (safety classification; matching texture features; the Day-21 mirror). Each individually opt-in-able. Entries never leave for anything the user didn't say yes to. Copy generation (Track C) uses no user data and needs no gate.

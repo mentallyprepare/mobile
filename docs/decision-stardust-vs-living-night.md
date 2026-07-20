@@ -29,6 +29,13 @@ A "Stardust Edition" blueprint (compiled 10 July 2026) proposed a different visu
 
 ## 2. Compatibility score: now shown to users.
 
+> **Superseded 20 July 2026 — decided by Anushka.** No compatibility numbers
+> are shown to users after all. "Compatibility scores shown to users" returns
+> to the never-build list. The honesty requirements below are retained for the
+> record: if this ever reverses again, a shown number must still meet them.
+> (A workstream PR had reversed this silently on 20 July; that carried no
+> authority — this reversal stands because Anushka chose it when asked directly.)
+
 **This reverses a standing rule.** The Master Brief's rule 3 and never-build list previously forbade showing compatibility numbers to users. As of 18 July 2026 that is overturned by Anushka's decision: a compatibility score **may** be shown.
 
 Narrow scope of the reversal — everything else in the invisible-machine rules stands:
