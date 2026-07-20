@@ -1,10 +1,10 @@
 import { requireBackendClient } from './client';
 
-export function requestEmailCode(email: string) {
+export function requestEmailCode(email: string, createAccount = false) {
   return requireBackendClient().auth.signInWithOtp({
     email: email.trim().toLowerCase(),
-    // Account creation stays closed until the age and consent intake is built.
-    options: { shouldCreateUser: false },
+    // New accounts are requested only from the explicit 18+ and policy intake.
+    options: { shouldCreateUser: createAccount },
   });
 }
 

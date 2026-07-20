@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
+import { View, Text, TextInput, StyleSheet, ScrollView, KeyboardAvoidingView, Platform, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Card from '../src/components/Card';
 import NightBackground from '../src/components/NightBackground';
@@ -15,7 +15,12 @@ export default function SignIn() {
   const [codeSent, setCodeSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const canSubmit = email.trim().length > 0 && (!codeSent || code.trim().length >= 6) && !busy;
+  const [creating, setCreating] = useState(false);
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
+  const creationReady = !creating || (ageConfirmed && termsAccepted && privacyAccepted);
+  const canSubmit = email.trim().length > 0 && creationReady && (!codeSent || code.trim().length >= 6) && !busy;
 
   async function onSubmit() {
     if (!canSubmit) return;
@@ -24,7 +29,7 @@ export default function SignIn() {
     try {
       if (codeSent) await signIn(email, code);
       else {
-        await requestCode(email);
+        await requestCode(email, creating);
         setCodeSent(true);
       }
     } catch {
@@ -42,8 +47,8 @@ export default function SignIn() {
           <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
             <View style={styles.column}>
               <Moon present />
-              <Text style={styles.title}>welcome back.</Text>
-              <Text style={styles.sub}>the night kept your place.</Text>
+              <Text style={styles.title}>{creating ? 'begin gently.' : 'welcome back.'}</Text>
+              <Text style={styles.sub}>{creating ? 'Start with a private account. Discovery stays off.' : 'the night kept your place.'}</Text>
               <Card style={styles.card}>
                 <Text style={styles.label}>email</Text>
                 <TextInput
@@ -58,6 +63,20 @@ export default function SignIn() {
                   textContentType="emailAddress"
                   editable={!busy && !codeSent}
                 />
+                {!codeSent ? (
+                  <>
+                    <Pressable onPress={() => setCreating((value) => !value)} style={styles.modeButton} accessibilityRole="button">
+                      <Text style={styles.modeLabel}>{creating ? 'I already have an account' : 'Create a new account'}</Text>
+                    </Pressable>
+                    {creating ? (
+                      <View style={styles.agreements}>
+                        <CheckRow checked={ageConfirmed} onPress={() => setAgeConfirmed((value) => !value)} label="I confirm I am 18 or older." />
+                        <CheckRow checked={termsAccepted} onPress={() => setTermsAccepted((value) => !value)} label="I agree to the terms." />
+                        <CheckRow checked={privacyAccepted} onPress={() => setPrivacyAccepted((value) => !value)} label="I have read the privacy notice." />
+                      </View>
+                    ) : null}
+                  </>
+                ) : null}
                 {codeSent ? (
                   <>
                     <Text style={[styles.label, styles.labelSpaced]}>email code</Text>
@@ -85,13 +104,17 @@ export default function SignIn() {
                   />
                 </View>
               </Card>
-              <Text style={styles.footnote}>no password. the code expires after a short time.</Text>
+              <Text style={styles.footnote}>No password. The code expires after a short time. New accounts repeat consent after verification so it can be recorded.</Text>
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
       </SafeAreaView>
     </View>
   );
+}
+
+function CheckRow({ checked, onPress, label }: { checked: boolean; onPress: () => void; label: string }) {
+  return <Pressable accessibilityRole="checkbox" accessibilityState={{ checked }} onPress={onPress} style={styles.checkRow}><View style={[styles.checkBox, checked && styles.checkBoxOn]}><Text style={styles.checkMark}>{checked ? '✓' : ''}</Text></View><Text style={styles.checkLabel}>{label}</Text></Pressable>;
 }
 
 const styles = StyleSheet.create({
@@ -105,6 +128,14 @@ const styles = StyleSheet.create({
   card: { marginTop: 34, padding: 24 },
   label: { fontFamily: font.body, fontSize: 11, letterSpacing: 1.6, color: ink.mid, marginBottom: 8 },
   labelSpaced: { marginTop: 20 },
+  modeButton: { alignSelf: 'flex-start', marginTop: 14, paddingVertical: 6 },
+  modeLabel: { fontFamily: font.body, fontSize: 12.5, color: ink.mid },
+  agreements: { marginTop: 14, gap: 12 },
+  checkRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  checkBox: { width: 21, height: 21, borderRadius: 6, borderWidth: 1, borderColor: surface.border, alignItems: 'center', justifyContent: 'center' },
+  checkBoxOn: { backgroundColor: 'rgba(168,155,240,0.3)' },
+  checkMark: { fontFamily: font.body, fontSize: 13, color: ink.high },
+  checkLabel: { flex: 1, fontFamily: font.body, fontSize: 12.5, lineHeight: 18, color: ink.mid },
   input: { height: 50, paddingHorizontal: 16, borderRadius: 14, borderWidth: 1, borderColor: surface.border, backgroundColor: 'rgba(5,3,17,0.45)', fontFamily: font.body, fontSize: 15, color: ink.high },
   error: { marginTop: 16, fontFamily: font.body, fontSize: 13, lineHeight: 20, color: '#E8A0B4' },
   actions: { marginTop: 24 },

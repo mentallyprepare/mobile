@@ -12,6 +12,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { SessionProvider, useSession } from '../src/session';
 import { sky } from '../src/theme';
 import { AuthProvider } from '../src/backend/AuthProvider';
+import { AccountSetupProvider, useAccountSetup } from '../src/backend/AccountSetupProvider';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -22,6 +23,7 @@ SplashScreen.preventAutoHideAsync();
  */
 function RootNavigator() {
   const { signedIn } = useSession();
+  const { complete: setupComplete } = useAccountSetup();
   const segments = useSegments();
   const router = useRouter();
 
@@ -34,9 +36,11 @@ function RootNavigator() {
   useEffect(() => {
     if (signedIn === null) return;
     const onSignIn = rootSegment === 'sign-in';
+    const onSetup = rootSegment === 'onboarding';
     if (!signedIn && !onSignIn) router.replace('/sign-in');
-    else if (signedIn && onSignIn) router.replace('/');
-  }, [signedIn, rootSegment, router]);
+    else if (signedIn && setupComplete === false && !onSetup) router.replace('/onboarding');
+    else if (signedIn && setupComplete === true && (onSignIn || onSetup)) router.replace('/');
+  }, [signedIn, setupComplete, rootSegment, router]);
 
   return (
     <Stack
@@ -68,7 +72,9 @@ export default function RootLayout() {
       <StatusBar style="light" />
       <AuthProvider>
         <SessionProvider>
-          <RootNavigator />
+          <AccountSetupProvider>
+            <RootNavigator />
+          </AccountSetupProvider>
         </SessionProvider>
       </AuthProvider>
     </SafeAreaProvider>

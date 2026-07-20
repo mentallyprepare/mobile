@@ -34,6 +34,15 @@ test('taste identity starts private and uses a trusted catalog write', () => {
   assert.match(migration, /grant execute on function public\.remove_shelf_item/i);
 });
 
+test('account creation requires explicit age and policy acknowledgement', () => {
+  assert.match(migration, /complete_initial_account_setup/i);
+  assert.match(migration, /18\+ confirmation is required/i);
+  assert.match(migration, /terms and privacy acknowledgement are required/i);
+  assert.match(migration, /profile_visibility text not null default 'private'/i);
+  assert.match(migration, /discovery_enabled boolean not null default false/i);
+  assert.doesNotMatch(migration, /grant execute on function public\.complete_initial_account_setup\([^\n]+\) to anon/i);
+});
+
 test('private writing and presence require trusted operations', () => {
   assert.doesNotMatch(migration, /grant\s+insert\s+on\s+public\.sealed_entries\s+to\s+authenticated/i);
   assert.doesNotMatch(migration, /grant\s+insert\s+on\s+public\.partner_presence\s+to\s+authenticated/i);

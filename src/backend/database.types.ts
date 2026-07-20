@@ -58,9 +58,9 @@ export type Database = {
   public: {
     Tables: {
       profiles: {
-        Row: { user_id: string; anonymous_name: string; locale: string; timezone: string; created_at: string; updated_at: string };
-        Insert: { user_id: string; anonymous_name: string; locale?: string; timezone?: string };
-        Update: { anonymous_name?: string; locale?: string; timezone?: string };
+        Row: { user_id: string; anonymous_name: string; locale: string; timezone: string; profile_visibility: string; discovery_enabled: boolean; onboarding_completed: boolean; created_at: string; updated_at: string };
+        Insert: { user_id: string; anonymous_name: string; locale?: string; timezone?: string; profile_visibility?: string; discovery_enabled?: boolean; onboarding_completed?: boolean };
+        Update: { anonymous_name?: string; locale?: string; timezone?: string; profile_visibility?: string; discovery_enabled?: boolean; onboarding_completed?: boolean };
         Relationships: [];
       };
       taste_categories: {
@@ -127,6 +127,10 @@ export type Database = {
         Returns: UserTasteObjectRow;
       };
       remove_shelf_item: { Args: { p_shelf_item_id: string }; Returns: undefined };
+      complete_initial_account_setup: {
+        Args: { p_anonymous_name: string; p_age_confirmed: boolean; p_terms_accepted: boolean; p_privacy_accepted: boolean };
+        Returns: Database['public']['Tables']['profiles']['Row'];
+      };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

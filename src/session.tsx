@@ -5,7 +5,8 @@ import { useAuth } from './backend/AuthProvider';
 
 type SessionValue = {
   signedIn: boolean | null;
-  requestCode: (email: string) => Promise<void>;
+  userId: string | null;
+  requestCode: (email: string, createAccount?: boolean) => Promise<void>;
   signIn: (email: string, code: string) => Promise<void>;
   signOut: () => Promise<void>;
 };
@@ -16,9 +17,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const { configured, loading, session } = useAuth();
   const signedIn = loading ? null : Boolean(session);
 
-  const requestCode = useCallback(async (email: string) => {
+  const requestCode = useCallback(async (email: string, createAccount = false) => {
     if (!configured) throw new Error('Backend is not configured.');
-    const { error } = await requestEmailCode(email);
+    const { error } = await requestEmailCode(email, createAccount);
     if (error) throw error;
   }, [configured]);
 
@@ -32,8 +33,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ signedIn, requestCode, signIn, signOut }),
-    [signedIn, requestCode, signIn, signOut],
+    () => ({ signedIn, userId: session?.user.id ?? null, requestCode, signIn, signOut }),
+    [signedIn, session?.user.id, requestCode, signIn, signOut],
   );
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }
