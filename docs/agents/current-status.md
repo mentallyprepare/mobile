@@ -32,8 +32,8 @@ This repository is the native application and version-controlled backend source.
 
 - TypeScript and ESLint: passed.
 - Four backend/CI contract tests and nine sky tests: passed.
-- Full `supabase db reset` and `supabase test db`: pending because Docker and Supabase CLI are not installed on this machine.
+- Clean Supabase database reset, migration, fictional seed, and all 28 pgTAP assertions: passed in both push and pull-request CI runs.
 
 ## Next gate
 
-Run the new verification workflow on the branch (or install Docker Desktop locally), fix any migration/runtime findings, then review the schema and auth flow before creating a hosted development project.
+Review the schema, privacy boundaries, and auth flow in draft PR #1 before creating a hosted development project. Hosted environments and production operation still require separate Rashmi approval.
