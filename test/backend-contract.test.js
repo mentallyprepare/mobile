@@ -12,6 +12,8 @@ const migration = fs.readdirSync(migrationDirectory).filter((name) => name.endsW
 const client = fs.readFileSync(path.join(root, 'src', 'backend', 'client.ts'), 'utf8');
 const config = fs.readFileSync(path.join(root, 'src', 'backend', 'config.ts'), 'utf8');
 const workflow = fs.readFileSync(path.join(root, '.github', 'workflows', 'verify.yml'), 'utf8');
+const musicCatalog = fs.readFileSync(path.join(root, 'supabase', 'functions', 'music-catalog', 'index.ts'), 'utf8');
+const mobileHome = fs.readFileSync(path.join(root, 'app', '(tabs)', 'index.tsx'), 'utf8');
 
 test('every public user-data table enables RLS', () => {
   const required = [
@@ -19,6 +21,7 @@ test('every public user-data table enables RLS', () => {
     'writing_drafts', 'sealed_entries', 'partner_presence', 'reveal_artifacts',
     'reveal_decisions', 'identity_reveal_requests', 'blocks', 'reports', 'rematch_requests',
     'taste_categories', 'taste_objects', 'user_taste_objects', 'onboarding_sessions',
+    'social_intentions', 'user_social_intentions', 'discovery_preferences',
   ];
   for (const table of required) {
     assert.match(migration, new RegExp(`alter table public\\.${table} enable row level security`, 'i'));
@@ -41,6 +44,29 @@ test('account creation requires explicit age and policy acknowledgement', () => 
   assert.match(migration, /profile_visibility text not null default 'private'/i);
   assert.match(migration, /discovery_enabled boolean not null default false/i);
   assert.doesNotMatch(migration, /grant execute on function public\.complete_initial_account_setup\([^\n]+\) to anon/i);
+});
+
+test('identity onboarding is server-gated and discovery defaults off', () => {
+  assert.match(migration, /complete_identity_onboarding/i);
+  assert.match(migration, /five artists are required/i);
+  assert.match(migration, /five songs are required/i);
+  assert.match(migration, /privacy_reviewed_at is null/i);
+  assert.match(migration, /discovery_enabled = coalesce\(p_enable_discovery, false\)/i);
+  assert.match(migration, /revoke update on public\.profiles from authenticated/i);
+});
+
+test('music provider data is fetched and verified server-side', () => {
+  assert.match(musicCatalog, /itunes\.apple\.com\/search/);
+  assert.match(musicCatalog, /itunes\.apple\.com\/lookup/);
+  assert.match(musicCatalog, /caller\.auth\.getUser/);
+  assert.match(musicCatalog, /SUPABASE_SERVICE_ROLE_KEY/);
+  assert.doesNotMatch(musicCatalog, /const\s+(songs|artists)\s*=\s*\[/i);
+});
+
+test('mobile home no longer routes completed users into Tonight', () => {
+  assert.match(mobileHome, /YOUR FINITE EDITION/);
+  assert.doesNotMatch(mobileHome, /getTonight|saveDraft|sealEntry/);
+  assert.doesNotMatch(mobileHome, /const\s+(people|recommendations)\s*=\s*\[/i);
 });
 
 test('private writing and presence require trusted operations', () => {

@@ -9,18 +9,23 @@ export type ShelfItem = {
   emotionalMeaning: string | null;
   visibility: 'private' | 'connections' | 'profile';
   useForMatching: boolean;
+  objectType: string;
+  personalNote: string | null;
+  identityRoles: string[];
+  privacyReviewedAt: string | null;
+  position: number;
 };
 
 export async function getShelf(): Promise<ShelfItem[]> {
   const client = requireBackendClient();
   const { data: links, error: linksError } = await client.from('user_taste_objects')
-    .select('id,taste_object_id,relationship_type,emotional_meaning,visibility,use_for_matching,position,created_at')
+    .select('id,taste_object_id,relationship_type,personal_note,emotional_meaning,visibility,use_for_matching,position,identity_roles,privacy_reviewed_at,created_at')
     .order('position').order('created_at');
   if (linksError) throw linksError;
   if (!links?.length) return [];
 
   const { data: objects, error: objectsError } = await client.from('taste_objects')
-    .select('id,category,title,creator_name').in('id', links.map((link) => link.taste_object_id));
+    .select('id,category,title,creator_name,object_type').in('id', links.map((link) => link.taste_object_id));
   if (objectsError) throw objectsError;
   const byId = new Map((objects ?? []).map((object) => [object.id, object]));
 
@@ -36,6 +41,11 @@ export async function getShelf(): Promise<ShelfItem[]> {
       emotionalMeaning: link.emotional_meaning,
       visibility: link.visibility as ShelfItem['visibility'],
       useForMatching: link.use_for_matching,
+      objectType: object.object_type,
+      personalNote: link.personal_note,
+      identityRoles: link.identity_roles,
+      privacyReviewedAt: link.privacy_reviewed_at,
+      position: link.position,
     }];
   });
 }

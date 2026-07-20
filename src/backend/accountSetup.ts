@@ -2,9 +2,9 @@ import { requireBackendClient } from './client';
 
 export async function hasInitialAccountSetup(): Promise<boolean> {
   const client = requireBackendClient();
-  const { data, error } = await client.from('profiles').select('user_id').maybeSingle();
+  const { data, error } = await client.from('profiles').select('onboarding_completed').maybeSingle();
   if (error) throw error;
-  return Boolean(data);
+  return data?.onboarding_completed === true;
 }
 
 export async function completeInitialAccountSetup(input: {

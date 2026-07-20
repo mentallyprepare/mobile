@@ -36,6 +36,7 @@ type TasteObjectRow = {
   release_year: number | null;
   metadata_json: Json;
   created_at: string;
+  object_type: string;
 };
 
 type UserTasteObjectRow = {
@@ -51,6 +52,8 @@ type UserTasteObjectRow = {
   position: number;
   created_at: string;
   updated_at: string;
+  identity_roles: string[];
+  privacy_reviewed_at: string | null;
 };
 
 /** Checked-in contract for rows available to the untrusted mobile client. */
@@ -78,13 +81,31 @@ export type Database = {
       user_taste_objects: {
         Row: UserTasteObjectRow;
         Insert: never;
-        Update: { relationship_type?: string; personal_note?: string | null; emotional_meaning?: string | null; context_prompt?: string | null; visibility?: string; use_for_matching?: boolean; position?: number };
+        Update: { relationship_type?: string; personal_note?: string | null; emotional_meaning?: string | null; context_prompt?: string | null; visibility?: string; use_for_matching?: boolean; position?: number; identity_roles?: string[]; privacy_reviewed_at?: string | null };
         Relationships: [];
       };
       onboarding_sessions: {
         Row: { user_id: string; current_step: string; completed_steps: string[]; draft_data: Json; started_at: string; updated_at: string; completed_at: string | null };
         Insert: { user_id: string; current_step?: string; completed_steps?: string[]; draft_data?: Json; completed_at?: string | null };
         Update: { current_step?: string; completed_steps?: string[]; draft_data?: Json; completed_at?: string | null };
+        Relationships: [];
+      };
+      social_intentions: {
+        Row: { id: string; label: string; position: number; active: boolean };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      user_social_intentions: {
+        Row: { user_id: string; intention_id: string; created_at: string };
+        Insert: { user_id: string; intention_id: string };
+        Update: never;
+        Relationships: [];
+      };
+      discovery_preferences: {
+        Row: { user_id: string; discoverable: boolean; open_to_sparks: boolean; open_to_ritual: boolean; taste_categories: string[]; archetype_affects_matching: boolean; imported_music_affects_matching: boolean; updated_at: string };
+        Insert: { user_id: string; discoverable?: boolean; open_to_sparks?: boolean; open_to_ritual?: boolean; taste_categories?: string[]; archetype_affects_matching?: boolean; imported_music_affects_matching?: boolean };
+        Update: { discoverable?: boolean; open_to_sparks?: boolean; open_to_ritual?: boolean; taste_categories?: string[]; archetype_affects_matching?: boolean; imported_music_affects_matching?: boolean };
         Relationships: [];
       };
       match_memberships: {
@@ -131,6 +152,13 @@ export type Database = {
         Args: { p_anonymous_name: string; p_age_confirmed: boolean; p_terms_accepted: boolean; p_privacy_accepted: boolean };
         Returns: Database['public']['Tables']['profiles']['Row'];
       };
+      add_manual_identity_object: {
+        Args: { p_object_type: string; p_title: string; p_creator_name: string | null; p_identity_roles?: string[] };
+        Returns: UserTasteObjectRow;
+      };
+      set_social_intentions: { Args: { p_intention_ids: string[] }; Returns: undefined };
+      reorder_identity_shelf: { Args: { p_shelf_item_ids: string[] }; Returns: undefined };
+      complete_identity_onboarding: { Args: { p_enable_discovery?: boolean }; Returns: Database['public']['Tables']['profiles']['Row'] };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
