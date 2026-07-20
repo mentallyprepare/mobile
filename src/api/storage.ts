@@ -1,14 +1,13 @@
-import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
 /**
  * Where the token pair lives.
  *
- * Native uses expo-secure-store (Keychain / EncryptedSharedPreferences).
- * SecureStore has no web implementation, so the web build falls back to
- * localStorage — fine for development, and the web build cannot reach the API
- * anyway (the backend sets no CORS headers). Never ship web as a real client
- * without revisiting this.
+ * Native uses expo-secure-store (Keychain / EncryptedSharedPreferences). It has
+ * no web implementation, so it is required lazily inside the native branch —
+ * importing it at module scope pulls a native-only module into the web bundle.
+ * Web falls back to localStorage, which is for development only: the web build
+ * cannot reach the API anyway, since the backend sets no CORS headers.
  */
 export type TokenStorage = {
   get(key: string): Promise<string | null>;
@@ -40,10 +39,15 @@ const webStorage: TokenStorage = {
   },
 };
 
+function secureStore() {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  return require('expo-secure-store');
+}
+
 const nativeStorage: TokenStorage = {
-  get: (key) => SecureStore.getItemAsync(key),
-  set: (key, value) => SecureStore.setItemAsync(key, value),
-  remove: (key) => SecureStore.deleteItemAsync(key),
+  get: (key) => secureStore().getItemAsync(key),
+  set: (key, value) => secureStore().setItemAsync(key, value),
+  remove: (key) => secureStore().deleteItemAsync(key),
 };
 
 export const secureStorage: TokenStorage =

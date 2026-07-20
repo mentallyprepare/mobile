@@ -5,16 +5,30 @@ import { cta, font, ink } from '../theme';
 type PrimaryButtonProps = {
   label: string;
   onPress?: () => void;
+  disabled?: boolean;
+  /** Stretch to fill its container instead of hugging its label. */
+  block?: boolean;
 };
 
 /**
  * The one saturated element on a screen. Carries the web app's rose-to-purple
  * gradient and deep shadow — a translucent pill reads as disabled.
  */
-export default function PrimaryButton({ label, onPress }: PrimaryButtonProps) {
+export default function PrimaryButton({
+  label,
+  onPress,
+  disabled = false,
+  block = false,
+}: PrimaryButtonProps) {
   return (
-    <View style={styles.shadow}>
-      <Pressable onPress={onPress} style={({ pressed }) => pressed && styles.pressed}>
+    <View style={[styles.shadow, block && styles.block, disabled && styles.disabled]}>
+      <Pressable
+        onPress={disabled ? undefined : onPress}
+        disabled={disabled}
+        accessibilityRole="button"
+        accessibilityState={{ disabled }}
+        style={({ pressed }) => pressed && !disabled && styles.pressed}
+      >
         <LinearGradient
           colors={cta.gradient}
           start={{ x: 0, y: 0 }}
@@ -44,6 +58,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  block: { alignSelf: 'stretch' },
+  disabled: { opacity: 0.45 },
   pressed: { opacity: 0.85 },
   label: {
     fontFamily: font.bodyStrong,

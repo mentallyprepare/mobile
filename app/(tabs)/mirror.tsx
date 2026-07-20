@@ -1,61 +1,68 @@
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Moon from '../../src/components/Moon';
 import Card from '../../src/components/Card';
 import NightBackground from '../../src/components/NightBackground';
-import { ink, font, surface, layout } from '../../src/theme';
-
-// Placeholder shelf until the shelf_items schema is signed off and wired.
-const YOUR_SHELF = [
-  { kind: 'song', title: 'Self Control', detail: 'Frank Ocean' },
-  { kind: 'song', title: 'Liability', detail: 'Frank Ocean' },
-  { kind: 'book', title: 'The Bell Jar', detail: null },
-  { kind: 'film', title: 'Past Lives', detail: null },
-];
+import { ink, font, surface, layout, moon } from '../../src/theme';
+import { useMe } from '../../src/api/me';
+import { useSession } from '../../src/session';
 
 export default function Mirror() {
+  const { data, loading } = useMe();
+  const { signOut } = useSession();
+
+  const archetype = data?.user?.archetype ?? null;
+  const match = data?.match ?? null;
+  const partnerArchetype = match?.partner?.archetype ?? null;
+  const partnerSealed = data?.partnerStatus?.partnerHasWrittenToday ?? false;
+  const streak = data?.streak ?? 0;
+
   return (
     <View style={styles.root}>
       <NightBackground />
       <SafeAreaView style={styles.screen} edges={['top']}>
         <ScrollView contentContainerStyle={styles.scroll}>
           <View style={styles.column}>
-            <Moon size={30} />
-            <Text style={styles.archetype}>the mirror</Text>
-            <Text style={styles.archetypeLine}>
-              you see what others can&apos;t admit, even in yourself
-            </Text>
+            {loading ? (
+              <ActivityIndicator color={moon.present} style={styles.loader} />
+            ) : (
+              <>
+                <Moon size={30} />
+                <Text style={styles.archetype}>{archetype ?? 'not scanned yet'}</Text>
+                {data?.user?.name ? (
+                  <Text style={styles.archetypeLine}>{data.user.name}</Text>
+                ) : null}
 
-            <Text style={styles.sectionLabel}>YOUR SHELF</Text>
-            {YOUR_SHELF.map((item) => (
-              <Card key={item.title} style={styles.row}>
-                {item.kind === 'song' ? (
-                  <View style={styles.art} />
-                ) : (
-                  <Text style={styles.kind}>{item.kind.toUpperCase()}</Text>
-                )}
-                <View style={styles.rowText}>
-                  <Text style={styles.rowTitle}>{item.title}</Text>
-                  {item.detail ? <Text style={styles.rowDetail}>{item.detail}</Text> : null}
-                </View>
-              </Card>
-            ))}
+                {streak > 0 ? (
+                  <Text style={styles.streak}>
+                    {streak} {streak === 1 ? 'night' : 'nights'} in a row.
+                  </Text>
+                ) : null}
 
-            <View style={styles.divider} />
+                {match ? (
+                  <>
+                    <View style={styles.divider} />
+                    <Text style={styles.sectionLabel}>
+                      YOUR MATCH{partnerArchetype ? ` · ${partnerArchetype.toUpperCase()}` : ''}
+                    </Text>
+                    <View style={styles.matchMoon}>
+                      <Moon present={partnerSealed} size={30} />
+                    </View>
+                    <Text style={styles.matchLine}>
+                      someone from another college, night {match.day} with you
+                    </Text>
+                  </>
+                ) : null}
 
-            <Text style={styles.sectionLabel}>YOUR MATCH · THE PROTECTOR</Text>
-            <View style={styles.matchMoon}>
-              <Moon present size={30} />
-            </View>
-            <Text style={styles.matchLine}>someone from another city, night 9 with you</Text>
+                <View style={styles.divider} />
+                <Pressable onPress={signOut} style={styles.signOut}>
+                  <Text style={styles.signOutLabel}>sign out</Text>
+                </Pressable>
 
-            <Card accent style={styles.row}>
-              <View style={styles.art} />
-              <View style={styles.rowText}>
-                <Text style={styles.rowTitleMatch}>the night will always win</Text>
-                <Text style={styles.rowDetail}>Frank Ocean</Text>
-              </View>
-            </Card>
+                {/* The Shelf is phase 4 and has no schema or endpoint yet, so
+                    nothing is shown rather than inventing a shelf. */}
+              </>
+            )}
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -74,6 +81,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: layout.gutter,
     paddingTop: 46,
   },
+  loader: { marginTop: 80 },
   archetype: {
     marginTop: 28,
     fontFamily: font.displayItalic,
@@ -81,45 +89,25 @@ const styles = StyleSheet.create({
     color: ink.high,
   },
   archetypeLine: {
-    marginTop: 14,
+    marginTop: 12,
     fontFamily: font.body,
     fontSize: 14,
     lineHeight: 23,
     color: ink.mid,
   },
+  streak: {
+    marginTop: 16,
+    fontFamily: font.body,
+    fontSize: 13.5,
+    color: ink.faint,
+  },
   sectionLabel: {
-    marginTop: 48,
-    marginBottom: 2,
+    marginTop: 34,
     fontFamily: font.body,
     fontSize: 10,
     letterSpacing: 2,
     color: ink.mid,
   },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 16,
-    marginTop: 12,
-    padding: 18,
-  },
-  art: {
-    width: 44,
-    height: 44,
-    borderRadius: 8,
-    backgroundColor: 'rgba(248,242,255,0.07)',
-  },
-  kind: {
-    width: 44,
-    fontFamily: font.body,
-    fontSize: 9,
-    letterSpacing: 1.4,
-    color: ink.mid,
-  },
-  rowText: { flex: 1 },
-  rowTitle: { fontFamily: font.body, fontSize: 15, color: ink.high },
-  rowTitleMatch: { fontFamily: font.body, fontSize: 15, color: '#A89BF0' },
-  rowDetail: { marginTop: 4, fontFamily: font.body, fontSize: 12.5, color: ink.mid },
-  divider: { height: 1, backgroundColor: surface.border, marginTop: 48 },
   matchMoon: { marginTop: 20 },
   matchLine: {
     marginTop: 18,
@@ -127,5 +115,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
     lineHeight: 24,
     color: ink.high,
+  },
+  divider: { height: 1, backgroundColor: surface.border, marginTop: 44 },
+  signOut: { marginTop: 26, alignSelf: 'flex-start' },
+  signOutLabel: {
+    fontFamily: font.body,
+    fontSize: 13.5,
+    color: ink.mid,
   },
 });

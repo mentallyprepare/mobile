@@ -10,7 +10,9 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
-    "test:api": "node test/client.test.js"
+    "test:api": "node test/client.test.js",
+    "test:sky": "node test/sky.test.js",
+    "test": "npm run test:api && npm run test:sky"
   },
   "dependencies": {
     "@expo-google-fonts/instrument-serif": "^0.4.0",
