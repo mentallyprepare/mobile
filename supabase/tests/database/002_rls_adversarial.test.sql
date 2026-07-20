@@ -30,7 +30,12 @@ select is((select count(*) from public.consent_records), 0::bigint, 'unrelated u
 
 reset role;
 set local role anon;
-select is((select count(*) from public.daily_prompts), 0::bigint, 'anonymous caller cannot read prompts');
+select throws_ok(
+  $$select count(*) from public.daily_prompts$$,
+  '42501',
+  null,
+  'anonymous caller cannot read prompts'
+);
 
 select * from finish();
 rollback;
