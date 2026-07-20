@@ -3,6 +3,7 @@ node_modules/
 .expo/
 dist/
 dist-review/
+dist-mp007/
 web-build/
 expo-env.d.ts
 

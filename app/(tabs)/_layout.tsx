@@ -2,7 +2,7 @@ import { Tabs } from 'expo-router';
 import { sky, ink, moon } from '../../src/theme';
 import { MoonIcon, PulseIcon, SparkIcon, PersonIcon } from '../../src/components/Icons';
 
-// Four tabs, in the prototype's order. Icons only, no labels.
+// The second route is now the real-data Inner Shelf; labels remain visually hidden.
 export default function TabsLayout() {
   return (
     <Tabs
