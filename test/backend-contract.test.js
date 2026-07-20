@@ -38,5 +38,8 @@ test('mobile configuration fails closed and contains no service-role key', () =>
 test('CI rebuilds the database and executes pgTAP before approval', () => {
   assert.match(workflow, /npm run db:verify/);
   assert.match(workflow, /supabase stop --no-backup/);
+  assert.match(workflow, /actions\/checkout@v7/);
+  assert.match(workflow, /actions\/setup-node@v7/);
+  assert.doesNotMatch(workflow, /actions\/(checkout|setup-node)@v4/);
   assert.doesNotMatch(workflow, /SUPABASE_(ACCESS_TOKEN|DB_PASSWORD|SERVICE_ROLE)/);
 });
