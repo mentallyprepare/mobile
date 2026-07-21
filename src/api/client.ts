@@ -62,6 +62,7 @@ export function createApiClient({ baseUrl, storage, fetchImpl }: ClientOptions) 
       try {
         res = await fetchImpl(`${root}/api/auth/token/refresh`, {
           method: 'POST',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ refreshToken }),
         });
@@ -97,7 +98,11 @@ export function createApiClient({ baseUrl, storage, fetchImpl }: ClientOptions) 
         ...(options.headers || {}),
       };
       if (access) headers.Authorization = `Bearer ${access}`;
-      return fetchImpl(`${root}${path}`, { ...options, headers });
+      return fetchImpl(`${root}${path}`, {
+        credentials: 'include',
+        ...options,
+        headers,
+      });
     };
 
     let res = await send();
