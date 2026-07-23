@@ -9,14 +9,18 @@ import {
   Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import Card from '../src/components/Card';
-import NightBackground from '../src/components/NightBackground';
-import PrimaryButton from '../src/components/PrimaryButton';
-import Moon from '../src/components/Moon';
+import DaylightCard from '../src/components/DaylightCard';
+import DaylightButton from '../src/components/DaylightButton';
+import Illustration from '../src/components/Illustration';
 import { useSession } from '../src/session';
 import { ApiError } from '../src/api';
-import { ink, font, surface, layout } from '../src/theme';
+import { daylight, layout, space, type } from '../src/design';
 
+/**
+ * Sign-in — Daylight. The app's front door is the finding phase, so it lives
+ * in Daylight, not inside the ritual's dark palette. See
+ * docs/the-version.md and docs/design-daylight-world.md.
+ */
 export default function SignIn() {
   const { signIn } = useSession();
   const [email, setEmail] = useState('');
@@ -32,10 +36,8 @@ export default function SignIn() {
     setError(null);
     try {
       await signIn(email.trim().toLowerCase(), password);
-      // The root navigator redirects once the session flips.
+      // Root navigator picks up the session flip and routes on.
     } catch (err) {
-      // Show the server's own wording where we have it; it is already written
-      // in the product's voice and knows why the attempt failed.
       const message =
         err instanceof ApiError
           ? err.message
@@ -47,8 +49,7 @@ export default function SignIn() {
 
   return (
     <View style={styles.root}>
-      <NightBackground />
-      <SafeAreaView style={styles.screen} edges={['top', 'bottom']}>
+      <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
         <KeyboardAvoidingView
           style={styles.flex}
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -56,25 +57,27 @@ export default function SignIn() {
           <ScrollView
             contentContainerStyle={styles.scroll}
             keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
           >
             <View style={styles.column}>
-              <Moon present />
+              <Illustration slot="home-hero" size={92} />
               <Text style={styles.title}>welcome back.</Text>
               <Text style={styles.sub}>the night kept your place.</Text>
 
-              <Card style={styles.card}>
+              <DaylightCard style={styles.card}>
                 <Text style={styles.label}>email</Text>
                 <TextInput
                   style={styles.input}
                   value={email}
                   onChangeText={setEmail}
                   placeholder="you@college.edu"
-                  placeholderTextColor={ink.low}
+                  placeholderTextColor={daylight.inkLow}
                   autoCapitalize="none"
                   autoCorrect={false}
                   keyboardType="email-address"
                   textContentType="emailAddress"
                   editable={!busy}
+                  accessibilityLabel="Email"
                 />
 
                 <Text style={[styles.label, styles.labelSpaced]}>password</Text>
@@ -83,26 +86,27 @@ export default function SignIn() {
                   value={password}
                   onChangeText={setPassword}
                   placeholder="••••••••"
-                  placeholderTextColor={ink.low}
+                  placeholderTextColor={daylight.inkLow}
                   secureTextEntry
                   autoCapitalize="none"
                   textContentType="password"
                   editable={!busy}
                   onSubmitEditing={onSubmit}
                   returnKeyType="go"
+                  accessibilityLabel="Password"
                 />
 
                 {error ? <Text style={styles.error}>{error}</Text> : null}
 
                 <View style={styles.actions}>
-                  <PrimaryButton
+                  <DaylightButton
                     label={busy ? 'signing in…' : 'sign in'}
                     onPress={onSubmit}
                     disabled={!canSubmit}
                     block
                   />
                 </View>
-              </Card>
+              </DaylightCard>
 
               <Text style={styles.footnote}>
                 new here? create your account on the website — the app is for
@@ -117,10 +121,10 @@ export default function SignIn() {
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1 },
-  screen: { flex: 1 },
+  root: { flex: 1, backgroundColor: daylight.bg },
+  safe: { flex: 1 },
   flex: { flex: 1 },
-  scroll: { flexGrow: 1, justifyContent: 'center', paddingVertical: 40 },
+  scroll: { flexGrow: 1, justifyContent: 'center', paddingVertical: space.huge },
   column: {
     width: '100%',
     maxWidth: layout.maxWidth,
@@ -128,52 +132,46 @@ const styles = StyleSheet.create({
     paddingHorizontal: layout.gutter,
   },
   title: {
-    marginTop: 30,
-    fontFamily: font.displayItalic,
-    fontSize: 36,
-    color: ink.high,
+    marginTop: space.xl,
+    ...type.displayItalic,
+    fontSize: 38,
+    lineHeight: 44,
+    color: daylight.ink,
   },
   sub: {
-    marginTop: 12,
-    fontFamily: font.body,
-    fontSize: 14,
-    lineHeight: 22,
-    color: ink.mid,
+    marginTop: space.md,
+    ...type.body,
+    color: daylight.inkMid,
   },
-  card: { marginTop: 34, padding: 24 },
+  card: { marginTop: space.xl, padding: space.xl },
   label: {
-    fontFamily: font.body,
-    fontSize: 11,
-    letterSpacing: 1.6,
-    color: ink.mid,
+    ...type.eyebrow,
+    color: daylight.inkMid,
     marginBottom: 8,
   },
-  labelSpaced: { marginTop: 20 },
+  labelSpaced: { marginTop: space.lg },
   input: {
     height: 50,
-    paddingHorizontal: 16,
+    paddingHorizontal: space.lg,
     borderRadius: 14,
     borderWidth: 1,
-    borderColor: surface.border,
-    backgroundColor: 'rgba(5,3,17,0.45)',
-    fontFamily: font.body,
+    borderColor: daylight.border,
+    backgroundColor: daylight.surface,
+    ...type.body,
     fontSize: 15,
-    color: ink.high,
+    color: daylight.ink,
   },
   error: {
-    marginTop: 16,
-    fontFamily: font.body,
-    fontSize: 13,
-    lineHeight: 20,
-    color: '#E8A0B4',
+    marginTop: space.lg,
+    ...type.bodySmall,
+    color: daylight.accentRose,
   },
-  actions: { marginTop: 24 },
+  actions: { marginTop: space.xl },
   footnote: {
-    marginTop: 26,
-    fontFamily: font.body,
-    fontSize: 12.5,
-    lineHeight: 20,
-    color: ink.faint,
+    marginTop: space.xl,
+    ...type.bodySmall,
+    color: daylight.inkLow,
     textAlign: 'center',
+    fontStyle: 'italic',
   },
 });
