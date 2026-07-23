@@ -1,176 +1,122 @@
-import { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import Moon from '../../src/components/Moon';
-import Card from '../../src/components/Card';
-import NightBackground from '../../src/components/NightBackground';
-import PrimaryButton from '../../src/components/PrimaryButton';
-import { ink, font, moon, layout } from '../../src/theme';
-import { arcLabel } from '../../src/arc';
-import { useMe } from '../../src/api/me';
-import { sealEntry } from '../../src/api/entries';
-import { ApiError } from '../../src/api';
+import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
+import { useRouter } from 'expo-router';
+import DaylightScreen from '../../src/components/DaylightScreen';
+import DaylightCard from '../../src/components/DaylightCard';
+import Illustration from '../../src/components/Illustration';
+import { daylight, space, type } from '../../src/design';
+import { useMeShared } from '../../src/api/me-provider';
 
-export default function Tonight() {
-  const { data, loading, reload } = useMe();
-  const [draft, setDraft] = useState('');
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+/**
+ * Home — a finite daily edition. Only shows a section when its data is real.
+ * See docs/directive-native-social-app.md ("Home V1").
+ */
+export default function Home() {
+  const { data, loading } = useMeShared();
+  const router = useRouter();
 
-  const match = data?.match ?? null;
-  const night = match?.day ?? null;
-  const prompt = match?.currentPrompt ?? null;
-  const partnerSealed = data?.partnerStatus?.partnerHasWrittenToday ?? false;
-  const hasPartner = data?.partnerStatus?.hasPartner ?? false;
-  // Already written tonight? Then the ritual is done for today.
-  const sealedTonight = !!(night && data?.entries?.some((e) => e.day === night));
-
-  async function onSeal() {
-    if (!draft.trim() || busy) return;
-    setBusy(true);
-    setError(null);
-    try {
-      await sealEntry({ text: draft.trim(), selectedPrompt: prompt });
-      setDraft('');
-      await reload();
-    } catch (err) {
-      setError(
-        err instanceof ApiError
-          ? err.message
-          : 'could not reach the server. your words are still here.'
-      );
-    } finally {
-      setBusy(false);
-    }
+  if (loading) {
+    return (
+      <DaylightScreen>
+        <ActivityIndicator color={daylight.accent} style={{ marginTop: space.huge }} />
+      </DaylightScreen>
+    );
   }
 
+  const name = data?.user?.name?.split(' ')[0] ?? null;
+  const match = data?.match ?? null;
+  const streak = data?.streak ?? 0;
+  const sealedTonight = !!(match && data?.entries?.some((e) => e.day === match.day));
+
   return (
-    <View style={styles.root}>
-      <NightBackground />
-      <SafeAreaView style={styles.screen} edges={['top']}>
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-          <View style={styles.column}>
-            {loading ? (
-              <ActivityIndicator color={moon.present} style={styles.loader} />
-            ) : (
-              <>
-                {night ? <Text style={styles.eyebrow}>{arcLabel(night)}</Text> : null}
+    <DaylightScreen>
+      <Text style={styles.hello}>hello{name ? `, ${name.toLowerCase()}` : ''}.</Text>
+      <Text style={styles.date}>today</Text>
 
-                <View style={styles.moonWrap}>
-                  <Moon present={partnerSealed} />
-                </View>
-
-                {hasPartner ? (
-                  <Text style={[styles.presence, !partnerSealed && styles.presenceQuiet]}>
-                    {partnerSealed
-                      ? 'your match sealed something for you.'
-                      : "your match hasn't written yet."}
-                  </Text>
-                ) : (
-                  <Text style={[styles.presence, styles.presenceQuiet]}>
-                    still finding someone for you. you can write tonight anyway.
-                  </Text>
-                )}
-
-                <Card style={styles.card}>
-                  {sealedTonight ? (
-                    <>
-                      <Text style={styles.prompt}>tonight is sealed.</Text>
-                      <Text style={styles.sealedNote}>
-                        their note opens after midnight.
-                      </Text>
-                    </>
-                  ) : (
-                    <>
-                      <Text style={styles.prompt}>
-                        {prompt ?? 'what did you not say out loud today?'}
-                      </Text>
-                      <TextInput
-                        style={styles.input}
-                        value={draft}
-                        onChangeText={setDraft}
-                        placeholder="one small sentence is enough..."
-                        placeholderTextColor={ink.low}
-                        multiline
-                        textAlignVertical="top"
-                        editable={!busy}
-                        maxLength={5000}
-                      />
-                      {error ? <Text style={styles.error}>{error}</Text> : null}
-                      <View style={styles.actions}>
-                        <PrimaryButton
-                          label={busy ? 'sealing…' : 'seal it'}
-                          onPress={onSeal}
-                          disabled={!draft.trim() || busy}
-                        />
-                      </View>
-                    </>
-                  )}
-                </Card>
-              </>
-            )}
+      {match ? (
+        <DaylightCard
+          accent="violet"
+          style={styles.hero}
+          onPress={() => router.push('/rooms')}
+          accessibilityLabel={
+            sealedTonight
+              ? `Tonight sealed. Night ${match.day} of 21.`
+              : `Tonight open. Night ${match.day} of 21.`
+          }
+          accessibilityHint="Opens your active 21-night Room"
+        >
+          <View style={styles.heroRow}>
+            <Illustration slot="home-hero" size={72} />
+            <View style={styles.heroText}>
+              <Text style={styles.heroEyebrow}>NIGHT {match.day} OF 21</Text>
+              <Text style={styles.heroTitle}>
+                {sealedTonight ? 'tonight is sealed.' : "tonight's room."}
+              </Text>
+              <Text style={styles.heroSub}>
+                {sealedTonight
+                  ? 'their note opens after midnight.'
+                  : 'open the room to write.'}
+              </Text>
+            </View>
           </View>
-        </ScrollView>
-      </SafeAreaView>
-    </View>
+        </DaylightCard>
+      ) : (
+        <DaylightCard style={styles.hero} accent="blue">
+          <Text style={styles.heroTitle}>no room yet.</Text>
+          <Text style={styles.heroSub}>
+            when you find someone to do the nights with, they show up here.
+          </Text>
+        </DaylightCard>
+      )}
+
+      {streak > 0 ? (
+        <View style={styles.streak}>
+          <Text style={styles.streakN}>{streak}</Text>
+          <Text style={styles.streakLbl}>
+            {streak === 1 ? 'night in a row' : 'nights in a row'}
+          </Text>
+        </View>
+      ) : null}
+    </DaylightScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1 },
-  screen: { flex: 1 },
-  scroll: { paddingBottom: 56 },
-  column: {
-    width: '100%',
-    maxWidth: layout.maxWidth,
-    alignSelf: 'center',
-    paddingHorizontal: layout.gutter,
-    paddingTop: 48,
+  hello: { ...type.displayItalic, color: daylight.ink },
+  date: {
+    ...type.eyebrow,
+    fontSize: 11,
+    letterSpacing: 1.4,
+    color: daylight.inkMid,
+    marginTop: space.sm,
+    textTransform: 'uppercase',
   },
-  loader: { marginTop: 80 },
-  eyebrow: {
-    fontFamily: font.body,
-    fontSize: 12,
-    letterSpacing: 0.6,
-    color: ink.mid,
+  hero: { marginTop: space.xl },
+  heroRow: { flexDirection: 'row', alignItems: 'center', gap: space.lg },
+  heroText: { flex: 1 },
+  heroEyebrow: {
+    ...type.eyebrow,
+    fontSize: 10,
+    letterSpacing: 1.4,
+    color: daylight.accent,
   },
-  moonWrap: { marginTop: 40 },
-  presence: {
-    marginTop: 24,
-    fontFamily: font.body,
-    fontSize: 14.5,
-    lineHeight: 22,
-    color: moon.present,
+  heroTitle: {
+    ...type.displayItalic,
+    fontSize: 26,
+    lineHeight: 32,
+    color: daylight.ink,
+    marginTop: 4,
   },
-  presenceQuiet: { color: ink.mid },
-  card: { marginTop: 46, padding: 26 },
-  prompt: {
-    fontFamily: font.displayItalic,
-    fontSize: 33,
-    lineHeight: 42,
-    color: ink.high,
+  heroSub: {
+    ...type.body,
+    color: daylight.inkMid,
+    marginTop: 6,
   },
-  sealedNote: {
-    marginTop: 18,
-    fontFamily: font.body,
-    fontSize: 14,
-    lineHeight: 22,
-    color: ink.mid,
+  streak: {
+    marginTop: space.xl,
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: space.sm,
   },
-  input: {
-    marginTop: 30,
-    minHeight: 132,
-    fontFamily: font.displayItalic,
-    fontSize: 20,
-    lineHeight: 30,
-    color: ink.high,
-  },
-  error: {
-    marginTop: 16,
-    fontFamily: font.body,
-    fontSize: 13,
-    lineHeight: 20,
-    color: '#E8A0B4',
-  },
-  actions: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 18 },
+  streakN: { ...type.displayLarge, fontSize: 40, color: daylight.ink },
+  streakLbl: { ...type.body, color: daylight.inkMid },
 });
