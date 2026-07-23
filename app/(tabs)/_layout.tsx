@@ -1,6 +1,7 @@
 import { Tabs, useRouter } from 'expo-router';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { MeProvider, useMeShared } from '../../src/api/me-provider';
+import { ShelfProvider } from '../../src/api/shelf-provider';
 import {
   HomeIcon,
   DiscoverIcon,
@@ -105,7 +106,9 @@ function CreateTabButton({ style: _style }: any) {
 export default function TabsLayout() {
   return (
     <MeProvider>
-      <Shell />
+      <ShelfProvider>
+        <Shell />
+      </ShelfProvider>
     </MeProvider>
   );
 }

@@ -1,21 +1,25 @@
 import { View, Text, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
+import { useRouter } from 'expo-router';
 import DaylightScreen from '../../src/components/DaylightScreen';
 import DaylightCard from '../../src/components/DaylightCard';
 import Illustration from '../../src/components/Illustration';
-import { daylight, space, type } from '../../src/design';
+import { daylight, radius, space, type } from '../../src/design';
 import { useMeShared } from '../../src/api/me-provider';
+import { useShelf } from '../../src/api/shelf-provider';
+import { KIND_META, SHELF_KINDS, type ShelfKind } from '../../src/api/shelf';
 import { useSession } from '../../src/session';
 
 /**
- * You — identity, archetype, streak, sign out. Daylight surface. The old
- * Mirror content lives here now; the archetype line stays but the composition
- * moves out of the ritual's dark palette (the ritual is inside a Room only).
+ * You — identity, real shelf, streak, sign out. Daylight surface. The shelf
+ * shows only slots the user has filled; empty slots invite one-tap add.
  */
 export default function You() {
-  const { data, loading } = useMeShared();
+  const { data, loading: meLoading } = useMeShared();
+  const { byKind, loading: shelfLoading } = useShelf();
   const { signOut } = useSession();
+  const router = useRouter();
 
-  if (loading) {
+  if (meLoading) {
     return (
       <DaylightScreen>
         <ActivityIndicator color={daylight.accent} style={{ marginTop: space.huge }} />
@@ -27,6 +31,7 @@ export default function You() {
   const name = data?.user?.name ?? null;
   const streak = data?.streak ?? 0;
   const match = data?.match ?? null;
+  const filledKinds = SHELF_KINDS.filter((k) => byKind[k]);
 
   return (
     <DaylightScreen>
@@ -45,6 +50,41 @@ export default function You() {
           </Text>
         </DaylightCard>
       ) : null}
+
+      <Text style={styles.section}>YOUR SHELF</Text>
+      {shelfLoading ? (
+        <ActivityIndicator color={daylight.accent} style={{ marginTop: space.md }} />
+      ) : filledKinds.length === 0 ? (
+        <Pressable
+          onPress={() => router.push('/create')}
+          accessibilityRole="button"
+          accessibilityLabel="Add to your shelf"
+          style={({ pressed }) => [styles.emptyShelf, pressed && styles.pressed]}
+        >
+          <Text style={styles.emptyShelfTitle}>your shelf is empty.</Text>
+          <Text style={styles.emptyShelfBody}>
+            add a song, a film, a book — one thing at a time.
+          </Text>
+        </Pressable>
+      ) : (
+        <View style={styles.shelfList}>
+          {filledKinds.map((k) => (
+            <ShelfDisplayRow key={k} kind={k} />
+          ))}
+          {SHELF_KINDS.length > filledKinds.length ? (
+            <Pressable
+              onPress={() => router.push('/create')}
+              accessibilityRole="button"
+              accessibilityLabel="Add more"
+              style={({ pressed }) => [styles.addMore, pressed && styles.pressed]}
+            >
+              <Text style={styles.addMoreLabel}>
+                {SHELF_KINDS.length - filledKinds.length} more to add
+              </Text>
+            </Pressable>
+          ) : null}
+        </View>
+      )}
 
       {match ? (
         <DaylightCard style={styles.card} accent="violet">
@@ -69,6 +109,31 @@ export default function You() {
   );
 }
 
+function ShelfDisplayRow({ kind }: { kind: ShelfKind }) {
+  const { byKind } = useShelf();
+  const router = useRouter();
+  const item = byKind[kind]!;
+  const meta = KIND_META[kind];
+  return (
+    <Pressable
+      onPress={() => router.push({ pathname: '/shelf/[kind]', params: { kind } })}
+      accessibilityRole="button"
+      accessibilityLabel={`Edit ${meta.label}: ${item.title}`}
+      style={({ pressed }) => [styles.shelfRow, pressed && styles.pressed]}
+    >
+      <Text style={styles.shelfKind}>{meta.label.toUpperCase()}</Text>
+      <Text style={styles.shelfTitle} numberOfLines={1}>
+        {item.title}
+      </Text>
+      {item.detail ? (
+        <Text style={styles.shelfDetail} numberOfLines={1}>
+          {item.detail}
+        </Text>
+      ) : null}
+    </Pressable>
+  );
+}
+
 const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
@@ -89,13 +154,64 @@ const styles = StyleSheet.create({
   },
   card: { marginTop: space.xl },
   streak: { ...type.displayItalic, fontSize: 22, color: daylight.ink },
+
   section: {
+    marginTop: space.xl,
+    marginBottom: space.sm,
     ...type.eyebrow,
     fontSize: 10,
-    letterSpacing: 1.4,
+    letterSpacing: 1.6,
     color: daylight.inkMid,
-    marginBottom: 6,
+    textTransform: 'uppercase',
   },
+  emptyShelf: {
+    padding: space.xl,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: daylight.border,
+    backgroundColor: daylight.surface,
+  },
+  emptyShelfTitle: { ...type.displayItalic, fontSize: 22, color: daylight.ink },
+  emptyShelfBody: {
+    ...type.body,
+    color: daylight.inkMid,
+    marginTop: space.sm,
+  },
+  shelfList: { gap: space.md },
+  shelfRow: {
+    padding: space.lg,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: daylight.border,
+    backgroundColor: daylight.surface,
+  },
+  shelfKind: {
+    ...type.eyebrow,
+    fontSize: 10,
+    letterSpacing: 1.2,
+    color: daylight.accent,
+    textTransform: 'uppercase',
+  },
+  shelfTitle: {
+    ...type.body,
+    fontSize: 15,
+    color: daylight.ink,
+    marginTop: 4,
+  },
+  shelfDetail: { ...type.bodySmall, color: daylight.inkMid, marginTop: 2 },
+  addMore: {
+    paddingVertical: space.md,
+    alignItems: 'center',
+  },
+  addMoreLabel: {
+    ...type.eyebrow,
+    fontSize: 11,
+    letterSpacing: 1,
+    color: daylight.accent,
+    textTransform: 'lowercase',
+  },
+  pressed: { opacity: 0.85 },
+
   matchLine: { ...type.body, fontSize: 15, lineHeight: 23, color: daylight.ink },
   foot: { marginTop: space.huge },
   signOut: { alignSelf: 'flex-start', paddingVertical: 8 },

@@ -22,17 +22,12 @@ export default function Discover() {
           <View style={styles.emptyText}>
             <Text style={styles.emptyTitle}>not open yet.</Text>
             <Text style={styles.emptyBody}>
-              taste identity and discovery are still being built. this is where
-              they will live.
+              discovery is still being built. build your shelf in the meantime —
+              that's what people will resonate with.
             </Text>
           </View>
         </View>
       </DaylightCard>
-
-      <Text style={styles.footnote}>
-        first, you build a shelf: songs, films, books, memories that are honestly
-        you. then people who resonate can find you here.
-      </Text>
     </DaylightScreen>
   );
 }
