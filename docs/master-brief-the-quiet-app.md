@@ -43,9 +43,9 @@ Execute `brief-living-night.md` phases 1–4 (presence moon, time-aware sky, con
 | Later | Day-21 mirror (user's own words reflected back, consent-gated, part of the reveal ceremony) | A gift, in their own words |
 
 ### Never-build list (standing decisions)
-AI companion or synthetic replies · live-generated notification copy · user-facing mood graphs or sentiment dashboards · compatibility scores shown to users · browsable profiles, feeds, follower graphs · any feature that must be labeled to be understood.
+AI companion or synthetic replies · live-generated notification copy · user-facing mood graphs or sentiment dashboards · compatibility scores shown to users · follower graphs and follower counts · infinite feeds · synthetic activity or invented people · any feature that must be labeled to be understood.
 
-> **History:** "compatibility scores shown to users" was removed from this list on 18 July 2026 and restored on 20 July 2026, both by Anushka's decision.
+> **History:** "compatibility scores shown to users" was removed from this list on 18 July 2026 and restored on 20 July 2026, both by Anushka's decision. On 21 July 2026 Anushka adopted the native-social directive (`directive-native-social-app.md`): "browsable profiles" left the list — taste-identity profiles and discovery are now in scope — while follower graphs/counts, infinite feeds, and synthetic activity were added explicitly. Home is a finite daily edition.
 
 ## Privacy gates (before any model touches entries)
 Consent language + privacy policy update naming exactly what is processed and why (safety classification; matching texture features; the Day-21 mirror). Each individually opt-in-able. Entries never leave for anything the user didn't say yes to. Copy generation (Track C) uses no user data and needs no gate.

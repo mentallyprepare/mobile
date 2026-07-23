@@ -1,7 +1,14 @@
 # Mentally Prepare — mobile
 
-Native Expo/React Native app. Android first. The webapp lives in a separate repo and
-stays the front door; this app is for people already inside the 21 nights.
+Native Expo/React Native app. Android first. The webapp lives in a separate repo;
+its Express backend is this app's single source of truth.
+
+Direction (adopted 21 Jul 2026, see docs/directive-native-social-app.md): a
+social discovery app — taste identity, discovery, Sparks — with the private
+21-night ritual as the core relationship experience. Three visual worlds:
+Daylight (social), Living Night (ritual only), Utility (settings/safety).
+The reconciliation ledger in that directive governs where it amends earlier
+decisions; read it before trusting any older rule below.
 
 ## The governing rule
 
