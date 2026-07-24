@@ -15,7 +15,7 @@ import {
 } from '../src/backend/identityOnboarding';
 import { saveOnboardingProgress } from '../src/backend/onboarding';
 import { removeShelfItem, type ShelfItem } from '../src/backend/taste';
-import { cosmos, font, ink, layout, moon, radius, surface } from '../src/theme';
+import { cosmos, font, ink, layout, moon, radius, sky, surface } from '../src/theme';
 
 type Stage = 'account' | 'social' | 'music' | 'meaning' | 'privacy';
 const baseCompleted = ['account', 'age_confirmation', 'display_identity'];
