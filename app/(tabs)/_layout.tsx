@@ -1,41 +1,47 @@
 import { Tabs } from 'expo-router';
-import { sky, ink, moon } from '../../src/theme';
+import { cosmos, font, ink, sky } from '../../src/theme';
 import { MoonIcon, PulseIcon, SparkIcon, PersonIcon } from '../../src/components/Icons';
 
-// The second route is now the real-data Inner Shelf; labels remain visually hidden.
 export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarShowLabel: false,
-        tabBarActiveTintColor: moon.present,
-        tabBarInactiveTintColor: ink.mid,
+        tabBarShowLabel: true,
+        tabBarActiveTintColor: cosmos.lilac,
+        tabBarInactiveTintColor: ink.faint,
+        tabBarHideOnKeyboard: true,
         sceneStyle: { backgroundColor: sky.late },
+        tabBarLabelStyle: {
+          marginTop: 3,
+          fontFamily: font.bodyStrong,
+          fontSize: 9,
+          letterSpacing: 0.3,
+        },
+        tabBarItemStyle: { paddingTop: 8, paddingBottom: 7 },
         tabBarStyle: {
-          backgroundColor: '#0A0620',
+          backgroundColor: 'rgba(10,6,32,0.98)',
           borderTopColor: ink.line,
           borderTopWidth: 1,
-          height: 76,
-          paddingTop: 10,
+          height: 82,
         },
       }}
     >
       <Tabs.Screen
         name="index"
-        options={{ tabBarIcon: ({ color }) => <MoonIcon color={color} /> }}
+        options={{ title: 'Home', tabBarAccessibilityLabel: 'Home', tabBarIcon: ({ color }) => <MoonIcon color={color} /> }}
       />
       <Tabs.Screen
         name="silent"
-        options={{ tabBarIcon: ({ color }) => <PulseIcon color={color} /> }}
+        options={{ title: 'Shelf', tabBarAccessibilityLabel: 'Inner Shelf', tabBarIcon: ({ color }) => <PulseIcon color={color} /> }}
       />
       <Tabs.Screen
         name="sky"
-        options={{ tabBarIcon: ({ color }) => <SparkIcon color={color} /> }}
+        options={{ title: 'Sky', tabBarAccessibilityLabel: 'Your sky', tabBarIcon: ({ color }) => <SparkIcon color={color} /> }}
       />
       <Tabs.Screen
         name="mirror"
-        options={{ tabBarIcon: ({ color }) => <PersonIcon color={color} /> }}
+        options={{ title: 'You', tabBarAccessibilityLabel: 'Your profile', tabBarIcon: ({ color }) => <PersonIcon color={color} /> }}
       />
     </Tabs>
   );
