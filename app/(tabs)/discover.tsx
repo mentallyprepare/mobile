@@ -23,7 +23,7 @@ export default function Discover() {
             <Text style={styles.emptyTitle}>not open yet.</Text>
             <Text style={styles.emptyBody}>
               discovery is still being built. build your shelf in the meantime —
-              that's what people will resonate with.
+              that&apos;s what people will resonate with.
             </Text>
           </View>
         </View>

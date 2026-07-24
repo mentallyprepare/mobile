@@ -41,10 +41,12 @@ export function ShelfProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (signedIn === true) {
-      load();
+      void Promise.resolve().then(load);
     } else if (signedIn === false) {
-      setItems([]);
-      setLoading(false);
+      void Promise.resolve().then(() => {
+        setItems([]);
+        setLoading(false);
+      });
     }
   }, [signedIn, load]);
 

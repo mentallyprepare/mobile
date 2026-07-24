@@ -2,8 +2,6 @@ import { useCallback, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
 import { useRouter, useFocusEffect } from 'expo-router';
 import DaylightScreen from '../../src/components/DaylightScreen';
-import DaylightCard from '../../src/components/DaylightCard';
-import Illustration from '../../src/components/Illustration';
 import { daylight, radius, space, type } from '../../src/design';
 import { useMeShared } from '../../src/api/me-provider';
 import { useShelf } from '../../src/api/shelf-provider';

@@ -43,10 +43,12 @@ export function MeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (signedIn === true) {
-      load();
+      void Promise.resolve().then(load);
     } else if (signedIn === false) {
-      setData(null);
-      setLoading(false);
+      void Promise.resolve().then(() => {
+        setData(null);
+        setLoading(false);
+      });
     }
   }, [signedIn, load]);
 

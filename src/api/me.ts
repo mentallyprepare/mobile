@@ -88,7 +88,7 @@ export function useMe() {
   }, []);
 
   useEffect(() => {
-    load();
+    void Promise.resolve().then(load);
   }, [load]);
 
   return { ...state, reload: load };
