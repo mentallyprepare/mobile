@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { Animated, StyleSheet } from 'react-native';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 
@@ -7,7 +7,7 @@ type RevealProps = { children: ReactNode };
 /** A restrained native entrance that becomes completely static for reduced motion. */
 export default function Reveal({ children }: RevealProps) {
   const reducedMotion = useReducedMotion();
-  const progress = useRef(new Animated.Value(0)).current;
+  const [progress] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     if (reducedMotion) {
