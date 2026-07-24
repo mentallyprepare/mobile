@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { cosmos, font, ink, moon, sky } from '../../src/theme';
+import { cosmos, font, ink, sky } from '../../src/theme';
 import { MoonIcon, PulseIcon, SparkIcon, PersonIcon } from '../../src/components/Icons';
 
 export default function TabsLayout() {
