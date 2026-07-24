@@ -61,6 +61,23 @@ export const glow = {
   purpleOpacity: 0.16,
 };
 
+// Supporting accents for identity-building screens. These stay muted enough
+// that album art and the primary action remain the only visual focal points.
+export const cosmos = {
+  cream: '#F7F1FF',
+  lilac: '#C9BEFF',
+  lavender: '#9F91E8',
+  plum: '#7F5A8E',
+  rose: '#C47D91',
+  success: '#9CCDB8',
+  danger: '#F2A8B8',
+  selectedFill: 'rgba(168,155,240,0.13)',
+  selectedBorder: 'rgba(201,190,255,0.72)',
+};
+
+export const radius = { small: 12, medium: 18, large: 26, pill: 999 };
+export const spacing = { xs: 6, sm: 10, md: 16, lg: 24, xl: 34, xxl: 48 };
+
 // One column, centred, with real margins. Screens should feel like a room,
 // not a form: generous vertical air, nothing running edge to edge.
 export const layout = {
@@ -77,5 +94,5 @@ export const font = {
   bodyStrong: 'Manrope_600SemiBold',
 };
 
-export const theme = { sky, moon, ring, star, ink, font };
+export const theme = { sky, moon, ring, star, ink, font, cosmos, radius, spacing };
 export default theme;
