@@ -23,6 +23,7 @@ export default function Home() {
   }
 
   const name = data?.user?.name?.split(' ')[0] ?? null;
+  const archetype = data?.user?.archetype ?? null;
   const match = data?.match ?? null;
   const streak = data?.streak ?? 0;
   const sealedTonight = !!(match && data?.entries?.some((e) => e.day === match.day));
@@ -58,6 +59,21 @@ export default function Home() {
               </Text>
             </View>
           </View>
+        </DaylightCard>
+      ) : !archetype ? (
+        <DaylightCard
+          style={styles.hero}
+          accent="rose"
+          onPress={() => router.push('/scan')}
+          accessibilityLabel="Take the scan"
+          accessibilityHint="Eleven questions, about two minutes"
+        >
+          <Text style={styles.heroEyebrow}>ONE THING TO DO</Text>
+          <Text style={styles.heroTitle}>take the scan.</Text>
+          <Text style={styles.heroSub}>
+            eleven questions. it names the pattern behind how you handle
+            closeness.
+          </Text>
         </DaylightCard>
       ) : (
         <DaylightCard style={styles.hero} accent="blue">

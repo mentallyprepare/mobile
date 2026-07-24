@@ -43,6 +43,22 @@ export default function You() {
         </View>
       </View>
 
+      {!archetype ? (
+        <DaylightCard
+          style={styles.card}
+          accent="rose"
+          onPress={() => router.push('/scan')}
+          accessibilityLabel="Take the scan"
+          accessibilityHint="Eleven questions, about two minutes"
+        >
+          <Text style={styles.scanTitle}>take the scan.</Text>
+          <Text style={styles.scanBody}>
+            eleven questions, about two minutes. it names the pattern behind
+            how you handle closeness.
+          </Text>
+        </DaylightCard>
+      ) : null}
+
       {streak > 0 ? (
         <DaylightCard style={styles.card} accent="amber">
           <Text style={styles.streak}>
@@ -153,6 +169,8 @@ const styles = StyleSheet.create({
     marginTop: 6,
   },
   card: { marginTop: space.xl },
+  scanTitle: { ...type.displayItalic, fontSize: 24, color: daylight.ink },
+  scanBody: { marginTop: space.sm, ...type.body, color: daylight.inkMid, lineHeight: 23 },
   streak: { ...type.displayItalic, fontSize: 22, color: daylight.ink },
 
   section: {
