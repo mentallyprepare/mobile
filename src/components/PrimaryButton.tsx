@@ -1,6 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { cta, font, ink } from '../theme';
+import { cta, font, ink, radius } from '../theme';
 
 type PrimaryButtonProps = {
   label: string;
@@ -26,7 +26,9 @@ export default function PrimaryButton({
         onPress={disabled ? undefined : onPress}
         disabled={disabled}
         accessibilityRole="button"
+        accessibilityLabel={label}
         accessibilityState={{ disabled }}
+        hitSlop={6}
         style={({ pressed }) => pressed && !disabled && styles.pressed}
       >
         <LinearGradient
@@ -35,7 +37,7 @@ export default function PrimaryButton({
           end={{ x: 1, y: 1 }}
           style={styles.button}
         >
-          <Text style={styles.label}>{label}</Text>
+          <Text maxFontSizeMultiplier={1.35} style={styles.label}>{label}</Text>
         </LinearGradient>
       </Pressable>
     </View>
@@ -49,16 +51,16 @@ const styles = StyleSheet.create({
     shadowRadius: 21,
     shadowOffset: { width: 0, height: 12 },
     elevation: 8,
-    borderRadius: 999,
+    borderRadius: radius.pill,
   },
   button: {
-    minHeight: 52,
+    minHeight: 56,
     paddingHorizontal: 30,
-    borderRadius: 999,
+    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  block: { alignSelf: 'stretch' },
+  block: { alignSelf: 'stretch', width: '100%' },
   disabled: { opacity: 0.45 },
   pressed: { opacity: 0.85 },
   label: {
