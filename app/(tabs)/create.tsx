@@ -61,14 +61,16 @@ function ShelfRow({
 }) {
   const router = useRouter();
   const meta = KIND_META[kind];
-  const label = filled ? meta.label : `add ${meta.label}`;
+  const available = kind === 'song_a' || kind === 'song_b' || kind === 'memory';
+  const label = !available ? `${meta.label} — coming later` : filled ? meta.label : `add ${meta.label}`;
 
   return (
     <Pressable
-      onPress={() => router.push({ pathname: '/shelf/[kind]', params: { kind } })}
+      onPress={() => available && router.push({ pathname: '/shelf/[kind]', params: { kind } })}
       accessibilityRole="button"
       accessibilityLabel={filled ? `edit ${meta.label}: ${filled.title}` : label}
-      style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
+      disabled={!available}
+      style={({ pressed }) => [styles.row, !available && styles.rowDisabled, pressed && styles.rowPressed]}
     >
       <View style={[styles.kindDot, filled && styles.kindDotOn]} />
       <View style={styles.rowText}>
@@ -80,7 +82,7 @@ function ShelfRow({
           </Text>
         ) : null}
       </View>
-      <Text style={styles.arrow}>{filled ? 'edit' : 'add'}</Text>
+      <Text style={styles.arrow}>{!available ? 'later' : filled ? 'edit' : 'add'}</Text>
     </Pressable>
   );
 }
@@ -102,6 +104,7 @@ const styles = StyleSheet.create({
     gap: space.lg,
   },
   rowPressed: { opacity: 0.85 },
+  rowDisabled: { opacity: 0.58 },
   kindDot: {
     width: 10,
     height: 10,
