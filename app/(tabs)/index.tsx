@@ -3,6 +3,7 @@ import { useRouter } from 'expo-router';
 import DaylightScreen from '../../src/components/DaylightScreen';
 import DaylightCard from '../../src/components/DaylightCard';
 import Illustration from '../../src/components/Illustration';
+import CosmicWelcome from '../../src/components/CosmicWelcome';
 import { daylight, space, type } from '../../src/design';
 import { useMeShared } from '../../src/api/me-provider';
 
@@ -33,6 +34,8 @@ export default function Home() {
       <Text style={styles.hello}>hello{name ? `, ${name.toLowerCase()}` : ''}.</Text>
       <Text style={styles.date}>today</Text>
 
+      {!match && !archetype ? <CosmicWelcome /> : null}
+
       {match ? (
         <DaylightCard
           accent="violet"
@@ -62,7 +65,7 @@ export default function Home() {
         </DaylightCard>
       ) : !archetype ? (
         <DaylightCard
-          style={styles.hero}
+          style={styles.heroCompact}
           accent="rose"
           onPress={() => router.push('/scan')}
           accessibilityLabel="Take the scan"
@@ -107,6 +110,7 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   hero: { marginTop: space.xl },
+  heroCompact: { marginTop: space.md },
   heroRow: { flexDirection: 'row', alignItems: 'center', gap: space.lg },
   heroText: { flex: 1 },
   heroEyebrow: {

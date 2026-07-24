@@ -5,6 +5,7 @@ import { useRouter } from 'expo-router';
 import DaylightCard from '../src/components/DaylightCard';
 import DaylightButton from '../src/components/DaylightButton';
 import Illustration from '../src/components/Illustration';
+import CosmicWelcome from '../src/components/CosmicWelcome';
 import { daylight, layout, radius, space, type } from '../src/design';
 import {
   ARCHETYPES,
@@ -119,7 +120,7 @@ function IntroBody({ onStart, onSkip }: { onStart: () => void; onSkip: () => voi
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.column}>
-        <Illustration slot="you-hero" size={96} />
+        <CosmicWelcome />
         <Text style={styles.title}>a small scan.</Text>
         <Text style={styles.sub}>
           eleven questions about how you handle closeness, so we can name a
