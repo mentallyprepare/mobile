@@ -64,7 +64,64 @@ naming, colour systems or proprietary interaction patterns.
    if Silent returns later as a room-presence state — as a typed contract, not
    a mock.
 
-## The three worlds
+9. **The whole app is dark, amended 25 Jul 2026 by Anushka.** Ledger item 2
+   above is superseded in one specific respect: there is no cream Daylight
+   world. The Daylight palette (`#F5F0E7` cream, `#E7E1F8` pale lilac, dark
+   plum ink) is retired. The three surfaces still exist, but as **three
+   temperatures of one dark atmosphere**, not three worlds — see "The three
+   temperatures" below. The 21 Jul instruction "do not make the whole app
+   dark purple" no longer applies.
+
+   Two sub-decisions taken at the same time, because the amendment could not
+   be implemented without them:
+
+   - **`deepInk` resolves to `#050311`, not `#0A0714`.** The amendment text
+     specified `#0A0714`. That value conflicts with the shipped brand: the
+     app icon's sky gradient in `brand/logo-mark.svg` terminates at `#050311`,
+     and every raster in `assets/images/` is generated from it. A base of
+     `#0A0714` puts a visible seam between the splash and the app on OLED
+     Android. Ledger item 7 already makes brand-package hexes canonical over
+     directive hexes; this follows that rule. `#0A0714` is recorded as
+     superseded. Reversing this means regenerating the whole brand raster set.
+   - **`moonViolet` is `#A89BF0`.** Confirmed as the brand value.
+     `src/design/colors.ts` carried the `#A99BF0` typo on `daylight.accent`;
+     corrected in the same pass. Ledger item 7 anticipated exactly this drift.
+
+   **Migration note.** The retirement is staged, not instant. The `daylight`
+   token group survives in `src/design/colors.ts` marked deprecated so the
+   eight screens built on it keep compiling and rendering. Screens migrate to
+   the dark themes one at a time, per the house rule "minimal diffs, one
+   change one retest". The tab bar's skin migrates *with* the screens, not
+   before them — a dark tab bar under cream screens is a broken app, not a
+   partial one.
+
+## The three temperatures
+
+Amended 25 Jul 2026. Supersedes "The three worlds" below. The whole app runs
+on deep ink. Each temperature is that same atmosphere warmed or cooled by one
+accent per screen.
+
+1. **Moonlit-warm** — Home, Rooms, Tonight, Sealing, Reveal. Deep ink base,
+   warm cream-amber highlights, dusty rose shadow. A single painted object
+   owns the composition.
+2. **Cool-lavender** — Discover, Taste onboarding, Profiles, Sparks. Same deep
+   ink, cooler moon-lavender accent, slightly more chrome to support
+   navigation. Still no card-grid wallpaper.
+3. **Dark utility** — Settings, Privacy, Safety, Account, Blocking. Near-black,
+   no illustration, no atmosphere, high contrast, native controls, explicit
+   confirmation.
+
+### Contrast finding, flagged 25 Jul 2026
+
+`textMuted #4d426e` on `deepInk #050311` measures **2.26:1**. WCAG AA needs
+4.5:1 for body text and 3:1 for large text and UI boundaries. It fails both.
+This token is therefore constrained to decoration that carries no information
+— it must never be the only thing rendering a word, a count, or a state.
+`textSecondary #7a6fa8` measures 4.54:1 and passes AA for normal text with
+almost no margin; do not darken it. `textPrimary`, `moonViolet` and
+`dustyRose` all clear 8:1.
+
+## The three worlds (superseded 25 Jul 2026 — see above)
 
 - **Daylight social world** — Home, Discover, Search, Taste onboarding,
   Profiles, Inner Shelf, Sparks. Warm cream / pale lilac, dark ink type,
