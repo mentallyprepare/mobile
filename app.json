@@ -17,6 +17,10 @@
       },
       "predictiveBackGestureEnabled": false
     },
+    "ios": {
+      "bundleIdentifier": "com.mentallyprepare.app",
+      "supportsTablet": true
+    },
     "web": {
       "bundler": "metro",
       "output": "static",
@@ -33,7 +37,9 @@
         }
       ],
       "expo-font",
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-notifications",
+      "expo-sharing"
     ],
     "experiments": {
       "typedRoutes": true

@@ -1,5 +1,5 @@
 import { View, type ViewStyle } from 'react-native';
-import { daylight, radius } from '../design';
+import { brand, daylight, radius } from '../design';
 
 /**
  * Pluggable illustration slot. Screens declare a slot name; the manifest maps
@@ -19,11 +19,11 @@ type Palette = { fg: string; bg: string };
 
 const PLACEHOLDER: Record<IllustrationSlot, Palette> = {
   'home-hero': { fg: daylight.accent, bg: daylight.bgAlt },
-  'shelf-empty': { fg: daylight.accentRose, bg: '#F7E6ED' },
+  'shelf-empty': { fg: daylight.accentRose, bg: '#1A1018' },
   'room-empty': { fg: daylight.accent, bg: daylight.bgAlt },
-  'discover-empty': { fg: daylight.accentBlue, bg: '#DFE9F1' },
-  'spark-received': { fg: daylight.accentAmber, bg: '#F4E9D3' },
-  'you-hero': { fg: daylight.accentMoss, bg: '#E1E7DD' },
+  'discover-empty': { fg: daylight.accentBlue, bg: '#171024' },
+  'spark-received': { fg: daylight.accentAmber, bg: '#18140D' },
+  'you-hero': { fg: daylight.accentMoss, bg: brand.card },
 };
 
 // Registered assets go here as they are authored. Empty for now on purpose.

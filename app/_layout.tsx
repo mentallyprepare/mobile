@@ -2,6 +2,7 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect } from 'react';
+import { Platform } from 'react-native';
 import {
   useFonts,
   InstrumentSerif_400Regular,
@@ -10,7 +11,11 @@ import {
 import { Manrope_500Medium, Manrope_600SemiBold } from '@expo-google-fonts/manrope';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { SessionProvider, useSession } from '../src/session';
+import { MeProvider } from '../src/api/me-provider';
+import { ShelfProvider } from '../src/api/shelf-provider';
+import NotificationRouting from '../src/notifications/NotificationRouting';
 import { sky } from '../src/theme';
+import { brand } from '../src/design';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -33,7 +38,9 @@ function RootNavigator() {
   useEffect(() => {
     if (signedIn === null) return;
     const onSignIn = rootSegment === 'sign-in';
-    if (!signedIn && !onSignIn) router.replace('/sign-in');
+    const onPublicAuthScreen =
+      onSignIn || rootSegment === 'forgot-password' || rootSegment === 'sign-up';
+    if (!signedIn && !onPublicAuthScreen) router.replace('/sign-in');
     else if (signedIn && onSignIn) router.replace('/');
   }, [signedIn, rootSegment, router]);
 
@@ -59,6 +66,27 @@ export default function RootLayout() {
     if (fontsLoaded) SplashScreen.hideAsync();
   }, [fontsLoaded]);
 
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+
+    const style = document.createElement('style');
+    style.id = 'mentally-prepare-web-autofill-theme';
+    style.textContent = `
+      input:-webkit-autofill,
+      input:-webkit-autofill:hover,
+      input:-webkit-autofill:focus,
+      input:-webkit-autofill:active {
+        -webkit-box-shadow: 0 0 0 1000px ${brand.card} inset !important;
+        -webkit-text-fill-color: ${brand.ink} !important;
+        caret-color: ${brand.ink} !important;
+        transition: background-color 9999s ease-out 0s;
+      }
+    `;
+    document.head.appendChild(style);
+
+    return () => style.remove();
+  }, []);
+
   if (!fontsLoaded) return null;
 
   return (
@@ -66,7 +94,12 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <StatusBar style="light" />
       <SessionProvider>
-        <RootNavigator />
+        <MeProvider>
+          <ShelfProvider>
+            <NotificationRouting />
+            <RootNavigator />
+          </ShelfProvider>
+        </MeProvider>
       </SessionProvider>
     </SafeAreaProvider>
   );

@@ -1,79 +1,439 @@
-import { View, Text, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
+// touched
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
-import DaylightScreen from '../../src/components/DaylightScreen';
-import { daylight, space, type } from '../../src/design';
+import CosmicScreen from '../../src/components/app/CosmicScreen';
+import LivingNightScene from '../../src/components/ritual/LivingNightScene';
+import ShelfStrip from '../../src/components/shelf/ShelfStrip';
+import { brand, radius, space, type } from '../../src/design';
 import { useMeShared } from '../../src/api/me-provider';
+import { useShelf } from '../../src/api/shelf-provider';
 
-/**
- * Home. Stripped 27 Jul on Anushka's ask: no hero illustration, no wellness
- * copy, no eyebrows, no purple gradient card. Only what is true right now.
- * Two elements max. Written copy is a placeholder marker — Anushka replaces
- * with her own words; Claude does not write app-voice text here.
- */
 export default function Home() {
   const { data, loading } = useMeShared();
+  const { byKind } = useShelf();
   const router = useRouter();
 
   if (loading) {
     return (
-      <DaylightScreen>
-        <ActivityIndicator color={daylight.ink} style={{ marginTop: space.huge }} />
-      </DaylightScreen>
+      <CosmicScreen>
+        <ActivityIndicator color={brand.rose} style={{ marginTop: space.huge }} />
+      </CosmicScreen>
     );
   }
 
   const archetype = data?.user?.archetype ?? null;
   const match = data?.match ?? null;
-  const night = match?.day ?? null;
+  const fullName = data?.user?.name?.trim() || null;
+  const name = fullName?.split(/\s+/)[0] || null;
+  const initial = fullName?.charAt(0).toUpperCase() || 'M';
+  const shelfCount = Object.values(byKind).filter(Boolean).length;
+  const streak = data?.streak ?? 0;
 
-  // Active room: one line, tap opens the room.
-  if (match && night) {
+  if (match) {
+    const partnerPresent = data?.partnerStatus?.partnerHasWrittenToday ?? false;
+    const sealedTonight = !!data?.entries?.some((entry) => entry.day === match.day);
+
     return (
-      <DaylightScreen>
-        <Pressable
+      <CosmicScreen contentStyle={styles.immersiveContent}>
+        <View style={styles.padded}>
+          <AppHeader
+            name={name}
+            initial={initial}
+            onNotifications={() => router.push('/notification-settings')}
+          />
+        </View>
+
+        <LivingNightScene
+          night={match.day}
+          prompt={match.currentPrompt}
+          entries={data?.entries ?? []}
+          userId={data?.user?.id ?? 0}
+          sealed={sealedTonight}
+          partnerPresent={partnerPresent}
+          compact
+          actionLabel={sealedTonight ? 'Open tonight’s room' : 'Write tonight’s note'}
           onPress={() => router.push('/rooms')}
-          accessibilityRole="button"
-          accessibilityLabel={`Night ${night} of 21`}
-          style={styles.line}
-        >
-          <Text style={styles.night}>night {night} of 21</Text>
-        </Pressable>
-      </DaylightScreen>
+        />
+
+        <View style={styles.padded}>
+          <View style={styles.metrics}>
+            <Metric value={String(streak)} label="NIGHT STREAK" />
+            <View style={styles.metricDivider} />
+            <Metric value={`${shelfCount}/5`} label="SHELF FILLED" />
+            <View style={styles.metricDivider} />
+            <Metric value={String(data?.entries?.length ?? 0)} label="NOTES SEALED" />
+          </View>
+
+          <ShelfStrip byKind={byKind} title="Your cultural shelf" />
+        </View>
+      </CosmicScreen>
     );
   }
 
-  // No scan yet: one small link, no card, no illustration.
-  if (!archetype) {
-    return (
-      <DaylightScreen>
+  const setupDone = Number(!!archetype) + Number(shelfCount > 0);
+  const setupPercent = setupDone * 50;
+
+  return (
+    <CosmicScreen>
+      <AppHeader name={name} initial={initial} onNotifications={() => router.push('/notification-settings')} />
+
+      <View style={styles.setup}>
+        <View style={styles.setupTopline}>
+          <View>
+            <Text style={styles.kicker}>PRIVATE PROFILE</Text>
+            <Text style={styles.setupTitle}>Set up your world</Text>
+          </View>
+          <View style={styles.percentBadge}>
+            <Text style={styles.percent}>{setupPercent}%</Text>
+          </View>
+        </View>
+
+        <View style={styles.progress}>
+          <View
+            style={[
+              styles.progressPart,
+              archetype && styles.progressPartComplete,
+            ]}
+          />
+          <View
+            style={[
+              styles.progressPart,
+              shelfCount > 0 && styles.progressPartComplete,
+            ]}
+          />
+        </View>
+
         <Pressable
           onPress={() => router.push('/scan')}
           accessibilityRole="button"
-          accessibilityLabel="Take the scan"
-          style={styles.line}
+          accessibilityLabel={archetype ? 'Review your connection pattern' : 'Take the connection scan'}
+          style={({ pressed }) => [styles.primaryTask, pressed && styles.pressed]}
         >
-          <Text style={styles.link}>take the scan</Text>
+          <View style={styles.taskNumber}>
+            <Text style={styles.taskNumberText}>01</Text>
+          </View>
+          <View style={styles.taskCopy}>
+            <Text style={styles.taskLabel}>CONNECTION PATTERN</Text>
+            <Text style={styles.taskTitle}>{archetype || 'Take the 11-question scan'}</Text>
+            <Text style={styles.taskDetail}>
+              {archetype ? 'Your reflective result is ready' : 'Private, reflective, non-diagnostic'}
+            </Text>
+          </View>
+          <Text style={styles.taskArrow}>→</Text>
         </Pressable>
-      </DaylightScreen>
-    );
-  }
 
-  // Scanned, no match yet: nothing. Deliberate blank.
-  return <DaylightScreen />;
+        <View style={styles.tileRow}>
+          <Pressable
+            onPress={() => router.push('/create')}
+            accessibilityRole="button"
+            accessibilityLabel="Open your cultural shelf"
+            style={({ pressed }) => [styles.tile, styles.shelfTile, pressed && styles.pressed]}
+          >
+            <Text style={styles.tileIndex}>02</Text>
+            <View>
+              <Text style={styles.tileLabel}>YOUR SHELF</Text>
+              <Text style={styles.tileValue}>{shelfCount} / 5</Text>
+              <Text style={styles.tileDetail}>songs · film · book · memory</Text>
+            </View>
+          </Pressable>
+
+          <Pressable
+            onPress={() => router.push('/notification-settings')}
+            accessibilityRole="button"
+            accessibilityLabel="Open notification settings"
+            style={({ pressed }) => [styles.tile, styles.reminderTile, pressed && styles.pressed]}
+          >
+            <Text style={styles.tileIndex}>03</Text>
+            <View>
+              <Text style={styles.tileLabel}>REMINDERS</Text>
+              <Text style={styles.tileValue}>Quiet</Text>
+              <Text style={styles.tileDetail}>optional · private · controlled</Text>
+            </View>
+          </Pressable>
+        </View>
+      </View>
+
+      <ShelfStrip byKind={byKind} title="Your cultural shelf" />
+
+      <View style={styles.ritualSection}>
+        <View style={styles.sectionHeading}>
+          <Text style={styles.sectionTitle}>The 21-night ritual</Text>
+          <Text style={styles.sectionMeta}>PRIVATE BY DESIGN</Text>
+        </View>
+        <View style={styles.nightRail}>
+          {Array.from({ length: 21 }, (_, index) => (
+            <View
+              key={index}
+              style={[
+                styles.nightDot,
+                index === 0 && styles.nightDotStart,
+                index === 20 && styles.nightDotEnd,
+              ]}
+            />
+          ))}
+        </View>
+        <View style={styles.ritualSteps}>
+          <RitualStep number="01" title="Meet through meaning" />
+          <RitualStep number="07" title="Build private rhythm" />
+          <RitualStep number="21" title="Reveal with consent" />
+        </View>
+      </View>
+    </CosmicScreen>
+  );
+}
+
+function AppHeader({
+  name,
+  initial,
+  onNotifications,
+}: {
+  name: string | null;
+  initial: string;
+  onNotifications: () => void;
+}) {
+  return (
+    <View style={styles.header}>
+      <View style={styles.identity}>
+        <View style={styles.avatar}><Text style={styles.avatarText}>{initial}</Text></View>
+        <View>
+          <Text style={styles.greeting}>Good evening</Text>
+          <Text style={styles.name}>{name || 'Your private world'}</Text>
+        </View>
+      </View>
+      <Pressable
+        onPress={onNotifications}
+        accessibilityRole="button"
+        accessibilityLabel="Notification settings"
+        style={({ pressed }) => [styles.bell, pressed && styles.pressed]}
+      >
+        <View style={styles.bellTop} />
+        <View style={styles.bellBody} />
+        <View style={styles.bellDot} />
+      </Pressable>
+    </View>
+  );
+}
+
+function Metric({ value, label }: { value: string; label: string }) {
+  return (
+    <View style={styles.metric}>
+      <Text style={styles.metricValue}>{value}</Text>
+      <Text style={styles.metricLabel}>{label}</Text>
+    </View>
+  );
+}
+
+function RitualStep({ number, title }: { number: string; title: string }) {
+  return (
+    <View style={styles.ritualStep}>
+      <Text style={styles.ritualNumber}>{number}</Text>
+      <Text style={styles.ritualTitle}>{title}</Text>
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({
-  line: { paddingVertical: space.md },
-  night: {
-    ...type.displayItalic,
-    fontSize: 32,
-    lineHeight: 40,
-    color: daylight.ink,
+  immersiveContent: { paddingHorizontal: 0 },
+  padded: { paddingHorizontal: space.lg },
+  header: {
+    minHeight: 56,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
-  link: {
-    ...type.body,
-    fontSize: 15,
-    color: daylight.ink,
-    textDecorationLine: 'underline',
+  identity: { flexDirection: 'row', alignItems: 'center' },
+  avatar: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    backgroundColor: brand.rose,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: space.md,
   },
+  avatarText: { ...type.bodyStrong, color: brand.void, fontSize: 17 },
+  greeting: { ...type.bodySmall, color: brand.inkMid, fontSize: 10.5 },
+  name: { ...type.bodyStrong, color: brand.ink, fontSize: 16, marginTop: -1 },
+  bell: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    borderWidth: 1,
+    borderColor: brand.line,
+    backgroundColor: brand.card,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bellTop: {
+    width: 6,
+    height: 3,
+    borderRadius: 3,
+    backgroundColor: brand.inkMid,
+    marginBottom: -1,
+  },
+  bellBody: {
+    width: 15,
+    height: 15,
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
+    borderBottomLeftRadius: 4,
+    borderBottomRightRadius: 4,
+    borderWidth: 1.5,
+    borderColor: brand.inkMid,
+  },
+  bellDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: brand.rose,
+    marginTop: 2,
+  },
+  setup: {
+    marginTop: space.lg,
+    padding: space.lg,
+    borderRadius: radius.lg,
+    backgroundColor: brand.card,
+    borderWidth: 1,
+    borderColor: brand.line,
+  },
+  setupTopline: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  kicker: { ...type.eyebrow, color: brand.rose, fontSize: 8, letterSpacing: 1.2 },
+  setupTitle: { ...type.bodyStrong, color: brand.ink, fontSize: 22, marginTop: 2 },
+  percentBadge: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 5,
+    borderColor: 'rgba(137,108,181,0.46)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  percent: { ...type.bodyStrong, color: brand.ink, fontSize: 11 },
+  progress: { flexDirection: 'row', gap: 6, marginTop: space.lg },
+  progressPart: {
+    flex: 1,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: brand.line,
+  },
+  progressPartComplete: { backgroundColor: brand.rose },
+  primaryTask: {
+    minHeight: 108,
+    marginTop: space.lg,
+    padding: space.lg,
+    borderRadius: radius.md,
+    backgroundColor: brand.rose,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  taskNumber: {
+    width: 44,
+    height: 44,
+    borderRadius: 13,
+    backgroundColor: 'rgba(8,5,15,0.14)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  taskNumberText: { ...type.bodyStrong, color: brand.void, fontSize: 12 },
+  taskCopy: { flex: 1, marginLeft: space.md },
+  taskLabel: {
+    ...type.eyebrow,
+    color: 'rgba(8,5,15,0.58)',
+    fontSize: 7.5,
+    letterSpacing: 1,
+  },
+  taskTitle: { ...type.bodyStrong, color: brand.void, fontSize: 16, marginTop: 2 },
+  taskDetail: { ...type.bodySmall, color: 'rgba(8,5,15,0.66)', fontSize: 10.5 },
+  taskArrow: { color: brand.void, fontSize: 21 },
+  tileRow: { flexDirection: 'row', gap: space.md, marginTop: space.md },
+  tile: {
+    flex: 1,
+    minHeight: 154,
+    borderRadius: radius.md,
+    padding: space.lg,
+    justifyContent: 'space-between',
+    overflow: 'hidden',
+  },
+  shelfTile: { backgroundColor: brand.purple },
+  reminderTile: {
+    backgroundColor: brand.card,
+    borderWidth: 1,
+    borderColor: brand.gold,
+  },
+  tileIndex: { ...type.bodyStrong, color: 'rgba(255,255,255,0.55)', fontSize: 11 },
+  tileLabel: {
+    ...type.eyebrow,
+    color: 'rgba(255,255,255,0.64)',
+    fontSize: 7.5,
+    letterSpacing: 0.9,
+  },
+  tileValue: { ...type.bodyStrong, color: brand.ink, fontSize: 22, marginTop: 1 },
+  tileDetail: {
+    ...type.bodySmall,
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 9.5,
+    lineHeight: 14,
+    marginTop: 3,
+  },
+  metrics: {
+    minHeight: 88,
+    marginTop: space.md,
+    borderRadius: radius.md,
+    backgroundColor: brand.card,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  metric: { flex: 1, alignItems: 'center' },
+  metricValue: { ...type.bodyStrong, color: brand.ink, fontSize: 18 },
+  metricLabel: {
+    ...type.eyebrow,
+    color: brand.inkLow,
+    fontSize: 7,
+    letterSpacing: 0.7,
+    marginTop: 3,
+  },
+  metricDivider: { width: 1, height: 36, backgroundColor: brand.line },
+  ritualSection: {
+    marginTop: space.xl,
+    padding: space.lg,
+    borderRadius: radius.lg,
+    backgroundColor: brand.card,
+    borderWidth: 1,
+    borderColor: brand.line,
+  },
+  sectionHeading: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+  },
+  sectionTitle: { ...type.bodyStrong, color: brand.ink, fontSize: 17 },
+  sectionMeta: {
+    ...type.eyebrow,
+    color: brand.inkLow,
+    fontSize: 7,
+    letterSpacing: 0.8,
+  },
+  nightRail: {
+    marginTop: space.xl,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  nightDot: {
+    width: 5,
+    height: 5,
+    borderRadius: 3,
+    backgroundColor: brand.inkFaint,
+  },
+  nightDotStart: { width: 9, height: 9, borderRadius: 5, backgroundColor: brand.rose },
+  nightDotEnd: { width: 9, height: 9, borderRadius: 5, backgroundColor: brand.gold },
+  ritualSteps: { flexDirection: 'row', gap: space.md, marginTop: space.xl },
+  ritualStep: { flex: 1 },
+  ritualNumber: { ...type.bodyStrong, color: brand.rose, fontSize: 11 },
+  ritualTitle: { ...type.bodySmall, color: brand.inkMid, fontSize: 10, lineHeight: 14, marginTop: 2 },
+  pressed: { opacity: 0.76, transform: [{ scale: 0.99 }] },
 });

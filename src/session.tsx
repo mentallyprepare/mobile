@@ -1,11 +1,19 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
-import { login as apiLogin, logout as apiLogout, hasSession } from './api/auth';
+import {
+  login as apiLogin,
+  logout as apiLogout,
+  hasSession,
+  register as apiRegister,
+  type RegisterInput,
+} from './api/auth';
+import { disableNativeNotificationsForThisDevice } from './notifications/registration';
 
 type SessionValue = {
   /** null while we are still reading storage on cold start. */
   signedIn: boolean | null;
   signIn: (email: string, password: string) => Promise<void>;
+  signUp: (input: RegisterInput) => Promise<void>;
   signOut: () => Promise<void>;
 };
 
@@ -33,12 +41,21 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setSignedIn(true);
   }, []);
 
+  const signUp = useCallback(async (input: RegisterInput) => {
+    await apiRegister(input);
+    setSignedIn(true);
+  }, []);
+
   const signOut = useCallback(async () => {
+    await disableNativeNotificationsForThisDevice().catch(() => {});
     await apiLogout();
     setSignedIn(false);
   }, []);
 
-  const value = useMemo(() => ({ signedIn, signIn, signOut }), [signedIn, signIn, signOut]);
+  const value = useMemo(
+    () => ({ signedIn, signIn, signUp, signOut }),
+    [signedIn, signIn, signUp, signOut],
+  );
 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }

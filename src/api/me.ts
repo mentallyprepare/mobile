@@ -45,6 +45,9 @@ export type PartnerStatus = {
   /** The presence-moon signal: has the match sealed something tonight. */
   partnerHasWrittenToday: boolean;
   nextUnsealAt: string | null;
+  canSwitch: boolean;
+  switchesRemaining: number;
+  status: string;
 };
 
 export type MeResponse = {

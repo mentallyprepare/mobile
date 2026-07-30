@@ -285,6 +285,19 @@ Prereqs are documented in `master-brief-the-quiet-app.md` (Track A).
 - **`GET /api/my-data` and `DELETE /api/account` on mobile** (GDPR
   self-serve).
 
+### Proposed hero feature (drafted 27 Jul, not built)
+
+- **Sealed Notes** — optional, opt-in channel inside an active Room. A
+  writer may leave short notes for their current partner; the recipient
+  may choose to open one after finishing their own reflection. Governed
+  by the sentence "a note is never the price of participation, and
+  completing a reflection never creates a right to another person's
+  disclosure." Full spec in `docs/proposal-sealed-notes.md`, including
+  the Rashmi Kumar review that reshaped the earlier `secrets-drip`
+  draft into its current consent-led form. **Gated on batch-one Night
+  4–7 retention data and on the Slice 0.5 backend safety foundation.**
+  Rooms-only; never enters the finding phase.
+
 ### Known technical debt
 
 - Every tab currently calls its data provider on mount. `MeProvider` and

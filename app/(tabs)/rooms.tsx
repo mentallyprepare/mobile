@@ -1,36 +1,26 @@
 import { useState } from 'react';
-import { View, Text, TextInput, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import Moon from '../../src/components/Moon';
-import Card from '../../src/components/Card';
-import NightBackground from '../../src/components/NightBackground';
-import PrimaryButton from '../../src/components/PrimaryButton';
-import { ink, font, moon, layout } from '../../src/theme';
-import { arcLabel } from '../../src/arc';
+import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import CosmicScreen from '../../src/components/app/CosmicScreen';
+import LivingNightScene from '../../src/components/ritual/LivingNightScene';
+import { brand, radius, space, type } from '../../src/design';
 import { useMeShared } from '../../src/api/me-provider';
 import { sealEntry } from '../../src/api/entries';
 import { ApiError } from '../../src/api';
 
-/**
- * Rooms tab — the ritual. Living Night is preserved inside the Room. When no
- * Room is active, the tab shows a truthful "not yet" state. The ritual writing
- * lives here now rather than as its own primary tab; the shell around it is
- * Daylight.
- */
-export default function Rooms() {
+export default function Night() {
+  const router = useRouter();
   const { data, loading, reload } = useMeShared();
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [justSealed, setJustSealed] = useState(false);
 
   if (loading) {
     return (
-      <View style={styles.root}>
-        <NightBackground />
-        <SafeAreaView style={styles.screen} edges={['top']}>
-          <ActivityIndicator color={moon.present} style={{ marginTop: 80 }} />
-        </SafeAreaView>
-      </View>
+      <CosmicScreen>
+        <ActivityIndicator color={brand.rose} style={{ marginTop: space.huge }} />
+      </CosmicScreen>
     );
   }
 
@@ -38,41 +28,62 @@ export default function Rooms() {
 
   if (!match) {
     return (
-      <View style={styles.root}>
-        <NightBackground />
-        <SafeAreaView style={styles.screen} edges={['top']}>
-          <View style={styles.column}>
-            <Moon />
-            <Text style={styles.emptyTitle}>no room open.</Text>
-            <Text style={styles.emptyBody}>
-              once someone crosses over with you into the 21 nights, the room
-              lives here.
-            </Text>
-          </View>
-        </SafeAreaView>
-      </View>
+      <CosmicScreen contentStyle={styles.immersiveContent}>
+        <LivingNightScene
+          night={0}
+          prompt=""
+          entries={[]}
+          userId={data?.user?.id ?? 0}
+          sealed={false}
+          partnerPresent={false}
+          inactive
+        />
+
+        <View style={styles.sheet}>
+          <Text style={styles.sheetLabel}>BEFORE NIGHT ONE</Text>
+          <Text style={styles.sheetTitle}>Prepare your side of the room.</Text>
+          <Text style={styles.sheetBody}>
+            Your pattern and cultural shelf give a future match real context. The app never
+            invents a partner, a note, or a connection.
+          </Text>
+
+          <SetupAction
+            index="01"
+            title="Complete your pattern"
+            detail="Eleven reflective, non-diagnostic questions"
+            onPress={() => router.push('/scan')}
+          />
+          <SetupAction
+            index="02"
+            title="Build your cultural shelf"
+            detail="Songs, film, book, and one memory"
+            onPress={() => router.push('/create')}
+          />
+        </View>
+      </CosmicScreen>
     );
   }
 
   const night = match.day;
   const prompt = match.currentPrompt;
   const partnerSealed = data?.partnerStatus?.partnerHasWrittenToday ?? false;
-  const hasPartner = data?.partnerStatus?.hasPartner ?? false;
-  const sealedTonight = !!data?.entries?.some((e) => e.day === night);
+  const sealedTonight = !!data?.entries?.some((entry) => entry.day === night);
 
   async function onSeal() {
     if (!draft.trim() || busy) return;
     setBusy(true);
     setError(null);
+    setJustSealed(false);
     try {
       await sealEntry({ text: draft.trim(), selectedPrompt: prompt });
       setDraft('');
       await reload();
+      setJustSealed(true);
     } catch (err) {
       setError(
         err instanceof ApiError
           ? err.message
-          : 'could not reach the server. your words are still here.'
+          : 'Could not reach the server. Your draft is still here.',
       );
     } finally {
       setBusy(false);
@@ -80,137 +91,229 @@ export default function Rooms() {
   }
 
   return (
-    <View style={styles.root}>
-      <NightBackground />
-      <SafeAreaView style={styles.screen} edges={['top']}>
-        <ScrollView
-          contentContainerStyle={styles.scroll}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={styles.column}>
-            <Text style={styles.eyebrow}>{arcLabel(night)}</Text>
-            <View style={styles.moonWrap}>
-              <Moon present={partnerSealed} />
+    <CosmicScreen contentStyle={styles.immersiveContent}>
+      <LivingNightScene
+        night={night}
+        prompt={prompt}
+        entries={data?.entries ?? []}
+        userId={data?.user?.id ?? 0}
+        sealed={sealedTonight}
+        partnerPresent={partnerSealed}
+        celebrate={justSealed}
+      />
+
+      <View style={styles.sheet}>
+        {sealedTonight ? (
+          <View style={styles.sealedState}>
+            <View style={styles.sealedMark}>
+              <View style={styles.sealedMarkCore} />
             </View>
-
-            {hasPartner ? (
-              <Text style={[styles.presence, !partnerSealed && styles.presenceQuiet]}>
-                {partnerSealed
-                  ? 'your match sealed something for you.'
-                  : "your match hasn't written yet."}
-              </Text>
-            ) : (
-              <Text style={[styles.presence, styles.presenceQuiet]}>
-                still finding someone for you.
-              </Text>
-            )}
-
-            <Card style={styles.card}>
-              {sealedTonight ? (
-                <>
-                  <Text style={styles.prompt}>tonight is sealed.</Text>
-                  <Text style={styles.sealedNote}>their note opens after midnight.</Text>
-                </>
-              ) : (
-                <>
-                  <Text style={styles.prompt}>{prompt}</Text>
-                  <TextInput
-                    style={styles.input}
-                    value={draft}
-                    onChangeText={setDraft}
-                    placeholder="one small sentence is enough..."
-                    placeholderTextColor={ink.low}
-                    multiline
-                    textAlignVertical="top"
-                    editable={!busy}
-                    maxLength={5000}
-                    accessibilityLabel="Tonight's note"
-                  />
-                  {error ? <Text style={styles.error}>{error}</Text> : null}
-                  <View style={styles.actions}>
-                    <PrimaryButton
-                      label={busy ? 'sealing…' : 'seal it'}
-                      onPress={onSeal}
-                      disabled={!draft.trim() || busy}
-                    />
-                  </View>
-                </>
-              )}
-            </Card>
+            <Text style={styles.sheetLabel}>SEALED LOCALLY AND ON YOUR ACCOUNT</Text>
+            <Text style={styles.sheetTitle}>Your note became a star.</Text>
+            <Text style={styles.sheetBody}>
+              Nothing more is required tonight. Another person’s words remain hidden until the
+              room’s scheduled reveal.
+            </Text>
           </View>
-        </ScrollView>
-      </SafeAreaView>
-    </View>
+        ) : (
+          <>
+            <Text style={styles.sheetLabel}>YOUR PRIVATE RESPONSE</Text>
+            <Text style={styles.sheetTitle}>Write before you polish it.</Text>
+            <View style={styles.inputShell}>
+              <TextInput
+                style={styles.input}
+                value={draft}
+                onChangeText={setDraft}
+                placeholder="What is true for you tonight?"
+                placeholderTextColor={brand.inkLow}
+                multiline
+                textAlignVertical="top"
+                editable={!busy}
+                maxLength={5000}
+                accessibilityLabel="Tonight's private note"
+              />
+              <Text style={styles.counter}>{draft.length}/5000</Text>
+            </View>
+            <View style={styles.privacyRow}>
+              <View style={styles.privacyDot} />
+              <Text style={styles.privacy}>
+                Only you can see this before the scheduled reveal.
+              </Text>
+            </View>
+            {error ? <Text style={styles.error}>{error}</Text> : null}
+            <Pressable
+              onPress={onSeal}
+              disabled={!draft.trim() || busy}
+              accessibilityRole="button"
+              accessibilityLabel="Seal tonight's note"
+              style={({ pressed }) => [
+                styles.primary,
+                (!draft.trim() || busy) && styles.primaryDisabled,
+                pressed && styles.pressed,
+              ]}
+            >
+              <Text style={styles.primaryText}>{busy ? 'Sealing…' : 'Seal as a star'}</Text>
+              <Text style={styles.primaryArrow}>↑</Text>
+            </Pressable>
+          </>
+        )}
+      </View>
+    </CosmicScreen>
+  );
+}
+
+function SetupAction({
+  index,
+  title,
+  detail,
+  onPress,
+}: {
+  index: string;
+  title: string;
+  detail: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={title}
+      style={({ pressed }) => [styles.setupAction, pressed && styles.pressed]}
+    >
+      <Text style={styles.setupIndex}>{index}</Text>
+      <View style={styles.setupCopy}>
+        <Text style={styles.setupTitle}>{title}</Text>
+        <Text style={styles.setupDetail}>{detail}</Text>
+      </View>
+      <Text style={styles.setupArrow}>→</Text>
+    </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  root: { flex: 1 },
-  screen: { flex: 1 },
-  scroll: { paddingBottom: 100 },
-  column: {
-    width: '100%',
-    maxWidth: layout.maxWidth,
-    alignSelf: 'center',
-    paddingHorizontal: layout.gutter,
-    paddingTop: 48,
+  immersiveContent: { paddingHorizontal: 0, paddingBottom: 0 },
+  sheet: {
+    minHeight: 360,
+    marginTop: -24,
+    paddingHorizontal: space.lg,
+    paddingTop: space.xl,
+    paddingBottom: space.huge,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    backgroundColor: brand.card,
+    borderTopWidth: 1,
+    borderColor: brand.line,
   },
-  eyebrow: {
-    fontFamily: font.body,
-    fontSize: 12,
-    letterSpacing: 0.6,
-    color: ink.mid,
+  sheetLabel: {
+    ...type.eyebrow,
+    color: brand.rose,
+    fontSize: 8.5,
+    letterSpacing: 1.25,
   },
-  moonWrap: { marginTop: 40 },
-  presence: {
-    marginTop: 24,
-    fontFamily: font.body,
-    fontSize: 14.5,
-    lineHeight: 22,
-    color: moon.present,
+  sheetTitle: {
+    ...type.display,
+    color: brand.ink,
+    fontSize: 30,
+    lineHeight: 36,
+    marginTop: space.sm,
   },
-  presenceQuiet: { color: ink.mid },
-  card: { marginTop: 46, padding: 26 },
-  prompt: {
-    fontFamily: font.displayItalic,
-    fontSize: 33,
-    lineHeight: 42,
-    color: ink.high,
+  sheetBody: {
+    ...type.body,
+    color: brand.inkMid,
+    marginTop: space.sm,
+    maxWidth: 390,
   },
-  sealedNote: {
-    marginTop: 18,
-    fontFamily: font.body,
-    fontSize: 14,
-    lineHeight: 22,
-    color: ink.mid,
+  setupAction: {
+    minHeight: 82,
+    marginTop: space.lg,
+    paddingHorizontal: space.md,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: brand.line,
+    backgroundColor: brand.surface,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  setupIndex: {
+    ...type.eyebrow,
+    width: 34,
+    color: brand.rose,
+    fontSize: 9,
+    letterSpacing: 1,
+  },
+  setupCopy: { flex: 1 },
+  setupTitle: { ...type.bodyStrong, color: brand.ink, fontSize: 14.5 },
+  setupDetail: { ...type.bodySmall, color: brand.inkLow, marginTop: 2 },
+  setupArrow: { color: brand.gold, fontSize: 19 },
+  inputShell: {
+    minHeight: 214,
+    marginTop: space.lg,
+    padding: space.lg,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: 'rgba(228,175,197,0.38)',
+    backgroundColor: brand.void,
   },
   input: {
-    marginTop: 30,
-    minHeight: 132,
-    fontFamily: font.displayItalic,
-    fontSize: 20,
-    lineHeight: 30,
-    color: ink.high,
+    minHeight: 158,
+    ...type.body,
+    color: brand.ink,
+    fontSize: 16,
+    lineHeight: 25,
   },
-  error: {
-    marginTop: 16,
-    fontFamily: font.body,
-    fontSize: 13,
-    lineHeight: 20,
-    color: '#E8A0B4',
+  counter: {
+    ...type.bodySmall,
+    color: brand.inkLow,
+    textAlign: 'right',
+    marginTop: space.sm,
   },
-  actions: { flexDirection: 'row', justifyContent: 'flex-end', marginTop: 18 },
-  emptyTitle: {
-    marginTop: 40,
-    fontFamily: font.displayItalic,
-    fontSize: 32,
-    color: ink.high,
+  privacyRow: {
+    marginTop: space.md,
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  emptyBody: {
-    marginTop: 18,
-    fontFamily: font.body,
-    fontSize: 14.5,
-    lineHeight: 23,
-    color: ink.mid,
+  privacyDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    marginRight: space.sm,
+    backgroundColor: brand.gold,
   },
+  privacy: { ...type.bodySmall, flex: 1, color: brand.inkLow },
+  error: { ...type.bodySmall, color: brand.rose, marginTop: space.md },
+  primary: {
+    minHeight: 58,
+    marginTop: space.lg,
+    paddingHorizontal: space.lg,
+    borderRadius: radius.pill,
+    backgroundColor: brand.rose,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  primaryDisabled: { opacity: 0.35 },
+  primaryText: { ...type.bodyStrong, color: brand.void, fontSize: 15 },
+  primaryArrow: { color: brand.void, fontSize: 19, marginLeft: space.sm },
+  sealedState: { alignItems: 'flex-start' },
+  sealedMark: {
+    width: 64,
+    height: 64,
+    marginBottom: space.lg,
+    borderRadius: 32,
+    backgroundColor: 'rgba(228,175,197,0.12)',
+    borderWidth: 1,
+    borderColor: 'rgba(228,175,197,0.32)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  sealedMarkCore: {
+    width: 15,
+    height: 15,
+    borderRadius: 8,
+    backgroundColor: brand.gold,
+    shadowColor: brand.gold,
+    shadowOpacity: 0.82,
+    shadowRadius: 12,
+  },
+  pressed: { opacity: 0.74, transform: [{ scale: 0.99 }] },
 });

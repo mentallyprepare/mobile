@@ -1,49 +1,81 @@
-import { View, Text, StyleSheet } from 'react-native';
-import DaylightScreen from '../../src/components/DaylightScreen';
-import DaylightCard from '../../src/components/DaylightCard';
-import Illustration from '../../src/components/Illustration';
-import { daylight, space, type } from '../../src/design';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import CosmicScreen from '../../src/components/app/CosmicScreen';
+import { brand, radius, space, type } from '../../src/design';
+import { useShelf } from '../../src/api/shelf-provider';
 
-/**
- * Discover — the finding phase. Backend contract is not yet built
- * (taste-identity, discovery, sparks); this screen is deliberately a truthful
- * unavailable state. No fake people, no invented counts.
- * See docs/directive-native-social-app.md ("DISCOVER V1").
- */
+/** Direct route only. It stays out of tab navigation until discovery is real. */
 export default function Discover() {
-  return (
-    <DaylightScreen>
-      <Text style={styles.title}>discover.</Text>
-      <Text style={styles.sub}>find people whose inner world resonates.</Text>
+  const { byKind } = useShelf();
+  const router = useRouter();
+  const count = Object.values(byKind).filter(Boolean).length;
 
-      <DaylightCard style={styles.card} accent="blue">
-        <View style={styles.emptyRow}>
-          <Illustration slot="discover-empty" size={80} />
-          <View style={styles.emptyText}>
-            <Text style={styles.emptyTitle}>not open yet.</Text>
-            <Text style={styles.emptyBody}>
-              discovery is still being built. build your shelf in the meantime —
-              that&apos;s what people will resonate with.
-            </Text>
-          </View>
-        </View>
-      </DaylightCard>
-    </DaylightScreen>
+  return (
+    <CosmicScreen>
+      <Text style={styles.screenLabel}>DISCOVER</Text>
+      <Text style={styles.title}>Not available in this beta</Text>
+      <Text style={styles.subtitle}>
+        Discovery will appear in navigation after its matching and safety systems are ready.
+      </Text>
+
+      <View style={styles.status}>
+        <Text style={styles.statusLabel}>YOUR SHELF</Text>
+        <Text style={styles.statusValue}>{count} of 5 completed</Text>
+      </View>
+
+      <Pressable
+        onPress={() => router.push('/create')}
+        accessibilityRole="button"
+        accessibilityLabel="Open your shelf"
+        style={({ pressed }) => [styles.action, pressed && styles.pressed]}
+      >
+        <Text style={styles.actionText}>Open shelf</Text>
+        <Text style={styles.arrow}>→</Text>
+      </Pressable>
+    </CosmicScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  title: { ...type.displayItalic, color: daylight.ink },
-  sub: { ...type.body, color: daylight.inkMid, marginTop: space.sm },
-  card: { marginTop: space.xl },
-  emptyRow: { flexDirection: 'row', alignItems: 'center', gap: space.lg },
-  emptyText: { flex: 1 },
-  emptyTitle: { ...type.bodyStrong, fontSize: 16, color: daylight.ink },
-  emptyBody: { ...type.body, color: daylight.inkMid, marginTop: 6 },
-  footnote: {
-    ...type.bodySmall,
-    color: daylight.inkLow,
-    marginTop: space.xl,
-    fontStyle: 'italic',
+  screenLabel: {
+    ...type.eyebrow,
+    color: brand.inkLow,
+    fontSize: 9,
+    letterSpacing: 1.4,
   },
+  title: {
+    ...type.display,
+    color: brand.ink,
+    fontSize: 36,
+    lineHeight: 41,
+    marginTop: space.sm,
+  },
+  subtitle: { ...type.body, color: brand.inkMid, marginTop: space.sm, maxWidth: 340 },
+  status: {
+    marginTop: space.xl,
+    paddingVertical: space.lg,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: brand.line,
+  },
+  statusLabel: {
+    ...type.eyebrow,
+    color: brand.inkLow,
+    fontSize: 8.5,
+    letterSpacing: 1.1,
+  },
+  statusValue: { ...type.bodyStrong, color: brand.ink, marginTop: 6 },
+  action: {
+    minHeight: 50,
+    marginTop: space.lg,
+    paddingHorizontal: space.lg,
+    borderRadius: radius.md,
+    backgroundColor: brand.rose,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  actionText: { ...type.bodyStrong, color: brand.void },
+  arrow: { color: brand.void, fontSize: 19 },
+  pressed: { opacity: 0.75 },
 });
