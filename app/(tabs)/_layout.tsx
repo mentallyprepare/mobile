@@ -1,9 +1,15 @@
 import { Tabs } from 'expo-router';
 import { StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { HomeIcon, RoomsIcon, SparkIcon, YouIcon } from '../../src/components/Icons';
+import { TAB_BAR_CONTENT_HEIGHT } from '../../src/components/app/tab-bar';
 import { brand, type } from '../../src/design';
 
 function Shell() {
+  // The bar is absolutely positioned, so without this it sits underneath the
+  // Android gesture pill on most current devices.
+  const insets = useSafeAreaInsets();
+
   return (
     <Tabs
       screenOptions={{
@@ -18,7 +24,13 @@ function Shell() {
           letterSpacing: 0.2,
           textTransform: 'none',
         },
-        tabBarStyle: styles.tabBar,
+        tabBarStyle: [
+          styles.tabBar,
+          {
+            height: TAB_BAR_CONTENT_HEIGHT + insets.bottom,
+            paddingBottom: 8 + insets.bottom,
+          },
+        ],
         tabBarItemStyle: styles.tabItem,
       }}
     >
@@ -56,9 +68,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    height: 72,
     paddingTop: 8,
-    paddingBottom: 8,
     backgroundColor: brand.card,
     borderTopWidth: 1,
     borderTopColor: brand.line,

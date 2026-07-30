@@ -16,7 +16,7 @@
     "typecheck": "tsc --noEmit",
     "test:api": "node test/client.test.js",
     "test:sky": "node test/sky.test.js",
-    "test": "npm run test:api && npm run test:sky && npm run test:quiz && npm run test:notifications && npm run test:safety && npm run test:password-reset && npm run test:sign-up && npm run test:providers && npm run test:load-state && npm run test:deployment",
+    "test": "npm run test:api && npm run test:sky && npm run test:quiz && npm run test:notifications && npm run test:safety && npm run test:password-reset && npm run test:sign-up && npm run test:providers && npm run test:load-state && npm run test:keyboard && npm run test:deployment",
     "test:quiz": "node test/quiz.test.js",
     "test:notifications": "node test/notifications.test.js",
     "test:safety": "node test/safety.test.js",
@@ -25,7 +25,8 @@
     "test:providers": "node test/provider-layout.test.js",
     "test:deployment": "node test/deployment.test.js",
     "test:profile": "node test/profile-scene.test.js",
-    "test:load-state": "node test/load-state.test.js"
+    "test:load-state": "node test/load-state.test.js",
+    "test:keyboard": "node test/keyboard-clearance.test.js"
   },
   "dependencies": {
     "@expo-google-fonts/instrument-serif": "^0.4.0",

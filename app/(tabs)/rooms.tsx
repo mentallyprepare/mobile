@@ -1,5 +1,12 @@
-import { useState } from 'react';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { useCallback, useRef, useState } from 'react';
+import {
+  Pressable,
+  type ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import CosmicScreen from '../../src/components/app/CosmicScreen';
 import LivingNightScene from '../../src/components/ritual/LivingNightScene';
@@ -22,6 +29,19 @@ export default function Night() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [justSealed, setJustSealed] = useState(false);
+  const scrollRef = useRef<ScrollView | null>(null);
+
+  /**
+   * Brings the editor and the seal control into view when the keyboard opens.
+   * The night scene above the sheet is deliberately tall, so on a short Android
+   * screen the button that ends the ritual would otherwise be somewhere below
+   * the fold with a keyboard covering the rest.
+   */
+  const revealEditor = useCallback(() => {
+    // One frame after the keyboard animation starts, so the scroll lands on
+    // the resized layout rather than the old one.
+    setTimeout(() => scrollRef.current?.scrollToEnd({ animated: true }), 120);
+  }, []);
 
   const view = describeLoad({ loading, error: loadError, hasLoaded });
 
@@ -115,7 +135,11 @@ export default function Night() {
   }
 
   return (
-    <CosmicScreen contentStyle={styles.immersiveContent}>
+    <CosmicScreen
+      contentStyle={styles.immersiveContent}
+      avoidKeyboard={!sealedTonight}
+      scrollRef={scrollRef}
+    >
       <LivingNightScene
         night={night}
         prompt={prompt}
@@ -149,6 +173,7 @@ export default function Night() {
                 style={styles.input}
                 value={draft}
                 onChangeText={setDraft}
+                onFocus={revealEditor}
                 placeholder="What is true for you tonight?"
                 placeholderTextColor={brand.inkLow}
                 multiline
