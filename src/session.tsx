@@ -8,6 +8,7 @@ import {
   type RegisterInput,
 } from './api/auth';
 import { disableNativeNotificationsForThisDevice } from './notifications/registration';
+import { drafts } from './drafts';
 
 type SessionValue = {
   /** null while we are still reading storage on cold start. */
@@ -48,6 +49,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(async () => {
     await disableNativeNotificationsForThisDevice().catch(() => {});
+    // Unsealed writing is local and personal. It leaves with the account, so
+    // whoever signs in next on this device never inherits it.
+    await drafts.discardAll().catch(() => {});
     await apiLogout();
     setSignedIn(false);
   }, []);

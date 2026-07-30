@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Pressable,
   type ScrollView,
@@ -19,6 +19,7 @@ import { brand, radius, space, type } from '../../src/design';
 import { useMeShared } from '../../src/api/me-provider';
 import { describeLoad } from '../../src/api/load-state';
 import { sealEntry } from '../../src/api/entries';
+import { drafts } from '../../src/drafts';
 import { failureDetail } from '../../src/api/failures';
 import { ApiError } from '../../src/api';
 
@@ -29,7 +30,39 @@ export default function Night() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [justSealed, setJustSealed] = useState(false);
+  const [draftRestored, setDraftRestored] = useState(false);
   const scrollRef = useRef<ScrollView | null>(null);
+
+  // Read before the early returns: hooks cannot live behind a condition, and
+  // both values are available as soon as the provider has any data at all.
+  const userId = data?.user?.id ?? 0;
+  const activeNight = data?.match?.day ?? 0;
+  const scope = { userId, night: activeNight };
+
+  // Restore anything left unsealed on this device for this night.
+  useEffect(() => {
+    let alive = true;
+    setDraftRestored(false);
+    void drafts.load({ userId, night: activeNight }).then((saved) => {
+      if (!alive) return;
+      // Never overwrite something already being typed: if the editor has
+      // content, whatever is on disk is older than what is on screen.
+      if (saved) setDraft((current) => (current.length > 0 ? current : saved));
+      setDraftRestored(true);
+    });
+    return () => {
+      alive = false;
+    };
+  }, [userId, activeNight]);
+
+  // Autosave, debounced, and only once we know what was already stored.
+  useEffect(() => {
+    if (!draftRestored) return;
+    const handle = setTimeout(() => {
+      void drafts.save({ userId, night: activeNight }, draft);
+    }, 800);
+    return () => clearTimeout(handle);
+  }, [draft, draftRestored, userId, activeNight]);
 
   /**
    * Brings the editor and the seal control into view when the keyboard opens.
@@ -120,6 +153,8 @@ export default function Night() {
     setJustSealed(false);
     try {
       await sealEntry({ text: draft.trim(), selectedPrompt: prompt });
+      // Sealed is the one moment the local copy is no longer needed.
+      await drafts.discard(scope);
       setDraft('');
       await reload();
       setJustSealed(true);
