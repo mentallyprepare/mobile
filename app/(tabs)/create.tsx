@@ -1,15 +1,22 @@
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import CosmicScreen from '../../src/components/app/CosmicScreen';
 import ShelfCover from '../../src/components/shelf/ShelfCover';
+import {
+  LoadFailure,
+  LoadPlaceholder,
+  StaleNotice,
+} from '../../src/components/app/LoadFailure';
 import { brand, space, type } from '../../src/design';
 import { useShelf } from '../../src/api/shelf-provider';
+import { describeLoad } from '../../src/api/load-state';
 import { SHELF_KINDS } from '../../src/api/shelf';
 
 export default function Shelf() {
-  const { byKind, loading } = useShelf();
+  const { byKind, loading, error, hasLoaded, reload } = useShelf();
   const router = useRouter();
   const filledCount = Object.values(byKind).filter(Boolean).length;
+  const view = describeLoad({ loading, error, hasLoaded });
 
   return (
     <CosmicScreen>
@@ -19,10 +26,16 @@ export default function Shelf() {
         Choose objects you would genuinely want another person to understand.
       </Text>
 
-      {loading ? (
-        <ActivityIndicator color={brand.rose} style={{ marginTop: space.huge }} />
+      {view === 'first-load' ? (
+        <LoadPlaceholder label="Loading your shelf" />
+      ) : view === 'failed' ? (
+        <LoadFailure error={error} onRetry={() => void reload()} busy={loading} />
       ) : (
         <>
+          {view === 'stale' ? (
+            <StaleNotice error={error} onRetry={() => void reload()} busy={loading} />
+          ) : null}
+
           <View style={styles.progressBlock}>
             <View style={styles.progressHeader}>
               <Text style={styles.progressCount}>{filledCount} of 5 chosen</Text>

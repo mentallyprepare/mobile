@@ -28,7 +28,7 @@ execFileSync(
   { stdio: 'pipe', cwd: OUT }
 );
 
-const { createApiClient } = require(path.join(OUT, 'client.js'));
+const { createApiClient, NetworkError, ApiError } = require(path.join(OUT, 'client.js'));
 const { ACCESS_KEY, REFRESH_KEY } = require(path.join(OUT, 'keys.js'));
 
 function memoryStorage(initial = {}) {
@@ -179,6 +179,57 @@ test('204 responses resolve to null instead of throwing', async () => {
     fetchImpl: async () => ({ ok: true, status: 204, json: async () => { throw new Error('no body'); } }),
   });
   assert.strictEqual(await api.request('/api/thing'), null);
+});
+
+test('a request that never answers rejects as a timeout, not a hang', async () => {
+  const api = createApiClient({
+    baseUrl: 'https://x.test',
+    storage: memoryStorage(),
+    // Never settles. Without a ceiling this is a spinner that never comes back.
+    fetchImpl: () => new Promise(() => {}),
+    timeoutMs: 25,
+  });
+  await assert.rejects(
+    () => api.request('/api/me'),
+    (err) => err instanceof NetworkError && err.kind === 'timeout',
+  );
+});
+
+test('a timeout does not throw away the session', async () => {
+  const storage = memoryStorage({ [ACCESS_KEY]: 'a', [REFRESH_KEY]: 'r' });
+  const api = createApiClient({
+    baseUrl: 'https://x.test',
+    storage,
+    fetchImpl: () => new Promise(() => {}),
+    timeoutMs: 25,
+  });
+  await assert.rejects(() => api.request('/api/me'));
+  assert.strictEqual(await storage.get(ACCESS_KEY), 'a', 'a slow network is not a sign-out');
+  assert.strictEqual(await storage.get(REFRESH_KEY), 'r');
+});
+
+test('an unreachable network rejects as offline, distinguishable from a server error', async () => {
+  const api = createApiClient({
+    baseUrl: 'https://x.test',
+    storage: memoryStorage(),
+    fetchImpl: async () => { throw new TypeError('Network request failed'); },
+  });
+  await assert.rejects(
+    () => api.request('/api/me'),
+    (err) => err instanceof NetworkError && err.kind === 'offline',
+  );
+});
+
+test('a server error is an ApiError, not a NetworkError', async () => {
+  const api = createApiClient({
+    baseUrl: 'https://x.test',
+    storage: memoryStorage(),
+    fetchImpl: async () => json(500, { error: 'boom' }),
+  });
+  await assert.rejects(
+    () => api.request('/api/me'),
+    (err) => err instanceof ApiError && err.status === 500,
+  );
 });
 
 (async () => {

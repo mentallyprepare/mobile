@@ -1,22 +1,46 @@
-// touched
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import CosmicScreen from '../../src/components/app/CosmicScreen';
 import LivingNightScene from '../../src/components/ritual/LivingNightScene';
 import ShelfStrip from '../../src/components/shelf/ShelfStrip';
+import {
+  LoadFailure,
+  LoadPlaceholder,
+  StaleNotice,
+} from '../../src/components/app/LoadFailure';
 import { brand, radius, space, type } from '../../src/design';
 import { useMeShared } from '../../src/api/me-provider';
 import { useShelf } from '../../src/api/shelf-provider';
+import { canRenderContent, describeLoad } from '../../src/api/load-state';
 
 export default function Home() {
-  const { data, loading } = useMeShared();
-  const { byKind } = useShelf();
+  const { data, loading, error, hasLoaded, reload } = useMeShared();
+  const shelf = useShelf();
+  const { byKind } = shelf;
   const router = useRouter();
 
-  if (loading) {
+  const view = describeLoad({ loading, error, hasLoaded });
+  const shelfView = describeLoad({
+    loading: shelf.loading,
+    error: shelf.error,
+    hasLoaded: shelf.hasLoaded,
+  });
+  // A shelf we could not fetch is not a shelf with nothing on it. Until we
+  // know, counts read as unknown rather than zero.
+  const shelfKnown = canRenderContent(shelfView);
+
+  if (view === 'first-load') {
     return (
       <CosmicScreen>
-        <ActivityIndicator color={brand.rose} style={{ marginTop: space.huge }} />
+        <LoadPlaceholder label="Loading your world" />
+      </CosmicScreen>
+    );
+  }
+
+  if (view === 'failed') {
+    return (
+      <CosmicScreen>
+        <LoadFailure error={error} onRetry={() => void reload()} busy={loading} />
       </CosmicScreen>
     );
   }
@@ -28,6 +52,24 @@ export default function Home() {
   const initial = fullName?.charAt(0).toUpperCase() || 'M';
   const shelfCount = Object.values(byKind).filter(Boolean).length;
   const streak = data?.streak ?? 0;
+
+  const staleBanner =
+    view === 'stale' ? (
+      <StaleNotice error={error} onRetry={() => void reload()} busy={loading} />
+    ) : null;
+
+  const shelfSection =
+    shelfKnown ? (
+      <ShelfStrip byKind={byKind} title="Your cultural shelf" />
+    ) : shelfView === 'failed' ? (
+      <LoadFailure
+        error={shelf.error}
+        onRetry={() => void shelf.reload()}
+        busy={shelf.loading}
+      />
+    ) : (
+      <LoadPlaceholder label="Loading your shelf" />
+    );
 
   if (match) {
     const partnerPresent = data?.partnerStatus?.partnerHasWrittenToday ?? false;
@@ -41,6 +83,7 @@ export default function Home() {
             initial={initial}
             onNotifications={() => router.push('/notification-settings')}
           />
+          {staleBanner}
         </View>
 
         <LivingNightScene
@@ -59,23 +102,25 @@ export default function Home() {
           <View style={styles.metrics}>
             <Metric value={String(streak)} label="NIGHT STREAK" />
             <View style={styles.metricDivider} />
-            <Metric value={`${shelfCount}/5`} label="SHELF FILLED" />
+            <Metric value={shelfKnown ? `${shelfCount}/5` : '—'} label="SHELF FILLED" />
             <View style={styles.metricDivider} />
             <Metric value={String(data?.entries?.length ?? 0)} label="NOTES SEALED" />
           </View>
 
-          <ShelfStrip byKind={byKind} title="Your cultural shelf" />
+          {shelfSection}
         </View>
       </CosmicScreen>
     );
   }
 
-  const setupDone = Number(!!archetype) + Number(shelfCount > 0);
+  const setupDone = Number(!!archetype) + Number(shelfKnown && shelfCount > 0);
   const setupPercent = setupDone * 50;
 
   return (
     <CosmicScreen>
       <AppHeader name={name} initial={initial} onNotifications={() => router.push('/notification-settings')} />
+
+      {staleBanner}
 
       <View style={styles.setup}>
         <View style={styles.setupTopline}>
@@ -84,7 +129,7 @@ export default function Home() {
             <Text style={styles.setupTitle}>Set up your world</Text>
           </View>
           <View style={styles.percentBadge}>
-            <Text style={styles.percent}>{setupPercent}%</Text>
+            <Text style={styles.percent}>{shelfKnown ? `${setupPercent}%` : '—'}</Text>
           </View>
         </View>
 
@@ -98,7 +143,7 @@ export default function Home() {
           <View
             style={[
               styles.progressPart,
-              shelfCount > 0 && styles.progressPartComplete,
+              shelfKnown && shelfCount > 0 && styles.progressPartComplete,
             ]}
           />
         </View>
@@ -153,7 +198,7 @@ export default function Home() {
         </View>
       </View>
 
-      <ShelfStrip byKind={byKind} title="Your cultural shelf" />
+      {shelfSection}
 
       <View style={styles.ritualSection}>
         <View style={styles.sectionHeading}>

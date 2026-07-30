@@ -1,24 +1,59 @@
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter, type Href } from 'expo-router';
 import CosmicScreen from '../../src/components/app/CosmicScreen';
 import InnerUniverseScene from '../../src/components/profile/InnerUniverseScene';
 import ShelfStrip from '../../src/components/shelf/ShelfStrip';
+import {
+  LoadFailure,
+  LoadPlaceholder,
+  StaleNotice,
+} from '../../src/components/app/LoadFailure';
 import { brand, radius, space, type } from '../../src/design';
 import { useMeShared } from '../../src/api/me-provider';
 import { useShelf } from '../../src/api/shelf-provider';
+import { canRenderContent, describeLoad } from '../../src/api/load-state';
 import { SHELF_KINDS } from '../../src/api/shelf';
 import { useSession } from '../../src/session';
 
 export default function Profile() {
-  const { data, loading: meLoading } = useMeShared();
-  const { byKind, loading: shelfLoading } = useShelf();
+  const {
+    data,
+    loading: meLoading,
+    error: meError,
+    hasLoaded: meHasLoaded,
+    reload: reloadMe,
+  } = useMeShared();
+  const shelf = useShelf();
+  const { byKind } = shelf;
   const { signOut } = useSession();
   const router = useRouter();
 
-  if (meLoading) {
+  const view = describeLoad({
+    loading: meLoading,
+    error: meError,
+    hasLoaded: meHasLoaded,
+  });
+  const shelfView = describeLoad({
+    loading: shelf.loading,
+    error: shelf.error,
+    hasLoaded: shelf.hasLoaded,
+  });
+  // An unreachable shelf is not an empty shelf. Counts stay unknown until we
+  // have actually heard back.
+  const shelfKnown = canRenderContent(shelfView);
+
+  if (view === 'first-load') {
     return (
       <CosmicScreen>
-        <ActivityIndicator color={brand.rose} style={{ marginTop: space.huge }} />
+        <LoadPlaceholder label="Loading your profile" />
+      </CosmicScreen>
+    );
+  }
+
+  if (view === 'failed') {
+    return (
+      <CosmicScreen>
+        <LoadFailure error={meError} onRetry={() => void reloadMe()} busy={meLoading} />
       </CosmicScreen>
     );
   }
@@ -45,10 +80,17 @@ export default function Profile() {
 
       <View style={styles.sheet}>
         <Text style={styles.sheetLabel}>YOUR PRIVATE RECORD</Text>
+
+        {view === 'stale' ? (
+          <StaleNotice error={meError} onRetry={() => void reloadMe()} busy={meLoading} />
+        ) : null}
         <View style={styles.stats}>
           <Stat value={String(entries.length)} label="sealed nights" />
           <View style={styles.statRule} />
-          <Stat value={`${filledKinds.length}/5`} label="shelf objects" />
+          <Stat
+            value={shelfKnown ? `${filledKinds.length}/5` : '—'}
+            label="shelf objects"
+          />
           <View style={styles.statRule} />
           <Stat value={String(streak)} label="night streak" />
         </View>
@@ -63,10 +105,16 @@ export default function Profile() {
           />
         ) : null}
 
-        {shelfLoading ? (
-          <ActivityIndicator color={brand.rose} style={{ marginTop: space.xl }} />
-        ) : (
+        {shelfKnown ? (
           <ShelfStrip byKind={byKind} title="Objects in your orbit" />
+        ) : shelfView === 'failed' ? (
+          <LoadFailure
+            error={shelf.error}
+            onRetry={() => void shelf.reload()}
+            busy={shelf.loading}
+          />
+        ) : (
+          <LoadPlaceholder label="Loading your taste objects" />
         )}
 
         {match ? (

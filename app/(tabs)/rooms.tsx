@@ -1,28 +1,51 @@
 import { useState } from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import CosmicScreen from '../../src/components/app/CosmicScreen';
 import LivingNightScene from '../../src/components/ritual/LivingNightScene';
+import {
+  LoadFailure,
+  LoadPlaceholder,
+  StaleNotice,
+} from '../../src/components/app/LoadFailure';
 import { brand, radius, space, type } from '../../src/design';
 import { useMeShared } from '../../src/api/me-provider';
+import { describeLoad } from '../../src/api/load-state';
 import { sealEntry } from '../../src/api/entries';
+import { failureDetail } from '../../src/api/failures';
 import { ApiError } from '../../src/api';
 
 export default function Night() {
   const router = useRouter();
-  const { data, loading, reload } = useMeShared();
+  const { data, loading, error: loadError, hasLoaded, reload } = useMeShared();
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [justSealed, setJustSealed] = useState(false);
 
-  if (loading) {
+  const view = describeLoad({ loading, error: loadError, hasLoaded });
+
+  if (view === 'first-load') {
     return (
       <CosmicScreen>
-        <ActivityIndicator color={brand.rose} style={{ marginTop: space.huge }} />
+        <LoadPlaceholder label="Opening your room" />
       </CosmicScreen>
     );
   }
+
+  // A room we could not fetch must never be drawn as "before night one".
+  if (view === 'failed') {
+    return (
+      <CosmicScreen>
+        <LoadFailure error={loadError} onRetry={() => void reload()} busy={loading} />
+      </CosmicScreen>
+    );
+  }
+
+  const staleBanner =
+    view === 'stale' ? (
+      <StaleNotice error={loadError} onRetry={() => void reload()} busy={loading} />
+    ) : null;
 
   const match = data?.match ?? null;
 
@@ -40,6 +63,7 @@ export default function Night() {
         />
 
         <View style={styles.sheet}>
+          {staleBanner}
           <Text style={styles.sheetLabel}>BEFORE NIGHT ONE</Text>
           <Text style={styles.sheetTitle}>Prepare your side of the room.</Text>
           <Text style={styles.sheetBody}>
@@ -83,7 +107,7 @@ export default function Night() {
       setError(
         err instanceof ApiError
           ? err.message
-          : 'Could not reach the server. Your draft is still here.',
+          : `${failureDetail(err)} Your draft is still here.`,
       );
     } finally {
       setBusy(false);
@@ -103,6 +127,7 @@ export default function Night() {
       />
 
       <View style={styles.sheet}>
+        {staleBanner}
         {sealedTonight ? (
           <View style={styles.sealedState}>
             <View style={styles.sealedMark}>
@@ -140,7 +165,11 @@ export default function Night() {
                 Only you can see this before the scheduled reveal.
               </Text>
             </View>
-            {error ? <Text style={styles.error}>{error}</Text> : null}
+            {error ? (
+              <Text accessibilityLiveRegion="polite" style={styles.error}>
+                {error}
+              </Text>
+            ) : null}
             <Pressable
               onPress={onSeal}
               disabled={!draft.trim() || busy}
