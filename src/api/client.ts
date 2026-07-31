@@ -67,6 +67,28 @@ export function createApiClient({
   // resume; without this they would each burn a refresh round-trip.
   let refreshInFlight: Promise<boolean> | null = null;
 
+  // Subscribers notified when a refresh is rejected and the tokens are cleared.
+  // A network or timeout failure keeps the tokens and does NOT fire this: the
+  // distinction is what separates "your session ended" from "we can't reach the
+  // server", and confusing them would sign people out over a bad Wi-Fi moment.
+  const sessionLostSubs = new Set<() => void>();
+  let notifyingSessionLost = false;
+  function notifySessionLost(): void {
+    if (notifyingSessionLost) return;
+    notifyingSessionLost = true;
+    try {
+      for (const fn of sessionLostSubs) {
+        try {
+          fn();
+        } catch {
+          // One bad subscriber must not stop the rest from hearing.
+        }
+      }
+    } finally {
+      notifyingSessionLost = false;
+    }
+  }
+
   /**
    * One round trip with a hard ceiling.
    *
@@ -140,11 +162,13 @@ export function createApiClient({
       if (!res.ok) {
         // The refresh token itself is bad or revoked: this session is over.
         await clearTokens();
+        notifySessionLost();
         return false;
       }
       const body = await res.json().catch(() => null);
       if (!body?.auth?.accessToken || !body?.auth?.refreshToken) {
         await clearTokens();
+        notifySessionLost();
         return false;
       }
       await saveTokens(body.auth);
@@ -191,7 +215,22 @@ export function createApiClient({
     return body as T;
   }
 
-  return { request, refresh, saveTokens, clearTokens, hasSession };
+  /**
+   * Subscribe to session loss. Fires exactly when a refresh attempt rejects
+   * (server returns non-ok or a malformed body) and the tokens are cleared.
+   * A network failure or timeout does NOT fire — those preserve tokens so a
+   * dropped connection is not misread as a sign-out.
+   *
+   * Returns an unsubscribe function.
+   */
+  function onSessionLost(fn: () => void): () => void {
+    sessionLostSubs.add(fn);
+    return () => {
+      sessionLostSubs.delete(fn);
+    };
+  }
+
+  return { request, refresh, saveTokens, clearTokens, hasSession, onSessionLost };
 }
 
 export type ApiClient = ReturnType<typeof createApiClient>;

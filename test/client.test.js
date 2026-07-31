@@ -158,6 +158,76 @@ test('concurrent 401s collapse into a single refresh', async () => {
   assert.strictEqual(refreshCalls, 1, 'three parallel 401s -> one refresh');
 });
 
+test('a rejected refresh notifies onSessionLost exactly once', async () => {
+  const storage = memoryStorage({ [ACCESS_KEY]: 'stale', [REFRESH_KEY]: 'dead' });
+  let lostCalls = 0;
+  const api = createApiClient({
+    baseUrl: 'https://x.test',
+    storage,
+    fetchImpl: async (url) =>
+      url.endsWith('/api/auth/token/refresh')
+        ? json(401, { error: 'Invalid or expired refresh token' })
+        : json(401, { error: 'Not authenticated' }),
+  });
+  api.onSessionLost(() => { lostCalls++; });
+
+  await assert.rejects(() => api.request('/api/me'));
+  assert.strictEqual(lostCalls, 1, 'session-lost fires once when refresh is rejected');
+});
+
+test('a malformed refresh body also notifies onSessionLost', async () => {
+  const storage = memoryStorage({ [ACCESS_KEY]: 'stale', [REFRESH_KEY]: 'r1' });
+  let lostCalls = 0;
+  const api = createApiClient({
+    baseUrl: 'https://x.test',
+    storage,
+    fetchImpl: async (url) =>
+      url.endsWith('/api/auth/token/refresh')
+        ? json(200, { ok: true /* no auth pair */ })
+        : json(401, {}),
+  });
+  api.onSessionLost(() => { lostCalls++; });
+
+  await assert.rejects(() => api.request('/api/me'));
+  assert.strictEqual(lostCalls, 1);
+  assert.strictEqual(await storage.get(ACCESS_KEY), null, 'tokens cleared on malformed body');
+});
+
+test('a network failure during refresh does NOT notify onSessionLost', async () => {
+  const storage = memoryStorage({ [ACCESS_KEY]: 'a', [REFRESH_KEY]: 'r' });
+  let lostCalls = 0;
+  const api = createApiClient({
+    baseUrl: 'https://x.test',
+    storage,
+    fetchImpl: async (url) => {
+      if (url.endsWith('/api/auth/token/refresh')) throw new Error('offline');
+      return json(401, {});
+    },
+  });
+  api.onSessionLost(() => { lostCalls++; });
+
+  await assert.rejects(() => api.request('/api/me'));
+  assert.strictEqual(lostCalls, 0, 'a dropped connection is not a sign-out');
+  assert.strictEqual(await storage.get(REFRESH_KEY), 'r');
+});
+
+test('onSessionLost returns an unsubscribe function', async () => {
+  const storage = memoryStorage({ [ACCESS_KEY]: 'stale', [REFRESH_KEY]: 'dead' });
+  let lostCalls = 0;
+  const api = createApiClient({
+    baseUrl: 'https://x.test',
+    storage,
+    fetchImpl: async (url) =>
+      url.endsWith('/api/auth/token/refresh')
+        ? json(401, {})
+        : json(401, {}),
+  });
+  const unsubscribe = api.onSessionLost(() => { lostCalls++; });
+  unsubscribe();
+  await assert.rejects(() => api.request('/api/me'));
+  assert.strictEqual(lostCalls, 0, 'unsubscribed handler is not called');
+});
+
 test('a network failure during refresh keeps the tokens', async () => {
   const storage = memoryStorage({ [ACCESS_KEY]: 'a', [REFRESH_KEY]: 'r' });
   const api = createApiClient({

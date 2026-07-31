@@ -7,6 +7,7 @@ import {
   register as apiRegister,
   type RegisterInput,
 } from './api/auth';
+import { api } from './api';
 import { disableNativeNotificationsForThisDevice } from './notifications/registration';
 import { drafts } from './drafts';
 
@@ -35,6 +36,15 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     return () => {
       cancelled = true;
     };
+  }, []);
+
+  // When the client clears tokens because a refresh was rejected, drop the
+  // session flag so RootNavigator routes to /sign-in. Without this the app
+  // holds the user on an empty screen where every request 401s silently.
+  useEffect(() => {
+    return api.onSessionLost(() => {
+      setSignedIn(false);
+    });
   }, []);
 
   const signIn = useCallback(async (email: string, password: string) => {
