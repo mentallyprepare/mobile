@@ -3,33 +3,16 @@
 // Tests the API client's auth behaviour with an injected fake fetch and
 // in-memory storage. Run: npm run test:api
 //
-// The client is TypeScript, so this compiles src/api/{client,keys}.ts into a
-// temp dir first. It imports no react-native, which is what makes this possible.
+// The client is TypeScript, so this reads the compiled JS out of the shared
+// build directory. See test/_precompile.js for the one-shot compile.
 
-const { execFileSync } = require('child_process');
-const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const assert = require('assert');
+const { ensureBuilt } = require('./_precompile');
 
-const OUT = fs.mkdtempSync(path.join(os.tmpdir(), 'mp-api-test-'));
-const SRC = path.resolve(__dirname, '..', 'src', 'api');
-
-// Invoke tsc through node rather than the npx shim (the .cmd shim needs a shell
-// on Windows), and run it from the temp dir with absolute inputs so the project
-// tsconfig.json is not picked up — naming files on the command line while a
-// tsconfig is present is an error (TS5112).
-execFileSync(
-  process.execPath,
-  [require.resolve('typescript/bin/tsc'),
-   path.join(SRC, 'client.ts'), path.join(SRC, 'keys.ts'),
-   '--outDir', OUT,
-   '--module', 'commonjs', '--target', 'es2020', '--skipLibCheck'],
-  { stdio: 'pipe', cwd: OUT }
-);
-
-const { createApiClient, NetworkError, ApiError } = require(path.join(OUT, 'client.js'));
-const { ACCESS_KEY, REFRESH_KEY } = require(path.join(OUT, 'keys.js'));
+const OUT = ensureBuilt();
+const { createApiClient, NetworkError, ApiError } = require(path.join(OUT, 'api/client.js'));
+const { ACCESS_KEY, REFRESH_KEY } = require(path.join(OUT, 'api/keys.js'));
 
 function memoryStorage(initial = {}) {
   const map = new Map(Object.entries(initial));
@@ -314,6 +297,5 @@ test('a server error is an ApiError, not a NetworkError', async () => {
       process.exitCode = 1;
     }
   }
-  fs.rmSync(OUT, { recursive: true, force: true });
   console.log(`\n${passed}/${tests.length} API client tests passed.`);
 })();

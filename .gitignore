@@ -36,6 +36,9 @@ credentials.json
 .metro-health-check*
 *.tsbuildinfo
 
+# Shared test-suite compile output
+test/.build/
+
 # Logs and local junk
 *.log
 npm-debug.*

@@ -4,20 +4,11 @@
 // web app for identical answers. If either side drifts, this test fails.
 // Run: npm run test:quiz
 
-const { execFileSync } = require('child_process');
-const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const assert = require('assert');
+const { ensureBuilt } = require('./_precompile');
 
-const OUT = fs.mkdtempSync(path.join(os.tmpdir(), 'mp-quiz-test-'));
-const SRC = path.resolve(__dirname, '..', 'src');
-execFileSync(
-  process.execPath,
-  [require.resolve('typescript/bin/tsc'), path.join(SRC, 'quiz.ts'),
-   '--outDir', OUT, '--module', 'commonjs', '--target', 'es2020', '--skipLibCheck'],
-  { stdio: 'pipe', cwd: OUT }
-);
+const OUT = ensureBuilt();
 const { QUESTIONS, scoreQuiz, SCALE_MIN, SCALE_MAX } = require(path.join(OUT, 'quiz.js'));
 
 // The exact scoring rule from public/app.js — inlined so drift shows up here.
@@ -153,6 +144,5 @@ test('parity across 200 random vectors', () => {
     try { await fn(); console.log('ok   -', name); passed++; }
     catch (err) { console.error('FAIL -', name); console.error('      ', err.message); process.exitCode = 1; }
   }
-  fs.rmSync(OUT, { recursive: true, force: true });
   console.log(`\n${passed}/${tests.length} quiz tests passed.`);
 })();

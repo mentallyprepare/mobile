@@ -3,21 +3,11 @@
 // Star placement is pure logic with a stated invariant: a given user's sky must
 // be identical on every visit. Run: npm run test:sky
 
-const { execFileSync } = require('child_process');
-const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const assert = require('assert');
+const { ensureBuilt } = require('./_precompile');
 
-const OUT = fs.mkdtempSync(path.join(os.tmpdir(), 'mp-sky-test-'));
-const SRC = path.resolve(__dirname, '..', 'src');
-execFileSync(
-  process.execPath,
-  [require.resolve('typescript/bin/tsc'), path.join(SRC, 'sky.ts'),
-   '--outDir', OUT, '--module', 'commonjs', '--target', 'es2020', '--skipLibCheck'],
-  { stdio: 'pipe', cwd: OUT }
-);
-
+const OUT = ensureBuilt();
 const { starPositions, seeded, eveningFraction } = require(path.join(OUT, 'sky.js'));
 
 const BOUNDS = { width: 320, height: 440 };
@@ -100,6 +90,5 @@ test('eveningFraction clamps rather than wrapping to the wrong end', () => {
       process.exitCode = 1;
     }
   }
-  fs.rmSync(OUT, { recursive: true, force: true });
   console.log(`\n${passed}/${tests.length} sky tests passed.`);
 })();
