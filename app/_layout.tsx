@@ -2,7 +2,7 @@ import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useRef, useState } from 'react';
-import { Platform } from 'react-native';
+import { Platform, Pressable, StyleSheet, Text, View } from 'react-native';
 import {
   useFonts,
   InstrumentSerif_400Regular,
@@ -15,7 +15,7 @@ import { MeProvider } from '../src/api/me-provider';
 import { ShelfProvider } from '../src/api/shelf-provider';
 import NotificationRouting from '../src/notifications/NotificationRouting';
 import { sky } from '../src/theme';
-import { brand } from '../src/design';
+import { brand, radius, space, type } from '../src/design';
 import { FONT_GATE_TIMEOUT_MS, fontFailureNote, fontGate } from '../src/fonts/gate';
 
 void SplashScreen.preventAutoHideAsync().catch(() => {
@@ -138,3 +138,78 @@ export default function RootLayout() {
     </SafeAreaProvider>
   );
 }
+
+/**
+ * Route-level error boundary. Expo-router calls this named export when a
+ * render throws anywhere in the tree below this layout. Without it the app
+ * shows a white screen (release) or a red box (dev) that the user cannot
+ * dismiss.
+ *
+ * Deliberately quiet, in the same voice as LoadFailure: no red, no warning
+ * icon, no stack trace. A crash is not an emergency for the person reading
+ * this, and their writing is not gone — it is stored elsewhere. The one
+ * thing this always offers is a way out of the broken screen.
+ */
+export function ErrorBoundary({ error, retry }: { error: Error; retry: () => void }) {
+  // Left in for developers running with the dev client; the log is the only
+  // place the actual message ever appears. Users see the calm copy above.
+  if (__DEV__) console.error('[ErrorBoundary]', error);
+  return (
+    <View style={boundaryStyles.root}>
+      <View style={boundaryStyles.panel} accessibilityLiveRegion="polite">
+        <View style={boundaryStyles.mark} />
+        <Text style={boundaryStyles.headline}>Something didn’t load.</Text>
+        <Text style={boundaryStyles.detail}>
+          Nothing you wrote has been removed. Try again, or come back in a moment.
+        </Text>
+        <Pressable
+          onPress={retry}
+          accessibilityRole="button"
+          accessibilityLabel="Try again"
+          style={({ pressed }) => [
+            boundaryStyles.retry,
+            pressed && boundaryStyles.pressed,
+          ]}
+        >
+          <Text style={boundaryStyles.retryLabel}>Try again</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
+const boundaryStyles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: brand.void,
+    padding: space.lg,
+    justifyContent: 'center',
+  },
+  panel: {
+    padding: space.xl,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: brand.line,
+    backgroundColor: brand.card,
+  },
+  mark: {
+    width: 9,
+    height: 9,
+    borderRadius: 5,
+    marginBottom: space.lg,
+    backgroundColor: brand.gold,
+  },
+  headline: { ...type.display, color: brand.ink, fontSize: 26, lineHeight: 31 },
+  detail: { ...type.body, color: brand.inkMid, marginTop: space.sm },
+  retry: {
+    minHeight: 48,
+    marginTop: space.xl,
+    paddingHorizontal: space.lg,
+    borderRadius: radius.pill,
+    backgroundColor: brand.rose,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  retryLabel: { ...type.bodyStrong, color: brand.void, fontSize: 15 },
+  pressed: { opacity: 0.78 },
+});
