@@ -10,7 +10,7 @@ what it is, why it was deferred, and what it blocks.
 
 | # | Item | Where | Note |
 | --- | --- | --- | --- |
-| 1 | Data export is written unencrypted to app cache and never deleted | `src/privacy/export.ts:20–30` | Delete the file in a `finally` after `shareAsync`; warn before generating. The web branch pushes the whole journal through `Share.share({message})` and should go. |
+| 1 | ~~Data export is written unencrypted to app cache and never deleted~~ | `src/privacy/export.ts` | **Partially fixed** (commit after `dd507f4`). Web branch removed — no more `Share.share({message: journal})` leak; web returns `'unavailable'` and the caller renders the existing "not available on this device" copy. Filename fixed (was dated, so exports accumulated) — at most one plaintext copy on device at any moment, next export overwrites it. Delete-on-error added; delete-on-success deliberately not added (Android hands the recipient a content:// URI backed by the cache file and may read it after `shareAsync` resolves). Still todo: warn before generating; sweep on sign-out. |
 | 2 | Blocking deletes both people's writing | `app/safety-privacy.tsx` confirm copy + backend | Blocking should hide and retain under moderation, not destroy the reporter's own evidence. Backend-led; the copy changes only once the behaviour does. |
 | 3 | No shelf matching opt-in | `src/api/shelf.ts:79–93` | `saveShelfItem` sends no consent flag and no setting exists, so "the shelf does not influence matching unless the user opts in" cannot currently be honoured. |
 | 4 | Journal entries plaintext at rest | backend | `docs/agents/current-status.md` unit 0.5.4, still Todo. |
@@ -30,7 +30,7 @@ what it is, why it was deferred, and what it blocks.
 | # | Item | Evidence |
 | --- | --- | --- |
 | 10 | 74 hard-coded rgba/hex values bypass the token system | mostly decorative gradient and glow layers in `app/` and `src/components/` |
-| 11 | Session is never invalidated when the client clears tokens | `src/session.tsx:27`, `src/api/client.ts` — a revoked refresh token leaves a signed-in shell with no way back to sign-in |
+| 11 | ~~Session is never invalidated when the client clears tokens~~ | **Fixed** in `dd507f4` (C1). Client exposes `onSessionLost`; `SessionProvider` subscribes and drops `signedIn`; existing `RootNavigator` effect routes to `/sign-in`. Fires on rejected refresh or malformed refresh body; does NOT fire on network/timeout. |
 | 12 | No error boundary, no `+not-found` | `app/_layout.tsx` |
 | 13 | No runtime validation of API responses | `src/api/client.ts` casts the parsed body straight to `T` |
 | 14 | Touch targets below 44dp | ~12 controls; see section D4 of the audit |
