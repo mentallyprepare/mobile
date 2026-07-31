@@ -19,7 +19,7 @@ const DIRECTORY_NAME = 'unsealed-drafts';
 
 function draftsDirectory(): Directory {
   const directory = new Directory(Paths.document, DIRECTORY_NAME);
-  if (!directory.exists) directory.create({ idempotent: true });
+  if (!directory.exists) directory.create({ intermediates: true, idempotent: true });
   return directory;
 }
 
@@ -31,7 +31,7 @@ const fileSystemIO: DraftIO = {
   },
   async write(name, contents) {
     const file = new File(draftsDirectory(), name);
-    if (!file.exists) file.create({ idempotent: true });
+    if (!file.exists) file.create();
     file.write(contents);
   },
   async remove(name) {

@@ -1,4 +1,3 @@
-import { useCallback } from 'react';
 import {
   KeyboardAvoidingView,
   ScrollView,
@@ -34,15 +33,12 @@ export default function CosmicScreen({
 
   // Measured, not guessed: the bar's own height plus whatever the device
   // reserves underneath it, so the last control on a screen is never trapped.
-  const clearance = useCallback(
-    () => ({ paddingBottom: tabBarHeight + space.xl }),
-    [tabBarHeight],
-  );
+  const clearance = { paddingBottom: tabBarHeight + space.xl };
 
   const body = scroll ? (
     <ScrollView
       ref={scrollRef}
-      contentContainerStyle={[styles.scroll, clearance()]}
+      contentContainerStyle={[styles.scroll, clearance]}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
       // iOS insets the scroll view itself; Android is handled by the
@@ -52,7 +48,7 @@ export default function CosmicScreen({
       {content}
     </ScrollView>
   ) : (
-    <View style={[styles.scroll, clearance()]}>{content}</View>
+    <View style={[styles.scroll, clearance]}>{content}</View>
   );
 
   return (
