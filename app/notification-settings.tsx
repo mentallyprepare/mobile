@@ -213,8 +213,8 @@ export default function NotificationSettingsScreen() {
               onValueChange={(value) => void toggle(row.key, value)}
               disabled={!subscribed || busy}
               accessibilityLabel={row.title}
-              trackColor={{ false: daylight.border, true: daylight.bgAlt }}
-              thumbColor={preferences[row.key] ? daylight.accent : daylight.inkLow}
+              trackColor={{ false: daylight.inkLow, true: daylight.accentMoss }}
+              thumbColor={preferences[row.key] ? daylight.ink : daylight.bg}
             />
           </View>
         ))}

@@ -113,8 +113,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: daylight.ink,
   },
-  destructive: { backgroundColor: '#A1445A' },
-  confirmLabel: { ...type.bodyStrong, fontSize: 15, color: daylight.surface },
+  destructive: { backgroundColor: daylight.danger },
+  confirmLabel: { ...type.bodyStrong, fontSize: 15, color: daylight.bg },
   pressed: { opacity: 0.85 },
   disabled: { opacity: 0.5 },
 });

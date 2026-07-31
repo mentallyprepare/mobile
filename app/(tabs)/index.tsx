@@ -174,11 +174,13 @@ export default function Home() {
             accessibilityLabel="Open your cultural shelf"
             style={({ pressed }) => [styles.tile, styles.shelfTile, pressed && styles.pressed]}
           >
-            <Text style={styles.tileIndex}>02</Text>
+            <Text style={[styles.tileIndex, styles.shelfTileText]}>02</Text>
             <View>
-              <Text style={styles.tileLabel}>YOUR SHELF</Text>
-              <Text style={styles.tileValue}>{shelfCount} / 5</Text>
-              <Text style={styles.tileDetail}>songs · film · book · memory</Text>
+              <Text style={[styles.tileLabel, styles.shelfTileText]}>YOUR SHELF</Text>
+              <Text style={[styles.tileValue, styles.shelfTileText]}>{shelfCount} / 5</Text>
+              <Text style={[styles.tileDetail, styles.shelfTileText]}>
+                songs · film · book · memory
+              </Text>
             </View>
           </Pressable>
 
@@ -387,12 +389,12 @@ const styles = StyleSheet.create({
   taskCopy: { flex: 1, marginLeft: space.md },
   taskLabel: {
     ...type.eyebrow,
-    color: 'rgba(8,5,15,0.58)',
+    color: brand.void,
     fontSize: 7.5,
     letterSpacing: 1,
   },
   taskTitle: { ...type.bodyStrong, color: brand.void, fontSize: 16, marginTop: 2 },
-  taskDetail: { ...type.bodySmall, color: 'rgba(8,5,15,0.66)', fontSize: 10.5 },
+  taskDetail: { ...type.bodySmall, color: brand.void, fontSize: 10.5 },
   taskArrow: { color: brand.void, fontSize: 21 },
   tileRow: { flexDirection: 'row', gap: space.md, marginTop: space.md },
   tile: {
@@ -404,22 +406,23 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   shelfTile: { backgroundColor: brand.purple },
+  shelfTileText: { color: brand.void },
   reminderTile: {
     backgroundColor: brand.card,
     borderWidth: 1,
     borderColor: brand.gold,
   },
-  tileIndex: { ...type.bodyStrong, color: 'rgba(255,255,255,0.55)', fontSize: 11 },
+  tileIndex: { ...type.bodyStrong, color: brand.inkMid, fontSize: 11 },
   tileLabel: {
     ...type.eyebrow,
-    color: 'rgba(255,255,255,0.64)',
+    color: brand.inkMid,
     fontSize: 7.5,
     letterSpacing: 0.9,
   },
   tileValue: { ...type.bodyStrong, color: brand.ink, fontSize: 22, marginTop: 1 },
   tileDetail: {
     ...type.bodySmall,
-    color: 'rgba(255,255,255,0.7)',
+    color: brand.inkMid,
     fontSize: 9.5,
     lineHeight: 14,
     marginTop: 3,

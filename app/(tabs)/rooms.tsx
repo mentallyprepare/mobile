@@ -26,34 +26,49 @@ import { ApiError } from '../../src/api';
 export default function Night() {
   const router = useRouter();
   const { data, loading, error: loadError, hasLoaded, reload } = useMeShared();
-  const [draft, setDraft] = useState('');
+  const userId = data?.user?.id ?? 0;
+  const activeNight = data?.match?.day ?? 0;
+  const scopeKey = `${userId}:${activeNight}`;
+  const scope = { userId, night: activeNight };
+  const [draftState, setDraftState] = useState({ scopeKey: '', text: '' });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [justSealed, setJustSealed] = useState(false);
-  const [draftRestored, setDraftRestored] = useState(false);
+  const [restoredScope, setRestoredScope] = useState<string | null>(null);
   const scrollRef = useRef<ScrollView | null>(null);
 
-  // Read before the early returns: hooks cannot live behind a condition, and
-  // both values are available as soon as the provider has any data at all.
-  const userId = data?.user?.id ?? 0;
-  const activeNight = data?.match?.day ?? 0;
-  const scope = { userId, night: activeNight };
+  // Keep text attached to the account and night it belongs to. When the
+  // provider moves to another room, the old draft cannot flash or autosave
+  // into the new scope while its local copy is loading.
+  const draft = draftState.scopeKey === scopeKey ? draftState.text : '';
+  const setDraft = useCallback(
+    (update: string | ((current: string) => string)) => {
+      setDraftState((current) => {
+        const currentText = current.scopeKey === scopeKey ? current.text : '';
+        return {
+          scopeKey,
+          text: typeof update === 'function' ? update(currentText) : update,
+        };
+      });
+    },
+    [scopeKey],
+  );
+  const draftRestored = restoredScope === scopeKey;
 
   // Restore anything left unsealed on this device for this night.
   useEffect(() => {
     let alive = true;
-    setDraftRestored(false);
     void drafts.load({ userId, night: activeNight }).then((saved) => {
       if (!alive) return;
       // Never overwrite something already being typed: if the editor has
       // content, whatever is on disk is older than what is on screen.
       if (saved) setDraft((current) => (current.length > 0 ? current : saved));
-      setDraftRestored(true);
+      setRestoredScope(scopeKey);
     });
     return () => {
       alive = false;
     };
-  }, [userId, activeNight]);
+  }, [userId, activeNight, scopeKey, setDraft]);
 
   // Autosave, debounced, and only once we know what was already stored.
   useEffect(() => {

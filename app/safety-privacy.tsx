@@ -279,7 +279,7 @@ const styles = StyleSheet.create({
   rowTitle: { ...type.body, fontSize: 15, color: daylight.ink },
   rowBody: { marginTop: 3, ...type.bodySmall, lineHeight: 18, color: daylight.inkMid },
   arrow: { ...type.body, fontSize: 24, color: daylight.inkLow },
-  danger: { color: '#A1445A' },
+  danger: { color: daylight.danger },
   disabled: { opacity: 0.42 },
   pressed: { opacity: 0.82 },
   promise: { marginTop: space.xl },

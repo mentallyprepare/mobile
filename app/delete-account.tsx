@@ -120,7 +120,7 @@ export default function DeleteAccountScreen() {
 const styles = StyleSheet.create({
   back: { alignSelf: 'flex-start', paddingVertical: 6 },
   backLabel: { ...type.body, fontSize: 13.5, color: daylight.inkMid },
-  eyebrow: { marginTop: space.xl, ...type.eyebrow, letterSpacing: 1.5, color: '#A1445A' },
+  eyebrow: { marginTop: space.xl, ...type.eyebrow, letterSpacing: 1.5, color: daylight.danger },
   title: {
     marginTop: space.sm,
     ...type.displayItalic,
@@ -150,17 +150,17 @@ const styles = StyleSheet.create({
     ...type.body,
     color: daylight.ink,
   },
-  error: { marginTop: space.md, ...type.bodySmall, color: '#A1445A' },
+  error: { marginTop: space.md, ...type.bodySmall, color: daylight.danger },
   actions: { marginTop: space.xl, gap: space.md },
   deleteButton: {
     minHeight: 50,
     paddingHorizontal: space.lg,
     borderRadius: radius.pill,
-    backgroundColor: '#A1445A',
+    backgroundColor: daylight.danger,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  deleteLabel: { ...type.bodyStrong, fontSize: 15, color: daylight.surface },
+  deleteLabel: { ...type.bodyStrong, fontSize: 15, color: daylight.bg },
   disabled: { opacity: 0.42 },
   pressed: { opacity: 0.82 },
 });
