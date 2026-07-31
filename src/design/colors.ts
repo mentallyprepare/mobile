@@ -11,11 +11,32 @@ export const brand = {
   rose: '#EBB4C2',
   gold: '#ECC885',
   purple: '#896CB5',
+  /**
+   * Destructive actions. Replaces a hard-coded #A1445A that measured 3.36:1
+   * and so failed as both error text and a button fill.
+   */
+  danger: '#C96B80',
+
   line: 'rgba(248,242,255,0.08)',
   surface: 'rgba(248,242,255,0.04)',
+
+  /**
+   * The supporting-text ramp.
+   *
+   * Every step here that carries words clears WCAG AA (4.5:1) against void,
+   * card and sky. test/contrast.test.js fails if one drifts back below it.
+   *
+   * inkLow used to be 0.38 — 3.25:1 — and it carries the sentences that matter
+   * most: "Only you can see this before the scheduled reveal", every row
+   * detail, every counter. The privacy promise was the least readable text on
+   * the screen. It is still visibly quieter than inkMid; it is no longer
+   * unreadable.
+   */
   inkMid: 'rgba(248,242,255,0.62)',
-  inkLow: 'rgba(248,242,255,0.38)',
-  inkFaint: 'rgba(248,242,255,0.20)',
+  inkLow: 'rgba(248,242,255,0.55)',
+
+  /** Structural only — hairlines, unlit orbit nodes. Never put words in this. */
+  inkFaint: 'rgba(248,242,255,0.36)',
 } as const;
 
 /** Legacy utility token name, now mapped into the shared dark brand world. */
@@ -36,6 +57,10 @@ export const daylight = {
   accentMoss: brand.purple,
   accentBlue: brand.purple,
   accentCoral: brand.rose,
+
+  danger: brand.danger,
+  /** Type drawn on top of a danger fill. */
+  onDanger: brand.void,
 };
 
 /** Living Night uses the same ground, type and accents as the website. */
