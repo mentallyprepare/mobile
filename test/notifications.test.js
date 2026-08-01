@@ -1,35 +1,17 @@
 'use strict';
 
-const { execFileSync } = require('child_process');
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const assert = require('assert');
+const { ensureBuilt } = require('./_precompile');
 
-const OUT = fs.mkdtempSync(path.join(os.tmpdir(), 'mp-notifications-test-'));
+const OUT = ensureBuilt();
 const SRC = path.resolve(__dirname, '..', 'src', 'notifications');
-execFileSync(
-  process.execPath,
-  [
-    require.resolve('typescript/bin/tsc'),
-    path.join(SRC, 'copy.ts'),
-    path.join(SRC, 'preferences.ts'),
-    '--outDir',
-    OUT,
-    '--module',
-    'commonjs',
-    '--target',
-    'es2020',
-    '--skipLibCheck',
-  ],
-  { stdio: 'pipe', cwd: OUT },
-);
-
-const { notificationCopyBank, selectNotificationCopy } = require(path.join(OUT, 'copy.js'));
+const { notificationCopyBank, selectNotificationCopy } = require(path.join(OUT, 'notifications/copy.js'));
 const {
   cleanNotificationPreferences,
   DEFAULT_NOTIFICATION_PREFERENCES,
-} = require(path.join(OUT, 'preferences.js'));
+} = require(path.join(OUT, 'notifications/preferences.js'));
 
 const tests = [];
 const test = (name, fn) => tests.push([name, fn]);
@@ -90,6 +72,5 @@ test('native notification response APIs are never called on web', () => {
       process.exitCode = 1;
     }
   }
-  fs.rmSync(OUT, { recursive: true, force: true });
   console.log(`\n${passed}/${tests.length} notification tests passed.`);
 })();

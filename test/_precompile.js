@@ -44,8 +44,36 @@ const SOURCES = [
 
 let built = false;
 
+/**
+ * Cheapest possible freshness check: if every compiled output exists AND is
+ * newer than the newest source, the previous compile is still valid and we
+ * can skip tsc entirely. Each `npm run test:*` script spawns its own Node
+ * process, so an in-memory flag alone doesn't help across scripts — the
+ * disk check does.
+ */
+function outputsAreFresh() {
+  try {
+    const newestSource = SOURCES.reduce((max, rel) => {
+      const mtime = fs.statSync(path.join(SRC, rel)).mtimeMs;
+      return mtime > max ? mtime : max;
+    }, 0);
+    for (const rel of SOURCES) {
+      const out = path.join(BUILD_DIR, rel.replace(/\.ts$/, '.js'));
+      const stat = fs.statSync(out); // throws if missing → not fresh
+      if (stat.mtimeMs < newestSource) return false;
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function ensureBuilt() {
   if (built) return BUILD_DIR;
+  if (outputsAreFresh()) {
+    built = true;
+    return BUILD_DIR;
+  }
   fs.mkdirSync(BUILD_DIR, { recursive: true });
   // Run tsc from a cwd OUTSIDE the project. Otherwise it walks up, finds the
   // project's tsconfig.json, and errors TS5112 because files were named on

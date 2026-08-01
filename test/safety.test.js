@@ -1,34 +1,15 @@
 'use strict';
 
-const { execFileSync } = require('child_process');
-const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const assert = require('assert');
+const { ensureBuilt } = require('./_precompile');
 
-const OUT = fs.mkdtempSync(path.join(os.tmpdir(), 'mp-safety-test-'));
-const SOURCE = path.resolve(__dirname, '..', 'src', 'safety', 'contracts.ts');
-execFileSync(
-  process.execPath,
-  [
-    require.resolve('typescript/bin/tsc'),
-    SOURCE,
-    '--outDir',
-    OUT,
-    '--module',
-    'commonjs',
-    '--target',
-    'es2020',
-    '--skipLibCheck',
-  ],
-  { stdio: 'pipe', cwd: OUT },
-);
-
+const OUT = ensureBuilt();
 const {
   REPORT_CATEGORIES,
   canSubmitReport,
   canConfirmAccountDeletion,
-} = require(path.join(OUT, 'contracts.js'));
+} = require(path.join(OUT, 'safety/contracts.js'));
 
 const tests = [];
 const test = (name, fn) => tests.push([name, fn]);
@@ -69,6 +50,5 @@ test('account deletion requires both password and explicit DELETE confirmation',
       process.exitCode = 1;
     }
   }
-  fs.rmSync(OUT, { recursive: true, force: true });
   console.log(`\n${passed}/${tests.length} safety tests passed.`);
 })();

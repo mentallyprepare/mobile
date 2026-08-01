@@ -5,28 +5,16 @@
 // absolutely-positioned tab bar, and the sheet had no keyboard avoidance.
 // Run: npm run test:keyboard
 
-const { execFileSync } = require('child_process');
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const assert = require('assert');
+const { ensureBuilt } = require('./_precompile');
 
 const root = path.resolve(__dirname, '..');
 const read = (...p) => fs.readFileSync(path.join(root, ...p), 'utf8');
 
-const OUT = fs.mkdtempSync(path.join(os.tmpdir(), 'mp-tabbar-test-'));
-execFileSync(
-  process.execPath,
-  [
-    require.resolve('typescript/bin/tsc'),
-    path.join(root, 'src', 'design', 'chrome.ts'),
-    '--outDir', OUT,
-    '--module', 'commonjs', '--target', 'es2020', '--skipLibCheck',
-    '--noResolve',
-  ],
-  { stdio: 'pipe', cwd: OUT },
-);
-const { TAB_BAR_CONTENT_HEIGHT, tabBarHeightFor } = require(path.join(OUT, 'chrome.js'));
+const OUT = ensureBuilt();
+const { TAB_BAR_CONTENT_HEIGHT, tabBarHeightFor } = require(path.join(OUT, 'design/chrome.js'));
 
 let passed = 0;
 const tests = [];
@@ -104,6 +92,5 @@ test('keyboard avoidance never discards what has been typed', () => {
       process.exitCode = 1;
     }
   }
-  fs.rmSync(OUT, { recursive: true, force: true });
   console.log(`\n${passed}/${tests.length} keyboard clearance tests passed.`);
 })();

@@ -5,29 +5,17 @@
 // between accounts or nights, sealing removes it, and signing out clears it.
 // Run: npm run test:drafts
 
-const { execFileSync } = require('child_process');
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const assert = require('assert');
+const { ensureBuilt } = require('./_precompile');
 
-const OUT = fs.mkdtempSync(path.join(os.tmpdir(), 'mp-drafts-test-'));
-execFileSync(
-  process.execPath,
-  [
-    require.resolve('typescript/bin/tsc'),
-    path.resolve(__dirname, '..', 'src', 'drafts', 'store.ts'),
-    '--outDir', OUT,
-    '--module', 'commonjs', '--target', 'es2020', '--skipLibCheck', '--noResolve',
-  ],
-  { stdio: 'pipe', cwd: OUT },
-);
-
+const OUT = ensureBuilt();
 const {
   createDraftStore,
   draftFileName,
   isValidScope,
-} = require(path.join(OUT, 'store.js'));
+} = require(path.join(OUT, 'drafts/store.js'));
 
 /** Stands in for the device filesystem, and can be told to fail. */
 function memoryIO({ failing = false } = {}) {
@@ -176,6 +164,5 @@ test('the store never writes anything to the console', () => {
       process.exitCode = 1;
     }
   }
-  fs.rmSync(OUT, { recursive: true, force: true });
   console.log(`\n${passed}/${tests.length} draft recovery tests passed.`);
 })();

@@ -4,37 +4,19 @@
 // an empty first-run state. Compiles the pure modules the screens depend on
 // and asserts the decision directly. Run: npm run test:load-state
 
-const { execFileSync } = require('child_process');
-const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const assert = require('assert');
+const { ensureBuilt } = require('./_precompile');
 
-const OUT = fs.mkdtempSync(path.join(os.tmpdir(), 'mp-load-state-test-'));
-const SRC = path.resolve(__dirname, '..', 'src', 'api');
-
-execFileSync(
-  process.execPath,
-  [
-    require.resolve('typescript/bin/tsc'),
-    path.join(SRC, 'load-state.ts'),
-    path.join(SRC, 'failures.ts'),
-    path.join(SRC, 'client.ts'),
-    path.join(SRC, 'keys.ts'),
-    '--outDir', OUT,
-    '--module', 'commonjs', '--target', 'es2020', '--skipLibCheck',
-  ],
-  { stdio: 'pipe', cwd: OUT },
-);
-
-const { describeLoad, canRenderContent } = require(path.join(OUT, 'load-state.js'));
+const OUT = ensureBuilt();
+const { describeLoad, canRenderContent } = require(path.join(OUT, 'api/load-state.js'));
 const {
   classifyFailure,
   failureHeadline,
   failureDetail,
   staleNotice,
-} = require(path.join(OUT, 'failures.js'));
-const { ApiError, NetworkError } = require(path.join(OUT, 'client.js'));
+} = require(path.join(OUT, 'api/failures.js'));
+const { ApiError, NetworkError } = require(path.join(OUT, 'api/client.js'));
 
 let passed = 0;
 const tests = [];
@@ -141,6 +123,5 @@ test('every failure kind reassures that nothing was removed', () => {
       process.exitCode = 1;
     }
   }
-  fs.rmSync(OUT, { recursive: true, force: true });
   console.log(`\n${passed}/${tests.length} load-state tests passed.`);
 })();

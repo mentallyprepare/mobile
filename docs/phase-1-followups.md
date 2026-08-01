@@ -38,6 +38,6 @@ what it is, why it was deferred, and what it blocks.
 | 16 | Notification `Switch` tracks measure 1.01:1 and 1.18:1 | `app/notification-settings.tsx` — state is carried by thumb colour alone |
 | 17 | SVG text uses font family names that do not match the loaded faces | `LivingNightScene.tsx`, `CosmicWelcome.tsx` |
 | 18 | Back navigation still discards scan answers and sign-up drafts | no `usePreventRemove` anywhere |
-| 19 | `npm test` takes minutes because several tests shell out to `tsc` separately | `test/*.test.js` — **partially fixed**: `test/_precompile.js` collects all sources into one tsc invocation; `client.test.js`, `sky.test.js`, `quiz.test.js` converted. Remaining: `contrast`, `drafts`, `font-gate`, `keyboard-clearance`, `load-state`, `notifications`, `password-reset`, `safety`, `sign-up`. Mechanical: swap the top-of-file `execFileSync` block for `const OUT = ensureBuilt();`, add the appropriate subdirectory to the `require(path.join(OUT, ...))` line (e.g. `notifications/copy.js`), drop the trailing `fs.rmSync(OUT, ...)`. |
+| 19 | ~~`npm test` takes minutes because several tests shell out to `tsc` separately~~ | **Fixed.** All 12 tests now share `test/_precompile.js` — one tsc invocation per fresh Node process, cached to `test/.build/` (gitignored), skipped entirely on subsequent runs when every output is newer than its source. Full `npm test` is ~22s cold, ~18s warm, down from ~45–60s. |
 
 Full detail for 10–19 is in `docs/audit-production-readiness-2026-07-30.md`.

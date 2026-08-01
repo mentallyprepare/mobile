@@ -5,25 +5,14 @@
 // that carries words drifts back below WCAG AA.
 // Run: npm run test:contrast
 
-const { execFileSync } = require('child_process');
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const assert = require('assert');
+const { ensureBuilt } = require('./_precompile');
 
 const root = path.resolve(__dirname, '..');
-const OUT = fs.mkdtempSync(path.join(os.tmpdir(), 'mp-contrast-test-'));
-execFileSync(
-  process.execPath,
-  [
-    require.resolve('typescript/bin/tsc'),
-    path.join(root, 'src', 'design', 'colors.ts'),
-    '--outDir', OUT,
-    '--module', 'commonjs', '--target', 'es2020', '--skipLibCheck', '--noResolve',
-  ],
-  { stdio: 'pipe', cwd: OUT },
-);
-const { brand, daylight } = require(path.join(OUT, 'colors.js'));
+const OUT = ensureBuilt();
+const { brand, daylight } = require(path.join(OUT, 'design/colors.js'));
 
 // --- WCAG 2.1 relative luminance and contrast, with alpha composited first ---
 const parse = (value) => {
@@ -163,6 +152,5 @@ test('no screen re-declares the danger colour by hand', () => {
       process.exitCode = 1;
     }
   }
-  fs.rmSync(OUT, { recursive: true, force: true });
   console.log(`\n${passed}/${tests.length} contrast tests passed.`);
 })();

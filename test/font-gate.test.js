@@ -5,29 +5,18 @@
 // simply never answers, both have to let the app start.
 // Run: npm run test:font-gate
 
-const { execFileSync } = require('child_process');
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const assert = require('assert');
+const { ensureBuilt } = require('./_precompile');
 
 const root = path.resolve(__dirname, '..');
-const OUT = fs.mkdtempSync(path.join(os.tmpdir(), 'mp-font-gate-test-'));
-execFileSync(
-  process.execPath,
-  [
-    require.resolve('typescript/bin/tsc'),
-    path.join(root, 'src', 'fonts', 'gate.ts'),
-    '--outDir', OUT,
-    '--module', 'commonjs', '--target', 'es2020', '--skipLibCheck', '--noResolve',
-  ],
-  { stdio: 'pipe', cwd: OUT },
-);
+const OUT = ensureBuilt();
 const {
   fontGate,
   fontFailureNote,
   FONT_GATE_TIMEOUT_MS,
-} = require(path.join(OUT, 'gate.js'));
+} = require(path.join(OUT, 'fonts/gate.js'));
 
 let passed = 0;
 const tests = [];
@@ -120,6 +109,5 @@ test('the root layout renders on the gate, not on loaded alone', () => {
       process.exitCode = 1;
     }
   }
-  fs.rmSync(OUT, { recursive: true, force: true });
   console.log(`\n${passed}/${tests.length} font gate tests passed.`);
 })();
