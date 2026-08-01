@@ -1,4 +1,8 @@
 import { api } from './index';
+import {
+  parseSwitchPartnerResponse,
+  type SwitchPartnerResponse,
+} from './parse-endpoints';
 import type { ReportCategory } from '../safety/contracts';
 
 export async function submitReport(input: {
@@ -26,15 +30,12 @@ export async function requestRematch(reason: string): Promise<void> {
   });
 }
 
-export async function switchPartner(): Promise<{
-  matched: boolean;
-  state: 'matched' | 'waiting';
-  switchesRemaining: number;
-}> {
-  return api.request('/api/switch-partner', {
+export async function switchPartner(): Promise<SwitchPartnerResponse> {
+  const body = await api.request<unknown>('/api/switch-partner', {
     method: 'POST',
     body: JSON.stringify({}),
   });
+  return parseSwitchPartnerResponse(body);
 }
 
 export async function exportMyData(): Promise<Record<string, unknown>> {

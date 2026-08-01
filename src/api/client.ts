@@ -1,11 +1,7 @@
 import type { TokenStorage } from './storage';
 import { ACCESS_KEY, REFRESH_KEY } from './keys';
-
-export type AuthPair = {
-  accessToken: string;
-  refreshToken: string;
-  expiresIn?: number;
-};
+import type { AuthPair } from './types-auth';
+export type { AuthPair } from './types-auth';
 
 export class ApiError extends Error {
   status: number;

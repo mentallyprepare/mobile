@@ -17,6 +17,12 @@ const {
   parseShelfItemResponse,
   parseShelfList,
 } = require(path.join(OUT, 'api/parse-shelf.js'));
+const { parseAuthResponse } = require(path.join(OUT, 'api/parse-auth.js'));
+const {
+  parseScanResponse,
+  parseSealResponse,
+  parseSwitchPartnerResponse,
+} = require(path.join(OUT, 'api/parse-endpoints.js'));
 
 let passed = 0;
 const tests = [];
@@ -233,6 +239,93 @@ test('parseShelfItemResponse returns ok + item', () => {
 test('parseOkResponse returns just ok', () => {
   assert.deepStrictEqual(parseOkResponse({ ok: true }), { ok: true });
   assert.throws(() => parseOkResponse({}), parse.SchemaError);
+});
+
+// --- parseAuthResponse ---------------------------------------------------
+
+test('parseAuthResponse accepts a full token pair', () => {
+  const res = parseAuthResponse({
+    ok: true,
+    auth: { accessToken: 'a', refreshToken: 'r', expiresIn: 900 },
+  });
+  assert.strictEqual(res.auth.accessToken, 'a');
+  assert.strictEqual(res.auth.refreshToken, 'r');
+  assert.strictEqual(res.auth.expiresIn, 900);
+});
+
+test('parseAuthResponse accepts a token pair without expiresIn', () => {
+  const res = parseAuthResponse({
+    auth: { accessToken: 'a', refreshToken: 'r' },
+  });
+  assert.strictEqual(res.auth.expiresIn, undefined);
+});
+
+test('parseAuthResponse accepts a response with no token pair (email verification branch)', () => {
+  const res = parseAuthResponse({ ok: true, emailVerificationRequired: true });
+  assert.strictEqual(res.auth, undefined);
+  assert.strictEqual(res.emailVerificationRequired, true);
+});
+
+test('parseAuthResponse rejects present-but-broken auth so silent auth failure cannot ship', () => {
+  try {
+    parseAuthResponse({ auth: { accessToken: 'a' /* no refreshToken */ } });
+    assert.fail('should have thrown');
+  } catch (err) {
+    assert.ok(err instanceof parse.SchemaError);
+    assert.strictEqual(err.path, 'auth.refreshToken');
+  }
+});
+
+// --- parseScanResponse ---------------------------------------------------
+
+test('parseScanResponse returns ok + matched', () => {
+  assert.deepStrictEqual(parseScanResponse({ ok: true, matched: false }), {
+    ok: true,
+    matched: false,
+  });
+});
+
+test('parseScanResponse rejects missing matched', () => {
+  assert.throws(() => parseScanResponse({ ok: true }), parse.SchemaError);
+});
+
+// --- parseSealResponse ---------------------------------------------------
+
+test('parseSealResponse validates day when present, tolerates when absent', () => {
+  assert.strictEqual(parseSealResponse({ ok: true, day: 9 }).day, 9);
+  assert.strictEqual(parseSealResponse({ ok: true }).day, undefined);
+});
+
+test('parseSealResponse rejects a non-numeric day so the next screen cannot show nonsense', () => {
+  try {
+    parseSealResponse({ ok: true, day: '9' });
+    assert.fail('should have thrown');
+  } catch (err) {
+    assert.strictEqual(err.path, 'day');
+  }
+});
+
+// --- parseSwitchPartnerResponse ------------------------------------------
+
+test('parseSwitchPartnerResponse accepts both allowed states', () => {
+  for (const state of ['matched', 'waiting']) {
+    const r = parseSwitchPartnerResponse({
+      matched: state === 'matched',
+      state,
+      switchesRemaining: 2,
+    });
+    assert.strictEqual(r.state, state);
+  }
+});
+
+test('parseSwitchPartnerResponse rejects an unknown state so a UI branch cannot go dark', () => {
+  try {
+    parseSwitchPartnerResponse({ matched: false, state: 'queued', switchesRemaining: 1 });
+    assert.fail('should have thrown');
+  } catch (err) {
+    assert.strictEqual(err.path, 'state');
+    assert.match(err.message, /matched.*waiting/);
+  }
 });
 
 // --- run -----------------------------------------------------------------

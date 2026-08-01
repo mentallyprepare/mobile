@@ -1,12 +1,6 @@
 import { api } from './index';
-import type { AuthPair } from './client';
-
-type AuthResponse = {
-  ok?: boolean;
-  auth?: AuthPair;
-  emailVerificationRequired?: boolean;
-  [key: string]: unknown;
-};
+import { parseAuthResponse } from './parse-auth';
+import type { AuthResponse } from './types-auth';
 
 /** Persists the token pair the server returns, if there is one. */
 async function persist(res: AuthResponse): Promise<AuthResponse> {
@@ -17,11 +11,11 @@ async function persist(res: AuthResponse): Promise<AuthResponse> {
 }
 
 export async function login(email: string, password: string) {
-  const res = await api.request<AuthResponse>('/api/login', {
+  const body = await api.request<unknown>('/api/login', {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   });
-  return persist(res);
+  return persist(parseAuthResponse(body));
 }
 
 export type RegisterInput = {
@@ -38,11 +32,11 @@ export type RegisterInput = {
 };
 
 export async function register(input: RegisterInput) {
-  const res = await api.request<AuthResponse>('/api/register', {
+  const body = await api.request<unknown>('/api/register', {
     method: 'POST',
     body: JSON.stringify(input),
   });
-  return persist(res);
+  return persist(parseAuthResponse(body));
 }
 
 /**
