@@ -10,10 +10,11 @@ import { createDraftStore, type DraftIO } from './store';
  * whole point is surviving a restart.
  *
  * So: the app's private document directory, which no other app can read on a
- * non-rooted device. The trade-off is that Android's automatic backup would
- * include it; excluding this folder from `android:fullBackupContent` is
- * tracked as a follow-up, and is the reason nothing here is treated as
- * encrypted storage.
+ * non-rooted device. Android's automatic backup would otherwise include this
+ * folder verbatim; `android.allowBackup: false` in app.json disables that at
+ * the app level, so a Google account restoring an app install never carries
+ * an old draft across. Auth is server-side and every preference comes from
+ * /api/me on next sign-in, so nothing meaningful is lost by opting out.
  */
 const DIRECTORY_NAME = 'unsealed-drafts';
 

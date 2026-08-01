@@ -22,7 +22,7 @@ what it is, why it was deferred, and what it blocks.
 
 | # | Item | Where |
 | --- | --- | --- |
-| 8 | Drafts live in the app document directory, which Android's automatic backup includes | `src/drafts/index.ts` | Exclude the `unsealed-drafts` folder via `android:fullBackupContent` / `dataExtractionRules`. Documented in the file. |
+| 8 | ~~Drafts live in the app document directory, which Android's automatic backup includes~~ | **Fixed.** `android.allowBackup: false` in app.json disables the whole-app backup rather than adding a per-folder XML exclusion. Auth is server-side and preferences come from `/api/me`, so nothing meaningful is lost — but a Google-account restore of a fresh install can no longer carry an unsealed draft across. Regression test in `test/drafts.test.js`. |
 | 9 | `console.warn` on font fallback is the app's only diagnostic output | `app/_layout.tsx` | Fine as-is; revisit if a crash reporter is ever added, and keep it incapable of carrying user content. |
 
 ## Known, unfixed, not urgent

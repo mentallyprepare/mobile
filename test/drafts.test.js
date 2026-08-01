@@ -139,6 +139,18 @@ test('the file name carries the scope and none of the writing', () => {
   assert.ok(!/[a-z]{5,}/.test(name.replace('night', '').replace('txt', '')));
 });
 
+test('android auto-backup is disabled so unsealed drafts cannot leave the device', () => {
+  const config = JSON.parse(
+    fs.readFileSync(path.resolve(__dirname, '..', 'app.json'), 'utf8'),
+  );
+  assert.strictEqual(
+    config.expo?.android?.allowBackup,
+    false,
+    'app.json android.allowBackup must be false: drafts live in the app document ' +
+      'directory and Android auto-backup would otherwise copy them to Google Drive.',
+  );
+});
+
 test('the store never writes anything to the console', () => {
   const source = fs.readFileSync(
     path.resolve(__dirname, '..', 'src', 'drafts', 'store.ts'),
