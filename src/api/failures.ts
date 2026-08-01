@@ -1,4 +1,5 @@
 import { ApiError, NetworkError } from './client';
+import { SchemaError } from './parse';
 
 /**
  * How a request failed, in the only terms a screen needs.
@@ -12,10 +13,12 @@ export type FailureKind =
   | 'auth'
   | 'server'
   | 'request'
+  | 'schema'
   | 'unknown';
 
 export function classifyFailure(error: unknown): FailureKind {
   if (error instanceof NetworkError) return error.kind;
+  if (error instanceof SchemaError) return 'schema';
   if (error instanceof ApiError) {
     if (error.status === 401 || error.status === 403) return 'auth';
     if (error.status >= 500) return 'server';
@@ -38,6 +41,10 @@ const HEADLINES: Record<FailureKind, string> = {
   auth: 'We couldn’t confirm your session.',
   server: 'Something on our side is having trouble.',
   request: 'We couldn’t load this right now.',
+  // A schema mismatch is a bug we caught at the boundary. The user needs the
+  // same reassurance as any other failure — nothing was lost — without being
+  // asked to think about protocol drift between client and server.
+  schema: 'We couldn’t read the answer from your account.',
   unknown: 'We couldn’t load this right now.',
 };
 
@@ -47,6 +54,7 @@ const DETAILS: Record<FailureKind, string> = {
   auth: 'Nothing has been removed. Try again, or sign in once more.',
   server: 'Nothing has been removed. It should pass shortly.',
   request: 'Your existing information has not been removed.',
+  schema: 'Nothing has been removed. Updating the app may fix this.',
   unknown: 'Your existing information has not been removed.',
 };
 

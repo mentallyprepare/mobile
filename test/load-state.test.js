@@ -17,6 +17,7 @@ const {
   staleNotice,
 } = require(path.join(OUT, 'api/failures.js'));
 const { ApiError, NetworkError } = require(path.join(OUT, 'api/client.js'));
+const { SchemaError } = require(path.join(OUT, 'api/parse.js'));
 
 let passed = 0;
 const tests = [];
@@ -72,6 +73,7 @@ test('failures are classified into what a screen actually needs to say', () => {
   assert.strictEqual(classifyFailure(new ApiError(403, 'x', null)), 'auth');
   assert.strictEqual(classifyFailure(new ApiError(500, 'x', null)), 'server');
   assert.strictEqual(classifyFailure(new ApiError(422, 'x', null)), 'request');
+  assert.strictEqual(classifyFailure(new SchemaError('user.email', 'bad')), 'schema');
   assert.strictEqual(classifyFailure(new Error('who knows')), 'unknown');
 });
 
@@ -82,6 +84,7 @@ test('no failure message ever claims the user lost anything', () => {
     new ApiError(401, 'x', null),
     new ApiError(500, 'x', null),
     new ApiError(422, 'x', null),
+    new SchemaError('field', 'bad'),
     new Error('unknown'),
   ];
   const forbidden = /\b(lost|deleted|gone|erased|wiped|removed your)\b/i;
@@ -102,6 +105,7 @@ test('every failure kind reassures that nothing was removed', () => {
     new NetworkError('timeout', 'x'),
     new NetworkError('offline', 'x'),
     new ApiError(500, 'x', null),
+    new SchemaError('field', 'bad'),
     new Error('unknown'),
   ]) {
     assert.ok(
