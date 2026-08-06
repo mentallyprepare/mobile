@@ -17,6 +17,10 @@ npx expo start         # press a for Android, w for web
 If `npm install` complains about a font package version, run
 `npx expo install @expo-google-fonts/instrument-serif @expo-google-fonts/manrope`.
 
+Before opening a pull request, run the complete checks documented in
+[`CONTRIBUTING.md`](./CONTRIBUTING.md). Web exports are uploaded by CI as
+temporary artifacts and are not committed to source control.
+
 ## Layout
 
 - `app/` — expo-router routes. `_layout.tsx` loads brand fonts and holds the splash
@@ -29,7 +33,7 @@ If `npm install` complains about a font package version, run
 - `assets/images/` — app icon, Android adaptive icon (foreground + background),
   splash, favicon. All generated from `brand/logo-mark.svg`.
 - `brand/` — source-of-truth brand package (marks, wordmarks, lockup, social banner).
-  Edit the SVGs and regenerate the raster set from them.
+  Edit the SVGs and run `npm run brand:generate` to regenerate the raster set.
 
 ## Identity
 
