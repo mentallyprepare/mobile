@@ -1,11 +1,7 @@
 import type { TokenStorage } from './storage';
 import { ACCESS_KEY, REFRESH_KEY } from './keys';
-
-export type AuthPair = {
-  accessToken: string;
-  refreshToken: string;
-  expiresIn?: number;
-};
+import type { AuthPair } from './types-auth';
+export type { AuthPair } from './types-auth';
 
 export class ApiError extends Error {
   status: number;
@@ -18,13 +14,36 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * A request that never reached a server, or never came back.
+ *
+ * Kept separate from ApiError so screens can tell "we could not reach your
+ * account" apart from "the server said no". The distinction matters: one of
+ * them must never be rendered as though the user's writing is gone.
+ */
+export type NetworkFailureKind = 'timeout' | 'offline';
+
+export class NetworkError extends Error {
+  kind: NetworkFailureKind;
+  constructor(kind: NetworkFailureKind, message: string) {
+    super(message);
+    this.name = 'NetworkError';
+    this.kind = kind;
+  }
+}
+
 type FetchLike = (url: string, init?: any) => Promise<any>;
 
 type ClientOptions = {
   baseUrl: string;
   storage: TokenStorage;
   fetchImpl: FetchLike;
+  /** Ceiling on a single round trip. Injected so tests do not wait it out. */
+  timeoutMs?: number;
 };
+
+/** Long enough for a slow train, short enough that a spinner is never forever. */
+export const DEFAULT_TIMEOUT_MS = 15000;
 
 /**
  * Bearer-token API client.
@@ -32,12 +51,78 @@ type ClientOptions = {
  * Deliberately free of react-native imports so the retry logic can be tested
  * in plain Node: storage and fetch are injected.
  */
-export function createApiClient({ baseUrl, storage, fetchImpl }: ClientOptions) {
+export function createApiClient({
+  baseUrl,
+  storage,
+  fetchImpl,
+  timeoutMs = DEFAULT_TIMEOUT_MS,
+}: ClientOptions) {
   const root = baseUrl.replace(/\/$/, '');
 
   // Collapse concurrent refreshes. Several requests can 401 at once on app
   // resume; without this they would each burn a refresh round-trip.
   let refreshInFlight: Promise<boolean> | null = null;
+
+  // Subscribers notified when a refresh is rejected and the tokens are cleared.
+  // A network or timeout failure keeps the tokens and does NOT fire this: the
+  // distinction is what separates "your session ended" from "we can't reach the
+  // server", and confusing them would sign people out over a bad Wi-Fi moment.
+  const sessionLostSubs = new Set<() => void>();
+  let notifyingSessionLost = false;
+  function notifySessionLost(): void {
+    if (notifyingSessionLost) return;
+    notifyingSessionLost = true;
+    try {
+      for (const fn of sessionLostSubs) {
+        try {
+          fn();
+        } catch {
+          // One bad subscriber must not stop the rest from hearing.
+        }
+      }
+    } finally {
+      notifyingSessionLost = false;
+    }
+  }
+
+  /**
+   * One round trip with a hard ceiling.
+   *
+   * The timer races the fetch rather than relying on the abort signal alone:
+   * an injected or polyfilled fetch may ignore `signal`, and a request that
+   * hangs forever leaves a "Sealing…" button that never comes back.
+   */
+  async function callWithTimeout(url: string, init: any): Promise<any> {
+    const controller =
+      typeof AbortController !== 'undefined' ? new AbortController() : null;
+    let timer: any = null;
+
+    const expiry = new Promise<never>((_resolve, reject) => {
+      timer = setTimeout(() => {
+        try {
+          controller?.abort();
+        } catch {
+          /* aborting is best-effort */
+        }
+        reject(new NetworkError('timeout', 'The request took too long to answer.'));
+      }, timeoutMs);
+    });
+
+    try {
+      return await Promise.race([
+        fetchImpl(url, controller ? { ...init, signal: controller.signal } : init),
+        expiry,
+      ]);
+    } catch (err) {
+      if (err instanceof NetworkError) throw err;
+      // fetch only rejects when the request never completed: no route, DNS
+      // failure, connection dropped. Nothing here reads the error text, so no
+      // request body or URL can leak into a message shown to the user.
+      throw new NetworkError('offline', 'The connection could not be reached.');
+    } finally {
+      if (timer !== null) clearTimeout(timer);
+    }
+  }
 
   async function saveTokens(pair: AuthPair): Promise<void> {
     await storage.set(ACCESS_KEY, pair.accessToken);
@@ -60,24 +145,26 @@ export function createApiClient({ baseUrl, storage, fetchImpl }: ClientOptions) 
       if (!refreshToken) return false;
       let res: any;
       try {
-        res = await fetchImpl(`${root}/api/auth/token/refresh`, {
+        res = await callWithTimeout(`${root}/api/auth/token/refresh`, {
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ refreshToken }),
         });
       } catch {
-        // Network failure is not an auth failure — keep the tokens.
+        // Network failure or timeout is not an auth failure — keep the tokens.
         return false;
       }
       if (!res.ok) {
         // The refresh token itself is bad or revoked: this session is over.
         await clearTokens();
+        notifySessionLost();
         return false;
       }
       const body = await res.json().catch(() => null);
       if (!body?.auth?.accessToken || !body?.auth?.refreshToken) {
         await clearTokens();
+        notifySessionLost();
         return false;
       }
       await saveTokens(body.auth);
@@ -98,7 +185,7 @@ export function createApiClient({ baseUrl, storage, fetchImpl }: ClientOptions) 
         ...(options.headers || {}),
       };
       if (access) headers.Authorization = `Bearer ${access}`;
-      return fetchImpl(`${root}${path}`, {
+      return callWithTimeout(`${root}${path}`, {
         credentials: 'include',
         ...options,
         headers,
@@ -124,7 +211,22 @@ export function createApiClient({ baseUrl, storage, fetchImpl }: ClientOptions) 
     return body as T;
   }
 
-  return { request, refresh, saveTokens, clearTokens, hasSession };
+  /**
+   * Subscribe to session loss. Fires exactly when a refresh attempt rejects
+   * (server returns non-ok or a malformed body) and the tokens are cleared.
+   * A network failure or timeout does NOT fire — those preserve tokens so a
+   * dropped connection is not misread as a sign-out.
+   *
+   * Returns an unsubscribe function.
+   */
+  function onSessionLost(fn: () => void): () => void {
+    sessionLostSubs.add(fn);
+    return () => {
+      sessionLostSubs.delete(fn);
+    };
+  }
+
+  return { request, refresh, saveTokens, clearTokens, hasSession, onSessionLost };
 }
 
 export type ApiClient = ReturnType<typeof createApiClient>;

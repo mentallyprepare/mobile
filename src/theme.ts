@@ -1,41 +1,41 @@
-// Living Night design tokens. The interface reacts to true things: the hour,
-// the day, the match's presence, the ritual of sealing. Keep this the single
-// source of colour and type for the app.
+// Compatibility tokens for the original ritual components. Values mirror the
+// authoritative website/mobile palette in `src/design/colors.ts`.
+import { brand } from './design';
 
 export const sky = {
   // Time-aware background. `early` before 23:30 IST, `late` after.
-  early: '#0B0820',
-  late: '#050311',
+  early: brand.sky,
+  late: brand.void,
   // The mark's own sky gradient.
-  gradientFrom: '#100C2E',
-  gradientTo: '#050311',
+  gradientFrom: brand.sky,
+  gradientTo: brand.void,
 };
 
 export const moon = {
-  quiet: '#6B5FAE', // partner hasn't sealed tonight, no glow
-  present: '#A89BF0', // partner sealed something tonight, glow blooms
-  gradientFrom: '#B4A8F4',
-  gradientTo: '#413670',
+  quiet: brand.purple, // partner hasn't sealed tonight, no glow
+  present: brand.rose, // partner sealed something tonight, glow blooms
+  gradientFrom: brand.purple,
+  gradientTo: '#3A2B52',
 };
 
 export const ring = {
-  front: '#DDD6FF',
-  back: '#453E75',
+  front: brand.gold,
+  back: brand.purple,
 };
 
 export const star = {
-  yours: '#CFC7FF', // one per sealed entry
-  pending: '#EFEAFF', // tonight's not-yet-sealed star
-  theirs: '#A89BF0', // match's sky, positions only
+  yours: brand.rose, // one per sealed entry
+  pending: brand.ink, // tonight's not-yet-sealed star
+  theirs: brand.purple, // match's sky, positions only
 };
 
 export const ink = {
-  high: '#EFEAFF',
-  mid: '#8F87BB',
-  low: 'rgba(239,234,255,0.5)',
+  high: brand.ink,
+  mid: brand.inkMid,
+  low: brand.inkLow,
   // Ambient signals that should register without asking to be read.
-  faint: 'rgba(143,135,187,0.5)',
-  line: 'rgba(239,234,255,0.08)',
+  faint: brand.inkFaint,
+  line: brand.line,
 };
 
 // Card and panel treatment, carried over from the web app. The gradient runs
@@ -49,15 +49,15 @@ export const surface = {
 
 // The one saturated element on a screen. A translucent pill reads as disabled.
 export const cta = {
-  gradient: ['#B7657B', '#765996'] as [string, string],
-  shadow: 'rgba(155,79,102,0.30)',
+  gradient: [brand.rose, brand.purple] as [string, string],
+  shadow: 'rgba(235,180,194,0.24)',
 };
 
 // Ambient ground so cards sit on something instead of floating on black.
 export const glow = {
-  rose: '#D4859A',
+  rose: brand.rose,
   roseOpacity: 0.14,
-  purple: '#7B5EA7',
+  purple: brand.purple,
   purpleOpacity: 0.16,
 };
 

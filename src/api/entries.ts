@@ -1,4 +1,5 @@
 import { api } from './index';
+import { parseSealResponse, type SealResponse } from './parse-endpoints';
 
 export type SealInput = {
   text: string;
@@ -12,15 +13,11 @@ export type SealInput = {
   piiConfirmed?: boolean;
 };
 
-export type SealResponse = {
-  ok?: boolean;
-  day?: number;
-  [key: string]: unknown;
-};
+export type { SealResponse };
 
 /** Seals tonight's entry. Throws ApiError on rejection (empty, PII, no match). */
-export function sealEntry(input: SealInput) {
-  return api.request<SealResponse>('/api/entry', {
+export async function sealEntry(input: SealInput): Promise<SealResponse> {
+  const body = await api.request<unknown>('/api/entry', {
     method: 'POST',
     body: JSON.stringify({
       text: input.text,
@@ -29,6 +26,7 @@ export function sealEntry(input: SealInput) {
       piiConfirmed: input.piiConfirmed ?? false,
     }),
   });
+  return parseSealResponse(body);
 }
 
 export const PII_CODE = 'pii_detected';

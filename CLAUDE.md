@@ -30,7 +30,16 @@ dark so two humans can find each other.
 
 - Minimal diffs. One change, one retest. No new dependencies without a reason.
 - Propose before shipping user-facing copy.
-- `src/theme.ts` is the only place colour and type are defined. Use the tokens.
+- `src/design/colors.ts` is the canonical source of colour. `src/design/` also
+  owns type (`typography.ts`), spacing (`spacing.ts`) and fixed chrome
+  (`chrome.ts`); import them through `src/design`.
+- `src/theme.ts` is **not** the palette. It is a compatibility shim that
+  re-exports a few names for older ritual components, and only `sky` is still
+  read by live code. Do not add to it.
+- Use the existing tokens. Do not introduce hard-coded hex or rgba values in a
+  screen — if a colour is missing, add it to `colors.ts` and reference it.
+  `test/contrast.test.js` measures the palette and fails if a token that
+  carries words drops below WCAG AA.
 - Brand marks are generated from `brand/logo-mark.svg`. Edit the SVG, regenerate rasters.
 
 ## Stack

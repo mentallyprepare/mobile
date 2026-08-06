@@ -3,6 +3,7 @@ node_modules/
 .expo/
 dist/
 web-build/
+build/
 expo-env.d.ts
 
 # Native build output
@@ -34,6 +35,9 @@ credentials.json
 # Metro / TypeScript build info
 .metro-health-check*
 *.tsbuildinfo
+
+# Shared test-suite compile output
+test/.build/
 
 # Logs and local junk
 *.log

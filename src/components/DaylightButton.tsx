@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { daylight, radius, type } from '../design';
+import { brand, daylight, radius, type } from '../design';
 
 type DaylightButtonProps = {
   label: string;
@@ -59,6 +59,6 @@ const styles = StyleSheet.create({
   disabled: { opacity: 0.45 },
   pressed: { opacity: 0.85 },
   label: { ...type.bodyStrong, fontSize: 15 },
-  labelPrimary: { color: daylight.surface },
+  labelPrimary: { color: brand.void },
   labelGhost: { color: daylight.ink },
 });

@@ -1,6 +1,6 @@
 import { View, StyleSheet, Pressable, type ViewStyle } from 'react-native';
 import type { ReactNode } from 'react';
-import { daylight, radius, space } from '../design';
+import { brand, daylight, radius, space } from '../design';
 
 type DaylightCardProps = {
   children: ReactNode;
@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: daylight.border,
     // A soft daylight shadow, not the deep-night one.
-    shadowColor: '#25152E',
+    shadowColor: brand.void,
     shadowOpacity: 0.06,
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 6 },

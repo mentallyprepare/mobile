@@ -1,135 +1,135 @@
-import { useCallback, useEffect } from 'react';
-import { View, Text, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
-import { useRouter, useFocusEffect } from 'expo-router';
-import DaylightScreen from '../../src/components/DaylightScreen';
-import DaylightCard from '../../src/components/DaylightCard';
-import Illustration from '../../src/components/Illustration';
-import { daylight, radius, space, type } from '../../src/design';
-import { useMeShared } from '../../src/api/me-provider';
+import { StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
+import CosmicScreen from '../../src/components/app/CosmicScreen';
+import ShelfCover from '../../src/components/shelf/ShelfCover';
+import {
+  LoadFailure,
+  LoadPlaceholder,
+  StaleNotice,
+} from '../../src/components/app/LoadFailure';
+import { brand, space, type } from '../../src/design';
 import { useShelf } from '../../src/api/shelf-provider';
-import { KIND_META, SHELF_KINDS, type ShelfKind } from '../../src/api/shelf';
+import { describeLoad } from '../../src/api/load-state';
+import { SHELF_KINDS } from '../../src/api/shelf';
 
-/**
- * Create is contextual. When a Room is active, tapping Create immediately
- * routes to tonight's writing. Otherwise it lands on the shelf chooser: one
- * row per kind, filled row shows current title, empty row invites "add."
- * See docs/design-daylight-world.md.
- */
-export default function Create() {
-  const { data } = useMeShared();
-  const { byKind, loading } = useShelf();
+export default function Shelf() {
+  const { byKind, loading, error, hasLoaded, reload } = useShelf();
   const router = useRouter();
-  const inRoom = !!data?.match;
-
-  useFocusEffect(
-    useCallback(() => {
-      if (inRoom) router.replace('/rooms');
-    }, [inRoom, router]),
-  );
-  useEffect(() => {
-    if (inRoom) router.replace('/rooms');
-  }, [inRoom, router]);
-
-  if (inRoom) return <DaylightScreen><View /></DaylightScreen>;
+  const filledCount = Object.values(byKind).filter(Boolean).length;
+  const view = describeLoad({ loading, error, hasLoaded });
 
   return (
-    <DaylightScreen>
-      <Text style={styles.title}>your shelf.</Text>
-      <Text style={styles.sub}>
-        the songs, films, books and memories that are honestly you.
+    <CosmicScreen>
+      <Text style={styles.screenLabel}>INNER SHELF</Text>
+      <Text style={styles.title}>Things that carry you</Text>
+      <Text style={styles.subtitle}>
+        Keep a private record of the music and memories that matter to you.
       </Text>
 
-      {loading ? (
-        <ActivityIndicator color={daylight.accent} style={{ marginTop: space.xl }} />
+      {view === 'first-load' ? (
+        <LoadPlaceholder label="Loading your shelf" />
+      ) : view === 'failed' ? (
+        <LoadFailure error={error} onRetry={() => void reload()} busy={loading} />
       ) : (
-        <View style={styles.list}>
-          {SHELF_KINDS.map((kind) => (
-            <ShelfRow key={kind} kind={kind} filled={byKind[kind]} />
-          ))}
-        </View>
-      )}
-    </DaylightScreen>
-  );
-}
+        <>
+          {view === 'stale' ? (
+            <StaleNotice error={error} onRetry={() => void reload()} busy={loading} />
+          ) : null}
 
-function ShelfRow({
-  kind,
-  filled,
-}: {
-  kind: ShelfKind;
-  filled: { title: string; detail: string | null } | undefined;
-}) {
-  const router = useRouter();
-  const meta = KIND_META[kind];
-  const label = filled ? meta.label : `add ${meta.label}`;
+          <View style={styles.progressBlock}>
+            <View style={styles.progressHeader}>
+              <Text style={styles.progressCount}>{filledCount} of 5 chosen</Text>
+              <Text style={styles.progressLabel}>private to your account</Text>
+            </View>
+            <View style={styles.progressTrack}>
+              <View
+                style={[
+                  styles.progressFill,
+                  { width: `${(filledCount / SHELF_KINDS.length) * 100}%` },
+                ]}
+              />
+            </View>
+          </View>
 
-  return (
-    <Pressable
-      onPress={() => router.push({ pathname: '/shelf/[kind]', params: { kind } })}
-      accessibilityRole="button"
-      accessibilityLabel={filled ? `edit ${meta.label}: ${filled.title}` : label}
-      style={({ pressed }) => [styles.row, pressed && styles.rowPressed]}
-    >
-      <View style={[styles.kindDot, filled && styles.kindDotOn]} />
-      <View style={styles.rowText}>
-        <Text style={styles.rowLabel}>{label}</Text>
-        {filled ? (
-          <Text style={styles.rowTitle} numberOfLines={1}>
-            {filled.title}
-            {filled.detail ? <Text style={styles.rowDetail}>{'  ·  '}{filled.detail}</Text> : null}
+          <View style={styles.grid}>
+            {SHELF_KINDS.map((kind, index) => {
+              const wide = kind === 'memory';
+              return (
+                <ShelfCover
+                  key={kind}
+                  kind={kind}
+                  item={byKind[kind]}
+                  available
+                  index={index + 1}
+                  wide={wide}
+                  style={wide ? styles.wide : styles.tile}
+                  onPress={() =>
+                    router.push({ pathname: '/shelf/[kind]', params: { kind } })
+                  }
+                />
+              );
+            })}
+          </View>
+
+          <Text style={styles.note}>
+            Add a title manually. Catalogue search and public activity are not required.
           </Text>
-        ) : null}
-      </View>
-      <Text style={styles.arrow}>{filled ? 'edit' : 'add'}</Text>
-    </Pressable>
+        </>
+      )}
+    </CosmicScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  title: { ...type.displayItalic, color: daylight.ink },
-  sub: { ...type.body, color: daylight.inkMid, marginTop: space.sm },
-  list: { marginTop: space.xl },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  screenLabel: {
+    ...type.eyebrow,
+    color: brand.rose,
+    fontSize: 9,
+    letterSpacing: 1.4,
+  },
+  title: {
+    ...type.bodyStrong,
+    color: brand.ink,
+    fontSize: 30,
+    lineHeight: 36,
+    marginTop: space.sm,
+  },
+  subtitle: { ...type.body, color: brand.inkMid, marginTop: 3, maxWidth: 350 },
+  progressBlock: {
+    marginTop: space.xl,
     paddingVertical: space.lg,
-    paddingHorizontal: space.lg,
-    borderRadius: radius.lg,
-    backgroundColor: daylight.surface,
-    borderWidth: 1,
-    borderColor: daylight.border,
-    marginBottom: space.md,
-    gap: space.lg,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: brand.line,
   },
-  rowPressed: { opacity: 0.85 },
-  kindDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: daylight.border,
+  progressHeader: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
   },
-  kindDotOn: { backgroundColor: daylight.accent },
-  rowText: { flex: 1 },
-  rowLabel: {
-    ...type.eyebrow,
-    fontSize: 10,
-    letterSpacing: 1.2,
-    color: daylight.inkMid,
-    textTransform: 'uppercase',
+  progressCount: { ...type.bodyStrong, color: brand.ink, fontSize: 15 },
+  progressLabel: { ...type.bodySmall, color: brand.inkLow, fontSize: 10 },
+  progressTrack: {
+    height: 3,
+    marginTop: space.md,
+    borderRadius: 2,
+    backgroundColor: brand.line,
+    overflow: 'hidden',
   },
-  rowTitle: {
-    ...type.body,
-    fontSize: 15,
-    lineHeight: 22,
-    color: daylight.ink,
-    marginTop: 3,
+  progressFill: { height: '100%', backgroundColor: brand.rose },
+  grid: {
+    marginTop: space.lg,
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    gap: space.md,
   },
-  rowDetail: { color: daylight.inkMid },
-  arrow: {
-    ...type.eyebrow,
-    fontSize: 11,
-    color: daylight.accent,
-    letterSpacing: 1,
-    textTransform: 'lowercase',
+  tile: { width: '48%', height: 206 },
+  wide: { width: '100%' },
+  note: {
+    ...type.bodySmall,
+    color: brand.inkLow,
+    lineHeight: 18,
+    marginTop: space.lg,
   },
 });

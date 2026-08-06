@@ -1,8 +1,13 @@
 import { api } from './index';
-
-// Matches routes/shelf.js exactly. Five fixed slots.
-export const SHELF_KINDS = ['song_a', 'song_b', 'film', 'book', 'memory'] as const;
-export type ShelfKind = (typeof SHELF_KINDS)[number];
+import {
+  parseOkResponse,
+  parseShelfItemResponse,
+  parseShelfList,
+} from './parse-shelf';
+import { SHELF_KINDS as KINDS } from './types-shelf';
+import type { ShelfItem, ShelfKind, ShelfListResponse } from './types-shelf';
+export { SHELF_KINDS } from './types-shelf';
+export type { ShelfItem, ShelfKind, ShelfListResponse } from './types-shelf';
 
 /**
  * How each slot is presented to the user. Server-side the kinds are opaque
@@ -62,27 +67,18 @@ export const KIND_META: Record<
   },
 };
 
-export type ShelfItem = {
-  kind: ShelfKind;
-  title: string;
-  detail: string | null;
-  artworkUrl: string | null;
-  updatedAt: string;
-};
-
-export type ShelfListResponse = { items: ShelfItem[] };
-
-export function getMyShelf() {
-  return api.request<ShelfListResponse>('/api/shelf');
+export async function getMyShelf(): Promise<ShelfListResponse> {
+  const body = await api.request<unknown>('/api/shelf');
+  return parseShelfList(body);
 }
 
-export function saveShelfItem(
+export async function saveShelfItem(
   kind: ShelfKind,
   title: string,
   detail?: string | null,
   piiConfirmed?: boolean,
-) {
-  return api.request<{ ok: boolean; item: ShelfItem }>(`/api/shelf/${kind}`, {
+): Promise<{ ok: boolean; item: ShelfItem }> {
+  const body = await api.request<unknown>(`/api/shelf/${kind}`, {
     method: 'PUT',
     body: JSON.stringify({
       title,
@@ -90,12 +86,14 @@ export function saveShelfItem(
       piiConfirmed: piiConfirmed ?? false,
     }),
   });
+  return parseShelfItemResponse(body);
 }
 
-export function clearShelfItem(kind: ShelfKind) {
-  return api.request<{ ok: boolean }>(`/api/shelf/${kind}`, { method: 'DELETE' });
+export async function clearShelfItem(kind: ShelfKind): Promise<{ ok: boolean }> {
+  const body = await api.request<unknown>(`/api/shelf/${kind}`, { method: 'DELETE' });
+  return parseOkResponse(body);
 }
 
 export function isKind(x: unknown): x is ShelfKind {
-  return typeof x === 'string' && (SHELF_KINDS as readonly string[]).includes(x);
+  return typeof x === 'string' && (KINDS as readonly string[]).includes(x);
 }
