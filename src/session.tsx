@@ -58,12 +58,14 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signOut = useCallback(async () => {
-    await disableNativeNotificationsForThisDevice().catch(() => {});
+    // Clear private UI immediately. Network cleanup may take a full request
+    // timeout and must not leave the previous account visible meanwhile.
+    setSignedIn(false);
     // Unsealed writing is local and personal. It leaves with the account, so
     // whoever signs in next on this device never inherits it.
     await drafts.discardAll().catch(() => {});
+    await disableNativeNotificationsForThisDevice().catch(() => {});
     await apiLogout();
-    setSignedIn(false);
   }, []);
 
   const value = useMemo(

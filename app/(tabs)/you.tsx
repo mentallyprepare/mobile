@@ -123,7 +123,7 @@ export default function Profile() {
             <ActionRow
               eyebrow={`NIGHT ${String(match.day).padStart(2, '0')} OF 21`}
               title="Continue tonight’s ritual"
-              detail="Your writing remains private until the scheduled reveal"
+              detail="Your writing stays private to your account"
               onPress={() => router.push('/rooms')}
             />
           </>

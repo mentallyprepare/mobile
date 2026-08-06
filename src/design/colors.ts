@@ -27,7 +27,7 @@ export const brand = {
    * card and sky. test/contrast.test.js fails if one drifts back below it.
    *
    * inkLow used to be 0.38 — 3.25:1 — and it carries the sentences that matter
-   * most: "Only you can see this before the scheduled reveal", every row
+   * most: the account-privacy line, every row
    * detail, every counter. The privacy promise was the least readable text on
    * the screen. It is still visibly quieter than inkMid; it is no longer
    * unreadable.

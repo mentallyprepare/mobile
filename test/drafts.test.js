@@ -146,9 +146,17 @@ test('android auto-backup is disabled so unsealed drafts cannot leave the device
   assert.strictEqual(
     config.expo?.android?.allowBackup,
     false,
-    'app.json android.allowBackup must be false: drafts live in the app document ' +
-      'directory and Android auto-backup would otherwise copy them to Google Drive.',
+    'app.json android.allowBackup must be false so drafts cannot enter device backup.',
   );
+});
+
+test('unsealed drafts use cache so iOS device backup cannot copy them', () => {
+  const binding = fs.readFileSync(
+    path.resolve(__dirname, '..', 'src', 'drafts', 'index.ts'),
+    'utf8',
+  );
+  assert.match(binding, /new Directory\(Paths\.cache,/);
+  assert.doesNotMatch(binding, /new Directory\(Paths\.document,/);
 });
 
 test('the store never writes anything to the console', () => {

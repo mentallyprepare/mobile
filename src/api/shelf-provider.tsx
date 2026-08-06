@@ -30,30 +30,41 @@ export function ShelfProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState<unknown>(null);
   const [hasLoaded, setHasLoaded] = useState(false);
   const hasLoadedRef = useRef(false);
+  const requestGenerationRef = useRef(0);
+  const signedInRef = useRef(signedIn);
 
   const load = useCallback(async () => {
+    const generation = ++requestGenerationRef.current;
     setLoading(true);
     setError(null);
     try {
       if (!(await api.hasSession())) {
+        if (generation !== requestGenerationRef.current) return;
         setItems([]);
         setHasLoaded(false);
         hasLoadedRef.current = false;
         return;
       }
       const { items: rows } = await getMyShelf();
+      if (
+        generation !== requestGenerationRef.current ||
+        signedInRef.current !== true
+      ) return;
       setItems(rows);
       setHasLoaded(true);
       hasLoadedRef.current = true;
     } catch (err) {
+      if (generation !== requestGenerationRef.current) return;
       setError(err);
       if (!hasLoadedRef.current) setItems([]);
     } finally {
-      setLoading(false);
+      if (generation === requestGenerationRef.current) setLoading(false);
     }
   }, []);
 
   useEffect(() => {
+    signedInRef.current = signedIn;
+    requestGenerationRef.current += 1;
     if (signedIn === true) {
       void Promise.resolve().then(load);
     } else if (signedIn === false) {

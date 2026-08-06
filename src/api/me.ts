@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from './index';
 import { parseMe } from './parse-me';
+import type { MeResponse } from './types-me';
 
 // Shapes mirror the real /api/me response in the web repo (routes/app.js).
 // Types live in types-me.ts so parse-me.ts can share them without pulling
@@ -13,8 +14,6 @@ export type {
   PartnerEntryPresence,
   PartnerStatus,
 } from './types-me';
-
-import type { MeResponse } from './types-me';
 
 export async function getMe(): Promise<MeResponse> {
   const body = await api.request<unknown>('/api/me');

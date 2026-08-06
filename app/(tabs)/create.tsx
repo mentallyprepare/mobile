@@ -23,7 +23,7 @@ export default function Shelf() {
       <Text style={styles.screenLabel}>INNER SHELF</Text>
       <Text style={styles.title}>Things that carry you</Text>
       <Text style={styles.subtitle}>
-        Choose objects you would genuinely want another person to understand.
+        Keep a private record of the music and memories that matter to you.
       </Text>
 
       {view === 'first-load' ? (
@@ -39,7 +39,7 @@ export default function Shelf() {
           <View style={styles.progressBlock}>
             <View style={styles.progressHeader}>
               <Text style={styles.progressCount}>{filledCount} of 5 chosen</Text>
-              <Text style={styles.progressLabel}>private until revealed</Text>
+              <Text style={styles.progressLabel}>private to your account</Text>
             </View>
             <View style={styles.progressTrack}>
               <View

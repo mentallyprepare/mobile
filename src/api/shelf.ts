@@ -5,10 +5,9 @@ import {
   parseShelfList,
 } from './parse-shelf';
 import { SHELF_KINDS as KINDS } from './types-shelf';
+import type { ShelfItem, ShelfKind, ShelfListResponse } from './types-shelf';
 export { SHELF_KINDS } from './types-shelf';
 export type { ShelfItem, ShelfKind, ShelfListResponse } from './types-shelf';
-
-import type { ShelfItem, ShelfKind, ShelfListResponse } from './types-shelf';
 
 /**
  * How each slot is presented to the user. Server-side the kinds are opaque

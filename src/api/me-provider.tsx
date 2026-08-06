@@ -33,31 +33,45 @@ export function MeProvider({ children }: { children: ReactNode }) {
   // Reads the latest value inside the async load without making `load` depend
   // on it, which would restart the effect on every successful fetch.
   const hasLoadedRef = useRef(false);
+  const requestGenerationRef = useRef(0);
+  const signedInRef = useRef(signedIn);
 
   const load = useCallback(async () => {
+    const generation = ++requestGenerationRef.current;
     setLoading(true);
     setError(null);
     try {
       if (!(await api.hasSession())) {
+        if (generation !== requestGenerationRef.current) return;
         setData(null);
         setHasLoaded(false);
         hasLoadedRef.current = false;
         return;
       }
-      setData(await getMe());
+      const nextData = await getMe();
+      if (
+        generation !== requestGenerationRef.current ||
+        signedInRef.current !== true
+      ) return;
+      setData(nextData);
       setHasLoaded(true);
       hasLoadedRef.current = true;
     } catch (err) {
+      if (generation !== requestGenerationRef.current) return;
       setError(err);
       // Deliberately not clearing `data`. If we have never had any, it stays
       // null and the screen shows a failure — never an empty first-run state.
       if (!hasLoadedRef.current) setData(null);
     } finally {
-      setLoading(false);
+      if (generation === requestGenerationRef.current) setLoading(false);
     }
   }, []);
 
   useEffect(() => {
+    signedInRef.current = signedIn;
+    // Invalidate a request belonging to the previous account/session before
+    // it can publish private data into the new session's provider state.
+    requestGenerationRef.current += 1;
     if (signedIn === true) {
       void Promise.resolve().then(load);
     } else if (signedIn === false) {

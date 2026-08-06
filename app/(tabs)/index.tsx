@@ -222,7 +222,7 @@ export default function Home() {
         <View style={styles.ritualSteps}>
           <RitualStep number="01" title="Meet through meaning" />
           <RitualStep number="07" title="Build private rhythm" />
-          <RitualStep number="21" title="Reveal with consent" />
+          <RitualStep number="21" title="Keep what you wrote" />
         </View>
       </View>
     </CosmicScreen>

@@ -210,8 +210,7 @@ export default function Night() {
             <Text style={styles.sheetLabel}>SEALED LOCALLY AND ON YOUR ACCOUNT</Text>
             <Text style={styles.sheetTitle}>Your note became a star.</Text>
             <Text style={styles.sheetBody}>
-              Nothing more is required tonight. Another person’s words remain hidden until the
-              room’s scheduled reveal.
+              Nothing more is required tonight. This note stays private to your account.
             </Text>
           </View>
         ) : (
@@ -237,7 +236,7 @@ export default function Night() {
             <View style={styles.privacyRow}>
               <View style={styles.privacyDot} />
               <Text style={styles.privacy}>
-                Only you can see this before the scheduled reveal.
+                Only you can see this note.
               </Text>
             </View>
             {error ? (
