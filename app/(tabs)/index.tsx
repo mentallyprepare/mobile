@@ -1,8 +1,12 @@
+import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import CosmicScreen from '../../src/components/app/CosmicScreen';
 import LivingNightScene from '../../src/components/ritual/LivingNightScene';
 import ShelfStrip from '../../src/components/shelf/ShelfStrip';
+import MoodChip from '../../src/components/home/MoodChip';
+import NightProgressStrip from '../../src/components/home/NightProgressStrip';
+import InsightCard from '../../src/components/home/InsightCard';
 import {
   LoadFailure,
   LoadPlaceholder,
@@ -12,12 +16,22 @@ import { brand, radius, space, type } from '../../src/design';
 import { useMeShared } from '../../src/api/me-provider';
 import { useShelf } from '../../src/api/shelf-provider';
 import { canRenderContent, describeLoad } from '../../src/api/load-state';
+import { FEELINGS, reflectionFor, type Feeling } from '../../src/daily-edition';
 
 export default function Home() {
   const { data, loading, error, hasLoaded, reload } = useMeShared();
   const shelf = useShelf();
   const { byKind } = shelf;
   const router = useRouter();
+  const [feelings, setFeelings] = useState<Feeling[]>([]);
+
+  function toggleFeeling(feeling: Feeling) {
+    setFeelings((current) =>
+      current.includes(feeling)
+        ? current.filter((item) => item !== feeling)
+        : [...current, feeling],
+    );
+  }
 
   const view = describeLoad({ loading, error, hasLoaded });
   const shelfView = describeLoad({
@@ -99,6 +113,11 @@ export default function Home() {
         />
 
         <View style={styles.padded}>
+          <NightProgressStrip
+            currentNight={match.day}
+            completedNights={(data?.entries ?? []).map((entry) => entry.day)}
+          />
+
           <View style={styles.metrics}>
             <Metric value={String(streak)} label="NIGHT STREAK" />
             <View style={styles.metricDivider} />
@@ -106,6 +125,49 @@ export default function Home() {
             <View style={styles.metricDivider} />
             <Metric value={String(data?.entries?.length ?? 0)} label="NOTES SEALED" />
           </View>
+
+          <View style={styles.checkIn}>
+            <Text style={styles.checkInKicker}>HOW IS TONIGHT ARRIVING?</Text>
+            <Text style={styles.checkInTitle}>choose what feels nearest.</Text>
+            <View style={styles.chips}>
+              {FEELINGS.map((feeling) => (
+                <MoodChip
+                  key={feeling}
+                  label={feeling}
+                  selected={feelings.includes(feeling)}
+                  onPress={() => toggleFeeling(feeling)}
+                />
+              ))}
+            </View>
+            {feelings.length > 0 ? (
+              <Text style={styles.selection} accessibilityLiveRegion="polite">
+                tonight feels {feelings.join(' and ')}.
+              </Text>
+            ) : null}
+          </View>
+
+          <InsightCard text={reflectionFor(feelings)} active={feelings.length > 0} />
+
+          {(data?.entries?.length ?? 0) > 0 ? (
+            <View style={styles.recentCard}>
+              <Text style={styles.checkInKicker}>RECENT REFLECTION</Text>
+              <Text style={styles.recentTitle}>
+                night {Math.max(...(data?.entries ?? []).map((entry) => entry.day))} is sealed.
+              </Text>
+              <Text style={styles.recentBody}>
+                your words stay private. only the constellation keeps their place.
+              </Text>
+            </View>
+          ) : null}
+
+          {match.day < 21 ? (
+            <View style={styles.tomorrow}>
+              <Text style={styles.checkInKicker}>TOMORROW</Text>
+              <Text style={styles.tomorrowText}>
+                night {match.day + 1} stays closed until it arrives.
+              </Text>
+            </View>
+          ) : null}
 
           {shelfSection}
         </View>
@@ -445,6 +507,29 @@ const styles = StyleSheet.create({
     marginTop: 3,
   },
   metricDivider: { width: 1, height: 36, backgroundColor: brand.line },
+  checkIn: { marginTop: space.xl },
+  checkInKicker: { ...type.eyebrow, color: brand.rose, fontSize: 8, letterSpacing: 1.1 },
+  checkInTitle: {
+    ...type.displayItalic,
+    color: brand.ink,
+    fontSize: 27,
+    lineHeight: 34,
+    marginTop: space.xs,
+  },
+  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, marginTop: space.lg },
+  selection: { ...type.body, color: brand.inkMid, marginTop: space.md },
+  recentCard: {
+    marginTop: space.lg,
+    padding: space.lg,
+    borderRadius: radius.lg,
+    backgroundColor: brand.card,
+    borderWidth: 1,
+    borderColor: brand.line,
+  },
+  recentTitle: { ...type.bodyStrong, color: brand.ink, fontSize: 17, marginTop: space.sm },
+  recentBody: { ...type.bodySmall, color: brand.inkMid, marginTop: space.xs },
+  tomorrow: { marginTop: space.xl },
+  tomorrowText: { ...type.body, color: brand.inkMid, marginTop: space.sm },
   ritualSection: {
     marginTop: space.xl,
     padding: space.lg,
