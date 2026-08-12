@@ -31,5 +31,13 @@ assert.match(quickSheet, /reduceMotionChanged/);
 assert.match(quickSheet, /Write tonight/);
 assert.match(quickSheet, /View your journey/);
 
+const completionBanner = fs.readFileSync(
+  path.resolve(__dirname, '..', 'src', 'components', 'home', 'CompletionBanner.tsx'),
+  'utf8',
+);
+assert.match(completionBanner, /accessibilityRole="alert"/);
+assert.match(completionBanner, /reduceMotionChanged/);
+assert.match(completionBanner, /Your words remain private/);
+
 fs.rmSync(out, { recursive: true, force: true });
-console.log('8/8 daily edition tests passed.');
+console.log('11/11 daily edition tests passed.');

@@ -1,6 +1,6 @@
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Pressable, type ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import CosmicScreen from '../../src/components/app/CosmicScreen';
 import LivingNightScene from '../../src/components/ritual/LivingNightScene';
 import ShelfStrip from '../../src/components/shelf/ShelfStrip';
@@ -8,6 +8,7 @@ import MoodChip from '../../src/components/home/MoodChip';
 import NightProgressStrip from '../../src/components/home/NightProgressStrip';
 import InsightCard from '../../src/components/home/InsightCard';
 import QuickActionSheet, { type QuickAction } from '../../src/components/home/QuickActionSheet';
+import CompletionBanner from '../../src/components/home/CompletionBanner';
 import {
   LoadFailure,
   LoadPlaceholder,
@@ -27,11 +28,26 @@ export default function Home() {
   const [feelings, setFeelings] = useState<Feeling[]>([]);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [lockedNight, setLockedNight] = useState<number | null>(null);
+  const [completionVisible, setCompletionVisible] = useState(false);
   const scrollRef = useRef<ScrollView | null>(null);
   const progressY = useRef(0);
   const tonightY = useRef(0);
   const checkInY = useRef(0);
   const feedY = useRef(0);
+  const announcedSealKey = useRef<string | null>(null);
+  const match = data?.match ?? null;
+  const sealedTonight = !!(match && data?.entries?.some((entry) => entry.day === match.day));
+  const sealKey = sealedTonight ? `${data?.user?.id ?? 0}:${match?.day ?? 0}` : null;
+
+  useFocusEffect(
+    useCallback(() => {
+      if (!sealKey || announcedSealKey.current === sealKey) return;
+      announcedSealKey.current = sealKey;
+      setCompletionVisible(true);
+    }, [sealKey]),
+  );
+
+  const finishCompletion = useCallback(() => setCompletionVisible(false), []);
 
   function toggleFeeling(feeling: Feeling) {
     setFeelings((current) =>
@@ -85,7 +101,6 @@ export default function Home() {
   }
 
   const archetype = data?.user?.archetype ?? null;
-  const match = data?.match ?? null;
   const fullName = data?.user?.name?.trim() || null;
   const name = fullName?.split(/\s+/)[0] || null;
   const initial = fullName?.charAt(0).toUpperCase() || 'M';
@@ -112,7 +127,6 @@ export default function Home() {
 
   if (match) {
     const partnerPresent = data?.partnerStatus?.partnerHasWrittenToday ?? false;
-    const sealedTonight = !!data?.entries?.some((entry) => entry.day === match.day);
 
     return (
       <CosmicScreen
@@ -164,6 +178,12 @@ export default function Home() {
               night {lockedNight} opens when it arrives.
             </Text>
           ) : null}
+
+          <CompletionBanner
+            night={match.day}
+            visible={completionVisible}
+            onFinished={finishCompletion}
+          />
 
           <View style={styles.metrics}>
             <Metric value={String(streak)} label="NIGHT STREAK" />
