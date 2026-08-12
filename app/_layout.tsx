@@ -43,7 +43,10 @@ function RootNavigator() {
     if (signedIn === null) return;
     const onSignIn = rootSegment === 'sign-in';
     const onPublicAuthScreen =
-      onSignIn || rootSegment === 'forgot-password' || rootSegment === 'sign-up';
+      onSignIn ||
+      rootSegment === 'forgot-password' ||
+      rootSegment === 'sign-up' ||
+      (__DEV__ && rootSegment === 'daily-preview');
     if (!signedIn && !onPublicAuthScreen) router.replace('/sign-in');
     else if (signedIn && onSignIn) router.replace('/');
   }, [signedIn, rootSegment, router]);

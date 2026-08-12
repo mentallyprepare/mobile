@@ -39,5 +39,14 @@ assert.match(completionBanner, /accessibilityRole="alert"/);
 assert.match(completionBanner, /reduceMotionChanged/);
 assert.match(completionBanner, /Your words remain private/);
 
+const previewRoute = fs.readFileSync(
+  path.resolve(__dirname, '..', 'app', 'daily-preview.tsx'),
+  'utf8',
+);
+assert.match(previewRoute, /Sample state · nothing is saved/);
+assert.match(previewRoute, /No real partner, account, note, or match/);
+assert.match(previewRoute, /if \(!__DEV__\) return <Redirect/);
+assert.match(previewRoute, /Seal preview/);
+
 fs.rmSync(out, { recursive: true, force: true });
-console.log('11/11 daily edition tests passed.');
+console.log('15/15 daily edition tests passed.');

@@ -150,6 +150,19 @@ export default function SignIn() {
                 <Text style={styles.createArrow}>→</Text>
               </Pressable>
 
+              {__DEV__ ? (
+                <Pressable
+                  onPress={() => router.push('/daily-preview')}
+                  accessibilityRole="button"
+                  accessibilityLabel="Preview daily edition interactions"
+                  style={({ pressed }) => [styles.preview, pressed && styles.pressed]}
+                >
+                  <Text style={styles.previewEyebrow}>DEVELOPMENT PREVIEW</Text>
+                  <Text style={styles.previewLabel}>try the daily interactions</Text>
+                  <Text style={styles.createArrow}>→</Text>
+                </Pressable>
+              ) : null}
+
               <Text style={styles.privacyNote}>
                 18+ · private by default · no public feed
               </Text>
@@ -295,5 +308,18 @@ const styles = StyleSheet.create({
     marginTop: space.lg,
     marginBottom: space.sm,
   },
+  preview: {
+    minHeight: 64,
+    marginTop: space.md,
+    paddingHorizontal: space.lg,
+    paddingVertical: space.md,
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    borderColor: 'rgba(236,200,133,0.36)',
+    backgroundColor: 'rgba(236,200,133,0.06)',
+    justifyContent: 'center',
+  },
+  previewEyebrow: { ...type.eyebrow, color: brand.gold, fontSize: 8, letterSpacing: 1.1 },
+  previewLabel: { ...type.bodyStrong, color: brand.ink, fontSize: 14, marginTop: 3 },
   pressed: { opacity: 0.82 },
 });
