@@ -1,16 +1,28 @@
-import { Tabs } from 'expo-router';
-import { StyleSheet } from 'react-native';
+import { Tabs, useRouter } from 'expo-router';
+import { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { HomeIcon, RoomsIcon, SparkIcon, YouIcon } from '../../src/components/Icons';
 import { TAB_BAR_CONTENT_HEIGHT } from '../../src/components/app/tab-bar';
 import { brand, type } from '../../src/design';
+import StardustBottomNav from '../../src/components/home/StardustBottomNav';
+import QuickActionSheet, { type QuickAction } from '../../src/components/home/QuickActionSheet';
 
 function Shell() {
   // The bar is absolutely positioned, so without this it sits underneath the
   // Android gesture pill on most current devices.
   const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const [actionsOpen, setActionsOpen] = useState(false);
+
+  function handleAction(action: QuickAction) {
+    setActionsOpen(false);
+    if (action === 'write' || action === 'reflection') router.push('/rooms');
+    else router.push({ pathname: '/', params: { section: action } });
+  }
 
   return (
+    <View style={styles.root}>
     <Tabs
       screenOptions={{
         headerShown: false,
@@ -55,6 +67,9 @@ function Shell() {
         options={{ title: 'You', tabBarIcon: ({ color }) => <YouIcon color={color} /> }}
       />
     </Tabs>
+      <StardustBottomNav onPress={() => setActionsOpen(true)} />
+      <QuickActionSheet visible={actionsOpen} onClose={() => setActionsOpen(false)} onAction={handleAction} />
+    </View>
   );
 }
 
@@ -63,6 +78,7 @@ export default function TabsLayout() {
 }
 
 const styles = StyleSheet.create({
+  root: { flex: 1 },
   tabBar: {
     position: 'absolute',
     left: 0,

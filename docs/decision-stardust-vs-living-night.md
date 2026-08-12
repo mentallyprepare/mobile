@@ -1,5 +1,13 @@
 # Decision — Stardust vs Living Night
 
+> **Interaction amendment — 12 August 2026, Anushka.** Stardust's dashboard
+> interaction grammar is now approved for Home: a long finite daily feed,
+> horizontal day selection, multi-select tags, contextual sheets, editorial
+> cards, a large phase visualization, and a prominent central action. Living
+> Night remains the visual identity and ritual world. The rejected Stardust
+> brand fork, ambient decoration, extra archetype system, matching changes,
+> compatibility numbers, and fabricated personalization remain rejected.
+
 Decided 18 July 2026. Two decisions, recorded together because they came from the same review.
 
 ## 1. Living Night stands. Stardust is not the direction.

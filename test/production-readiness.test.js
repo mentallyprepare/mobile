@@ -141,8 +141,8 @@ assert.match(
 );
 assert.match(
   home,
-  /shelfTileText: \{ color: brand\.void \}/,
-  'purple shelf tiles need dark text that meets contrast',
+  /<ShelfStrip /,
+  'Home must use the shelf component whose artwork scrims are checked above',
 );
 
 for (const source of [safety, deletion, confirmSheet]) {

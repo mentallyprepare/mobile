@@ -1,0 +1,11 @@
+import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import TagGrid from './TagGrid';
+import type { FeedTag } from '../../stardust-feed';
+import { brand, radius, space, type } from '../../design';
+
+export default function AddMoreSheet({ visible, tags, selected, onToggle, onClose }: { visible: boolean; tags: FeedTag[]; selected: string[]; onToggle: (id: string) => void; onClose: () => void }) {
+  const insets = useSafeAreaInsets();
+  return <Modal transparent visible={visible} animationType="slide" onRequestClose={onClose}><View style={styles.root}><Pressable style={styles.backdrop} onPress={onClose} accessibilityRole="button" accessibilityLabel="Dismiss feeling selector" /><View accessibilityViewIsModal style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, space.lg) }]}><View style={styles.handle} /><Text style={styles.kicker}>ADD MORE</Text><Text style={styles.title}>What else is here?</Text><Text style={styles.body}>Choose as many as fit. Selection stays local for this version.</Text><TagGrid tags={tags} selected={selected} onToggle={onToggle} onAddMore={onClose} showAddMore={false} /><Pressable onPress={onClose} accessibilityRole="button" accessibilityLabel="Done selecting feelings" style={({ pressed }) => [styles.done, pressed && styles.pressed]}><Text style={styles.doneText}>Done</Text></Pressable></View></View></Modal>;
+}
+const styles = StyleSheet.create({ root: { flex: 1, justifyContent: 'flex-end' }, backdrop: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(8,5,15,0.74)' }, sheet: { padding: space.lg, borderTopLeftRadius: radius.xl, borderTopRightRadius: radius.xl, backgroundColor: brand.card, borderWidth: 1, borderColor: brand.line }, handle: { width: 38, height: 4, borderRadius: 2, alignSelf: 'center', backgroundColor: brand.inkFaint }, kicker: { ...type.eyebrow, color: brand.rose, fontSize: 8, marginTop: space.lg }, title: { ...type.displayItalic, color: brand.ink, fontSize: 30, lineHeight: 36, marginTop: 3 }, body: { ...type.bodySmall, color: brand.inkMid, marginTop: space.sm }, done: { minHeight: 50, marginTop: space.xl, borderRadius: radius.pill, backgroundColor: brand.rose, alignItems: 'center', justifyContent: 'center' }, doneText: { ...type.bodyStrong, color: brand.void }, pressed: { opacity: 0.72 } });
