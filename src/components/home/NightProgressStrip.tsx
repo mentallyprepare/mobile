@@ -1,12 +1,16 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { brand, radius, space, type } from '../../design';
 
 export default function NightProgressStrip({
   currentNight,
   completedNights,
+  onSelectNight,
+  onLockedPress,
 }: {
   currentNight: number;
   completedNights: readonly number[];
+  onSelectNight?: (night: number) => void;
+  onLockedPress?: (night: number) => void;
 }) {
   const completed = new Set(completedNights);
   return (
@@ -29,15 +33,26 @@ export default function NightProgressStrip({
           const isCurrent = night === currentNight;
           const isComplete = completed.has(night);
           return (
-            <View
+            <Pressable
               key={night}
+              onPress={() =>
+                isComplete || isCurrent
+                  ? onSelectNight?.(night)
+                  : onLockedPress?.(night)
+              }
               style={[styles.marker, isComplete && styles.complete, isCurrent && styles.current]}
-              accessibilityElementsHidden
+              accessibilityRole="button"
+              accessibilityLabel={`Night ${night}, ${isComplete ? 'completed' : isCurrent ? 'current' : 'locked'}`}
+              accessibilityHint={
+                isComplete || isCurrent
+                  ? 'Moves to this night in today’s edition'
+                  : 'Future nights open when they arrive'
+              }
             >
               <Text style={[styles.markerText, isComplete && styles.completeText]}>
                 {String(night).padStart(2, '0')}
               </Text>
-            </View>
+            </Pressable>
           );
         })}
       </ScrollView>

@@ -1,5 +1,6 @@
 import {
   KeyboardAvoidingView,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   View,
@@ -21,12 +22,16 @@ export default function CosmicScreen({
    */
   avoidKeyboard = false,
   scrollRef,
+  refreshing = false,
+  onRefresh,
 }: {
   children: ReactNode;
   scroll?: boolean;
   contentStyle?: ViewStyle;
   avoidKeyboard?: boolean;
   scrollRef?: RefObject<ScrollView | null>;
+  refreshing?: boolean;
+  onRefresh?: () => void;
 }) {
   const tabBarHeight = useTabBarHeight();
   const content = <View style={[styles.column, contentStyle]}>{children}</View>;
@@ -41,6 +46,16 @@ export default function CosmicScreen({
       contentContainerStyle={[styles.scroll, clearance]}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
+      refreshControl={
+        onRefresh ? (
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={brand.rose}
+            colors={[brand.rose]}
+          />
+        ) : undefined
+      }
       // iOS insets the scroll view itself; Android is handled by the
       // KeyboardAvoidingView below. Neither discards what has been typed.
       automaticallyAdjustKeyboardInsets={avoidKeyboard}

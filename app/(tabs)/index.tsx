@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useRef, useState } from 'react';
+import { Pressable, type ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import CosmicScreen from '../../src/components/app/CosmicScreen';
 import LivingNightScene from '../../src/components/ritual/LivingNightScene';
@@ -7,6 +7,7 @@ import ShelfStrip from '../../src/components/shelf/ShelfStrip';
 import MoodChip from '../../src/components/home/MoodChip';
 import NightProgressStrip from '../../src/components/home/NightProgressStrip';
 import InsightCard from '../../src/components/home/InsightCard';
+import QuickActionSheet, { type QuickAction } from '../../src/components/home/QuickActionSheet';
 import {
   LoadFailure,
   LoadPlaceholder,
@@ -24,6 +25,13 @@ export default function Home() {
   const { byKind } = shelf;
   const router = useRouter();
   const [feelings, setFeelings] = useState<Feeling[]>([]);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [lockedNight, setLockedNight] = useState<number | null>(null);
+  const scrollRef = useRef<ScrollView | null>(null);
+  const progressY = useRef(0);
+  const tonightY = useRef(0);
+  const checkInY = useRef(0);
+  const feedY = useRef(0);
 
   function toggleFeeling(feeling: Feeling) {
     setFeelings((current) =>
@@ -31,6 +39,23 @@ export default function Home() {
         ? current.filter((item) => item !== feeling)
         : [...current, feeling],
     );
+  }
+
+  function scrollTo(y: number) {
+    scrollRef.current?.scrollTo({ y: Math.max(0, y - space.md), animated: true });
+  }
+
+  function handleQuickAction(action: QuickAction) {
+    setSheetOpen(false);
+    if (action === 'write' || action === 'reflection') {
+      router.push('/rooms');
+      return;
+    }
+    requestAnimationFrame(() => scrollTo(action === 'check-in' ? checkInY.current : progressY.current));
+  }
+
+  async function refreshDailyEdition() {
+    await Promise.all([reload(), shelf.reload()]);
   }
 
   const view = describeLoad({ loading, error, hasLoaded });
@@ -90,7 +115,12 @@ export default function Home() {
     const sealedTonight = !!data?.entries?.some((entry) => entry.day === match.day);
 
     return (
-      <CosmicScreen contentStyle={styles.immersiveContent}>
+      <CosmicScreen
+        contentStyle={styles.immersiveContent}
+        scrollRef={scrollRef}
+        refreshing={loading || shelf.loading}
+        onRefresh={() => void refreshDailyEdition()}
+      >
         <View style={styles.padded}>
           <AppHeader
             name={name}
@@ -100,23 +130,40 @@ export default function Home() {
           {staleBanner}
         </View>
 
-        <LivingNightScene
-          night={match.day}
-          prompt={match.currentPrompt}
-          entries={data?.entries ?? []}
-          userId={data?.user?.id ?? 0}
-          sealed={sealedTonight}
-          partnerPresent={partnerPresent}
-          compact
-          actionLabel={sealedTonight ? 'Open tonight’s room' : 'Write tonight’s note'}
-          onPress={() => router.push('/rooms')}
-        />
-
-        <View style={styles.padded}>
-          <NightProgressStrip
-            currentNight={match.day}
-            completedNights={(data?.entries ?? []).map((entry) => entry.day)}
+        <View onLayout={(event) => { tonightY.current = event.nativeEvent.layout.y; }}>
+          <LivingNightScene
+            night={match.day}
+            prompt={match.currentPrompt}
+            entries={data?.entries ?? []}
+            userId={data?.user?.id ?? 0}
+            sealed={sealedTonight}
+            partnerPresent={partnerPresent}
+            compact
+            actionLabel={sealedTonight ? 'Open tonight’s room' : 'Write tonight’s note'}
+            onPress={() => router.push('/rooms')}
           />
+        </View>
+
+        <View
+          style={styles.padded}
+          onLayout={(event) => { feedY.current = event.nativeEvent.layout.y; }}
+        >
+          <View onLayout={(event) => { progressY.current = event.nativeEvent.layout.y + feedY.current; }}>
+            <NightProgressStrip
+              currentNight={match.day}
+              completedNights={(data?.entries ?? []).map((entry) => entry.day)}
+              onSelectNight={(night) => {
+                setLockedNight(null);
+                scrollTo(night === match.day ? tonightY.current : progressY.current);
+              }}
+              onLockedPress={(night) => setLockedNight(night)}
+            />
+          </View>
+          {lockedNight ? (
+            <Text style={styles.lockedNotice} accessibilityLiveRegion="polite">
+              night {lockedNight} opens when it arrives.
+            </Text>
+          ) : null}
 
           <View style={styles.metrics}>
             <Metric value={String(streak)} label="NIGHT STREAK" />
@@ -126,7 +173,10 @@ export default function Home() {
             <Metric value={String(data?.entries?.length ?? 0)} label="NOTES SEALED" />
           </View>
 
-          <View style={styles.checkIn}>
+          <View
+            style={styles.checkIn}
+            onLayout={(event) => { checkInY.current = event.nativeEvent.layout.y + feedY.current; }}
+          >
             <Text style={styles.checkInKicker}>HOW IS TONIGHT ARRIVING?</Text>
             <Text style={styles.checkInTitle}>choose what feels nearest.</Text>
             <View style={styles.chips}>
@@ -144,6 +194,15 @@ export default function Home() {
                 tonight feels {feelings.join(' and ')}.
               </Text>
             ) : null}
+            <Pressable
+              onPress={() => setSheetOpen(true)}
+              accessibilityRole="button"
+              accessibilityLabel="Add more quick actions"
+              style={({ pressed }) => [styles.addMore, pressed && styles.pressed]}
+            >
+              <Text style={styles.addMoreText}>Add more</Text>
+              <Text style={styles.addMoreArrow}>+</Text>
+            </Pressable>
           </View>
 
           <InsightCard text={reflectionFor(feelings)} active={feelings.length > 0} />
@@ -171,6 +230,11 @@ export default function Home() {
 
           {shelfSection}
         </View>
+        <QuickActionSheet
+          visible={sheetOpen}
+          onClose={() => setSheetOpen(false)}
+          onAction={handleQuickAction}
+        />
       </CosmicScreen>
     );
   }
@@ -518,6 +582,20 @@ const styles = StyleSheet.create({
   },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm, marginTop: space.lg },
   selection: { ...type.body, color: brand.inkMid, marginTop: space.md },
+  lockedNotice: { ...type.bodySmall, color: brand.gold, marginTop: space.sm },
+  addMore: {
+    minHeight: 48,
+    marginTop: space.md,
+    paddingHorizontal: space.md,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: brand.line,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  addMoreText: { ...type.bodyStrong, color: brand.ink },
+  addMoreArrow: { color: brand.gold, fontSize: 20 },
   recentCard: {
     marginTop: space.lg,
     padding: space.lg,

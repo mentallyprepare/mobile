@@ -22,5 +22,14 @@ assert.match(reflectionFor(['quiet']), /Quiet counts/);
 assert.match(reflectionFor(['heavy', 'hopeful']), /More than one feeling can be true/);
 assert.ok(!reflectionFor(['clear']).match(/AI|diagnos|compatib/i));
 
+const quickSheet = fs.readFileSync(
+  path.resolve(__dirname, '..', 'src', 'components', 'home', 'QuickActionSheet.tsx'),
+  'utf8',
+);
+assert.match(quickSheet, /accessibilityViewIsModal/);
+assert.match(quickSheet, /reduceMotionChanged/);
+assert.match(quickSheet, /Write tonight/);
+assert.match(quickSheet, /View your journey/);
+
 fs.rmSync(out, { recursive: true, force: true });
-console.log('4/4 daily edition tests passed.');
+console.log('8/8 daily edition tests passed.');
