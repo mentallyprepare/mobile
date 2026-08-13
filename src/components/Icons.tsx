@@ -58,6 +58,25 @@ export function RoomsIcon({ color, size = 22 }: IconProps) {
   );
 }
 
+export function JourneyIcon({ color, size = 22 }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Rect x={3.5} y={5} width={17} height={15.5} rx={3} stroke={color} strokeWidth={1.5} />
+      <Path d="M7 3v4M17 3v4M4 9.5h16M8 14h3M13 14h3" stroke={color} strokeWidth={1.5} strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+export function CommunityIcon({ color, size = 22 }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Circle cx={9} cy={8} r={3} stroke={color} strokeWidth={1.5} />
+      <Circle cx={17} cy={10} r={2.5} stroke={color} strokeWidth={1.5} />
+      <Path d="M3.5 20v-1.5A4.5 4.5 0 0 1 8 14h2a4.5 4.5 0 0 1 4.5 4.5V20M14 15.5a4 4 0 0 1 6.5 3V20" stroke={color} strokeWidth={1.5} strokeLinecap="round" />
+    </Svg>
+  );
+}
+
 export function YouIcon({ color, size = 22 }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">

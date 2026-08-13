@@ -16,7 +16,7 @@ execFileSync(
 );
 
 const { FEELINGS, reflectionFor } = require(path.join(out, 'daily-edition.js'));
-const { MORE_TAGS, PRIMARY_TAGS, RECOMMENDATIONS, phaseForNight } = require(path.join(out, 'stardust-feed.js'));
+const { CONTENT_LIMITS, MORE_TAGS, PRIMARY_TAGS, RECOMMENDATIONS, compactCopy, phaseForNight } = require(path.join(out, 'stardust-feed.js'));
 
 assert.deepStrictEqual(FEELINGS, ['restless', 'quiet', 'hopeful', 'heavy', 'clear']);
 assert.match(reflectionFor([]), /stays on this device/);
@@ -27,6 +27,9 @@ assert.strictEqual(PRIMARY_TAGS.length, 5);
 assert.ok(MORE_TAGS.length >= 5);
 assert.strictEqual(RECOMMENDATIONS.length, 3);
 assert.strictEqual(phaseForNight(4).label, 'ARRIVAL');
+assert.strictEqual(compactCopy('  a   short  line  ', 30), 'a short line');
+assert.ok(compactCopy('This generated sentence is intentionally too long for the compact card.', 32).length <= 32);
+assert.strictEqual(CONTENT_LIMITS.insight, 130);
 
 const quickSheet = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'components', 'home', 'QuickActionSheet.tsx'), 'utf8');
 assert.match(quickSheet, /accessibilityViewIsModal/);
@@ -53,9 +56,40 @@ assert.match(homeRoute, /RecommendationCard/);
 assert.match(homeRoute, /SocialForecastCard/);
 assert.match(homeRoute, /CosmicSection/);
 assert.match(homeRoute, /EducationCard/);
+assert.match(homeRoute, /PersonalMetricsCard/);
+assert.match(homeRoute, /CommunityCard/);
+assert.match(homeRoute, /RECOMMENDATIONS\.slice\(0, 2\)/);
+assert.match(homeRoute, /selectedEntry/);
+assert.ok(homeRoute.lastIndexOf('<ForecastCard') < homeRoute.lastIndexOf('<SocialForecastCard'));
+assert.ok(homeRoute.lastIndexOf('<SocialForecastCard') < homeRoute.lastIndexOf('<TagGrid'));
+assert.ok(homeRoute.lastIndexOf('PhaseVisualization') < homeRoute.lastIndexOf('InsightCard'));
+assert.ok(homeRoute.lastIndexOf('PersonalMetricsCard') < homeRoute.lastIndexOf('CommunityCard'));
+
+const orbitDot = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'components', 'home', 'OrbitDot.tsx'), 'utf8');
+assert.match(orbitDot, /isReduceMotionEnabled/);
+assert.match(orbitDot, /reduceMotionChanged/);
+assert.match(orbitDot, /useNativeDriver: true/);
+assert.match(orbitDot, /duration = 10000/);
+
+const forecastCard = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'components', 'home', 'ForecastCard.tsx'), 'utf8');
+assert.match(forecastCard, /<OrbitDot/);
+assert.match(forecastCard, /compactCopy\(prompt, CONTENT_LIMITS\.forecastBody\)/);
+
+const insightCard = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'components', 'home', 'InsightCard.tsx'), 'utf8');
+assert.match(insightCard, /accessibilityState=\{canExpand \? \{ expanded \}/);
+assert.match(insightCard, /Read more/);
 
 const tabLayout = fs.readFileSync(path.resolve(__dirname, '..', 'app', '(tabs)', '_layout.tsx'), 'utf8');
 assert.match(tabLayout, /StardustBottomNav/);
+assert.match(tabLayout, /title: 'Journey'/);
+assert.match(tabLayout, /title: 'Community'/);
+assert.match(tabLayout, /name="create"[\s\S]*?href: null/);
+assert.match(tabLayout, /name="rooms" options=\{\{ href: null \}\}/);
+
+const journeyRoute = fs.readFileSync(path.resolve(__dirname, '..', 'app', '(tabs)', 'journey.tsx'), 'utf8');
+assert.match(journeyRoute, /DateStrip/);
+assert.match(journeyRoute, /PhaseVisualization/);
+assert.match(journeyRoute, /RecapCard/);
 
 const addMore = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'components', 'home', 'AddMoreSheet.tsx'), 'utf8');
 assert.match(addMore, /accessibilityViewIsModal/);

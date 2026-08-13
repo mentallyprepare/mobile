@@ -1,3 +1,5 @@
+import { compactCopy, CONTENT_LIMITS } from './stardust-feed';
+
 export const FEELINGS = ['restless', 'quiet', 'hopeful', 'heavy', 'clear'] as const;
 
 export type Feeling = (typeof FEELINGS)[number];
@@ -15,6 +17,6 @@ export function reflectionFor(feelings: readonly Feeling[]): string {
   if (feelings.length === 0) {
     return 'Choose what feels nearest. This check-in stays on this device for now.';
   }
-  if (feelings.length === 1) return REFLECTIONS[feelings[0]];
-  return `${REFLECTIONS[feelings[0]]} More than one feeling can be true at once.`;
+  if (feelings.length === 1) return compactCopy(REFLECTIONS[feelings[0]], CONTENT_LIMITS.insight);
+  return compactCopy(`${REFLECTIONS[feelings[0]]} More than one feeling can be true at once.`, CONTENT_LIMITS.insight);
 }

@@ -14,6 +14,22 @@ export type FeedRecommendation = {
   tone: FeedTag['tone'];
 };
 
+export const CONTENT_LIMITS = {
+  forecastTitle: 42,
+  forecastBody: 110,
+  insight: 130,
+  recommendation: 72,
+  socialMessage: 90,
+} as const;
+
+export function compactCopy(text: string, maxLength: number) {
+  const clean = text.replace(/\s+/g, ' ').trim();
+  if (clean.length <= maxLength) return clean;
+  const shortened = clean.slice(0, Math.max(1, maxLength - 1));
+  const lastSpace = shortened.lastIndexOf(' ');
+  return `${shortened.slice(0, Math.max(lastSpace, 1))}…`;
+}
+
 export const PRIMARY_TAGS: FeedTag[] = [
   { id: 'restless', label: 'restless', tone: 'rose', intensity: 2 },
   { id: 'quiet', label: 'quiet', tone: 'purple', intensity: 1 },

@@ -14,6 +14,8 @@ import PhaseVisualization from '../../src/components/home/PhaseVisualization';
 import CosmicSection from '../../src/components/home/CosmicSection';
 import RecapCard from '../../src/components/home/RecapCard';
 import EducationCard from '../../src/components/home/EducationCard';
+import PersonalMetricsCard from '../../src/components/home/PersonalMetricsCard';
+import CommunityCard from '../../src/components/home/CommunityCard';
 import InsightCard from '../../src/components/home/InsightCard';
 import CompletionBanner from '../../src/components/home/CompletionBanner';
 import QuickActionSheet, { type QuickAction } from '../../src/components/home/QuickActionSheet';
@@ -94,18 +96,24 @@ export default function Home() {
       ? 'More than one feeling can be present without becoming a verdict.'
       : reflectionFor([]);
   const forecastPrompt = match?.currentPrompt ?? 'What kind of connection would feel honest to enter?';
+  const selectedEntry = data?.entries?.find((entry) => entry.day === activeNight);
+  const isCurrentSelection = activeNight === currentNight;
+  const visiblePrompt = isCurrentSelection
+    ? forecastPrompt
+    : selectedEntry
+      ? `Night ${activeNight} is sealed in your private archive.`
+      : `Night ${activeNight} has no sealed entry.`;
   const status = match ? (sealedTonight ? 'SEALED' : phase.label) : 'PREPARING';
   const partnerPresent = data?.partnerStatus?.partnerHasWrittenToday ?? false;
   const streak = data?.streak ?? 0;
 
   return (
     <CosmicScreen scrollRef={scrollRef} refreshing={loading || shelf.loading} onRefresh={() => void refreshFeed()}>
-      <FeedHeader name={name} initial={initial} status={status} night={match ? currentNight : null} onNotifications={() => router.push('/notification-settings')} />
+      <FeedHeader name={name} initial={initial} onNotifications={() => router.push('/notification-settings')} />
       {view === 'stale' ? <StaleNotice error={error} onRetry={() => void reload()} busy={loading} /> : null}
 
       <View style={styles.dateSection}>
-        <Text style={styles.dateEyebrow}>{selectedDayLabel(activeNight, currentNight).toUpperCase()}</Text>
-        <Text style={styles.dateTitle}>{match ? `Night ${String(activeNight).padStart(2, '0')}` : 'Before night one'}</Text>
+        <Text style={styles.dateEyebrow}>CHOOSE A DAY</Text>
         <DateStrip
           selectedNight={activeNight}
           currentNight={currentNight}
@@ -117,7 +125,7 @@ export default function Home() {
             }
             setLockedNight(null);
             setSelectedNight(night);
-            scrollTo(night === currentNight ? forecastY.current : recapY.current);
+            scrollTo(forecastY.current);
           }}
         />
         {lockedNight ? <Text accessibilityLiveRegion="polite" style={styles.locked}>Night {lockedNight} opens when it arrives.</Text> : null}
@@ -125,25 +133,19 @@ export default function Home() {
 
       <CompletionBanner night={currentNight} visible={completionVisible} onFinished={() => setCompletionVisible(false)} />
 
+      <View style={styles.dayStatus}>
+        <View><Text style={styles.dayLabel}>{selectedDayLabel(activeNight, currentNight).toUpperCase()}</Text><Text style={styles.dayTitle}>{match ? `Night ${String(activeNight).padStart(2, '0')}` : 'Before night one'}</Text></View>
+        <View style={styles.phasePill}><Text style={styles.phaseText}>{isCurrentSelection ? status : selectedEntry ? 'SEALED' : 'PAST'}</Text></View>
+      </View>
+
       <View onLayout={(event) => { forecastY.current = event.nativeEvent.layout.y; }}>
-        <ForecastCard night={currentNight} prompt={forecastPrompt} status={status} onPress={() => handleAction('write')} />
+        <ForecastCard night={activeNight} prompt={visiblePrompt} status={isCurrentSelection ? status : selectedEntry ? 'SEALED' : 'ARCHIVE'} actionLabel={isCurrentSelection ? 'Open daily detail' : 'View day details'} onPress={() => isCurrentSelection ? handleAction('write') : scrollTo(recapY.current)} />
       </View>
 
-      <DailyFeedSection eyebrow="FOR YOUR EVENING" title="A few ways in">
+      <DailyFeedSection eyebrow="FOR YOUR EVENING" title="Two ways in">
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.cardRow}>
-          {RECOMMENDATIONS.map((item) => <RecommendationCard key={item.id} item={item} onPress={() => handleAction(item.action)} />)}
+          {RECOMMENDATIONS.slice(0, 2).map((item) => <RecommendationCard key={item.id} item={item} onPress={() => handleAction(item.action)} />)}
         </ScrollView>
-      </DailyFeedSection>
-
-      <View onLayout={(event) => { checkInY.current = event.nativeEvent.layout.y; }}>
-        <DailyFeedSection eyebrow="CHECK IN" title="What is present?" actionLabel="Clear" onAction={() => setSelectedTags([])}>
-          <TagGrid tags={PRIMARY_TAGS} selected={selectedTags} onToggle={toggleTag} onAddMore={() => setMoreOpen(true)} />
-          {selectedTags.length > 0 ? <Text accessibilityLiveRegion="polite" style={styles.selectedCopy}>{selectedTags.join(' · ')}</Text> : null}
-        </DailyFeedSection>
-      </View>
-
-      <DailyFeedSection eyebrow="REFLECTION" title="A small editorial note" actionLabel="Act" onAction={() => setActionsOpen(true)}>
-        <InsightCard text={insight} active={selectedTags.length > 0} />
       </DailyFeedSection>
 
       <DailyFeedSection eyebrow="CONNECTION" title="The social weather">
@@ -155,25 +157,41 @@ export default function Home() {
         />
       </DailyFeedSection>
 
-      <View onLayout={(event) => { journeyY.current = event.nativeEvent.layout.y; }}>
-        <DailyFeedSection eyebrow="YOUR PHASE" title="The shape of the 21 nights">
-          <PhaseVisualization night={match ? currentNight : 0} completed={completedNights.length} onPress={() => scrollTo(recapY.current)} />
+      <View onLayout={(event) => { checkInY.current = event.nativeEvent.layout.y; }}>
+        <DailyFeedSection eyebrow="YOU’RE FEELING" title="What is present?" actionLabel="Clear" onAction={() => setSelectedTags([])}>
+          <TagGrid tags={PRIMARY_TAGS} selected={selectedTags} onToggle={toggleTag} onAddMore={() => setMoreOpen(true)} />
+          {selectedTags.length > 0 ? <Text accessibilityLiveRegion="polite" style={styles.selectedCopy}>{selectedTags.join(' · ')}</Text> : null}
         </DailyFeedSection>
       </View>
 
-      <DailyFeedSection eyebrow="COSMIC" title="A wider view">
+      <View onLayout={(event) => { journeyY.current = event.nativeEvent.layout.y; }}>
+        <DailyFeedSection eyebrow="YOUR PHASE" title="The shape of the 21 nights">
+          <PhaseVisualization night={match ? currentNight : 0} completed={completedNights.length} onPress={() => router.push('/journey')} />
+        </DailyFeedSection>
+      </View>
+
+      <DailyFeedSection eyebrow="REFLECTION" title="A small editorial note" actionLabel="Save" onAction={() => setActionsOpen(true)}>
+        <InsightCard text={insight} active={selectedTags.length > 0} onPress={() => handleAction('reflection')} />
+      </DailyFeedSection>
+
+      <DailyFeedSection eyebrow="PERSONAL METRICS" title="Your ritual rhythm">
+        <PersonalMetricsCard sealed={completedNights.length} streak={streak} night={match ? currentNight : 0} />
+      </DailyFeedSection>
+
+      <DailyFeedSection eyebrow="FRIENDS" title="Your community">
+        <CommunityCard hasMatch={!!match} partnerPresent={partnerPresent} onPress={() => router.push(match ? '/rooms' : '/safety-privacy')} />
+      </DailyFeedSection>
+
+      <DailyFeedSection eyebrow="COSMIC & EDUCATION" title="A wider view">
         <CosmicSection onPress={() => setActionsOpen(true)} />
+        <EducationCard onPress={() => router.push('/safety-privacy')} />
       </DailyFeedSection>
 
       <View onLayout={(event) => { recapY.current = event.nativeEvent.layout.y; }}>
         <DailyFeedSection eyebrow="RECAP" title="What has accumulated">
-          <RecapCard completed={completedNights.length} streak={streak} onPress={() => scrollTo(journeyY.current)} />
+          <RecapCard completed={completedNights.length} streak={streak} onPress={() => router.push('/journey')} />
         </DailyFeedSection>
       </View>
-
-      <DailyFeedSection eyebrow="THE RITUAL" title="A boundary, not a score">
-        <EducationCard onPress={() => router.push('/safety-privacy')} />
-      </DailyFeedSection>
 
       {shelfKnown ? <ShelfStrip byKind={shelf.byKind} title="Your cultural shelf" /> : shelfView === 'failed' ? <LoadFailure error={shelf.error} onRetry={() => void shelf.reload()} busy={shelf.loading} /> : <LoadPlaceholder label="Loading your shelf" />}
 
@@ -185,8 +203,9 @@ export default function Home() {
   );
 }
 
-function FeedHeader({ name, initial, status, night, onNotifications }: { name: string | null; initial: string; status: string; night: number | null; onNotifications: () => void }) {
-  return <View style={styles.header}><View style={styles.identity}><View style={styles.avatar}><Text style={styles.avatarText}>{initial}</Text></View><View><Text style={styles.greeting}>Good evening{name ? `, ${name}` : ''}</Text><Text style={styles.headerTitle}>Your daily edition</Text></View></View><Pressable onPress={onNotifications} accessibilityRole="button" accessibilityLabel="Notification settings" style={({ pressed }) => [styles.statusPill, pressed && styles.pressed]}><Text style={styles.statusText}>{night ? `N${String(night).padStart(2, '0')} · ` : ''}{status}</Text></Pressable></View>;
+function FeedHeader({ name, initial, onNotifications }: { name: string | null; initial: string; onNotifications: () => void }) {
+  const currentDate = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
+  return <View style={styles.header}><View style={styles.identity}><View style={styles.avatar}><Text style={styles.avatarText}>{initial}</Text></View><View><Text style={styles.greeting}>{currentDate}</Text><Text style={styles.headerTitle}>Good evening{name ? `, ${name}` : ''}</Text></View></View><Pressable onPress={onNotifications} accessibilityRole="button" accessibilityLabel="Notifications and settings" style={({ pressed }) => [styles.settingsButton, pressed && styles.pressed]}><Text style={styles.settingsIcon}>◌</Text></Pressable></View>;
 }
 
 const styles = StyleSheet.create({
@@ -195,12 +214,16 @@ const styles = StyleSheet.create({
   avatar: { width: 44, height: 44, borderRadius: 15, backgroundColor: brand.rose, alignItems: 'center', justifyContent: 'center', marginRight: space.md },
   avatarText: { ...type.bodyStrong, color: brand.void, fontSize: 17 },
   greeting: { ...type.bodySmall, color: brand.inkMid, fontSize: 10.5 },
-  headerTitle: { ...type.bodyStrong, color: brand.ink, fontSize: 17 },
-  statusPill: { minHeight: 40, paddingHorizontal: space.md, borderRadius: radius.pill, borderWidth: 1, borderColor: 'rgba(236,200,133,0.32)', backgroundColor: 'rgba(236,200,133,0.07)', alignItems: 'center', justifyContent: 'center' },
-  statusText: { ...type.eyebrow, color: brand.gold, fontSize: 7.5, letterSpacing: 0.7 },
+  headerTitle: { ...type.bodyStrong, color: brand.ink, fontSize: 22, lineHeight: 28 },
+  settingsButton: { width: 44, height: 44, borderRadius: radius.pill, borderWidth: 1, borderColor: brand.line, alignItems: 'center', justifyContent: 'center' },
+  settingsIcon: { color: brand.gold, fontSize: 26, lineHeight: 28 },
   dateSection: { marginTop: space.xl },
   dateEyebrow: { ...type.eyebrow, color: brand.rose, fontSize: 8 },
-  dateTitle: { ...type.displayItalic, color: brand.ink, fontSize: 32, lineHeight: 38, marginTop: 2, marginBottom: space.lg },
+  dayStatus: { marginTop: space.xl, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  dayLabel: { ...type.eyebrow, color: brand.rose, fontSize: 8 },
+  dayTitle: { ...type.bodyStrong, color: brand.ink, fontSize: 22, lineHeight: 28, marginTop: 2 },
+  phasePill: { minHeight: 38, paddingHorizontal: space.md, borderRadius: radius.pill, borderWidth: 1, borderColor: 'rgba(236,200,133,0.32)', backgroundColor: 'rgba(236,200,133,0.07)', alignItems: 'center', justifyContent: 'center' },
+  phaseText: { ...type.eyebrow, color: brand.gold, fontSize: 7.5 },
   locked: { ...type.bodySmall, color: brand.gold, marginTop: space.sm },
   cardRow: { gap: space.md, paddingTop: space.lg, paddingRight: space.xl },
   selectedCopy: { ...type.bodySmall, color: brand.inkMid, marginTop: space.md },

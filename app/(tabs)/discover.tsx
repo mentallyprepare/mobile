@@ -1,81 +1,37 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import CosmicScreen from '../../src/components/app/CosmicScreen';
+import CommunityCard from '../../src/components/home/CommunityCard';
+import { LoadFailure, LoadPlaceholder, StaleNotice } from '../../src/components/app/LoadFailure';
+import { useMeShared } from '../../src/api/me-provider';
+import { describeLoad } from '../../src/api/load-state';
 import { brand, radius, space, type } from '../../src/design';
-import { useShelf } from '../../src/api/shelf-provider';
 
-/** Direct route only. It stays out of tab navigation until discovery is real. */
-export default function Discover() {
-  const { byKind } = useShelf();
+export default function Community() {
   const router = useRouter();
-  const count = Object.values(byKind).filter(Boolean).length;
+  const { data, loading, error, hasLoaded, reload } = useMeShared();
+  const view = describeLoad({ loading, error, hasLoaded });
 
+  if (view === 'first-load') return <CosmicScreen><LoadPlaceholder label="Opening community" /></CosmicScreen>;
+  if (view === 'failed') return <CosmicScreen><LoadFailure error={error} onRetry={() => void reload()} busy={loading} /></CosmicScreen>;
+
+  const hasMatch = !!data?.match;
+  const partnerPresent = data?.partnerStatus?.partnerHasWrittenToday ?? false;
   return (
-    <CosmicScreen>
-      <Text style={styles.screenLabel}>DISCOVER</Text>
-      <Text style={styles.title}>Not available in this beta</Text>
-      <Text style={styles.subtitle}>
-        Discovery will appear in navigation after its matching and safety systems are ready.
-      </Text>
-
-      <View style={styles.status}>
-        <Text style={styles.statusLabel}>YOUR SHELF</Text>
-        <Text style={styles.statusValue}>{count} of 5 completed</Text>
-      </View>
-
-      <Pressable
-        onPress={() => router.push('/create')}
-        accessibilityRole="button"
-        accessibilityLabel="Open your shelf"
-        style={({ pressed }) => [styles.action, pressed && styles.pressed]}
-      >
-        <Text style={styles.actionText}>Open shelf</Text>
-        <Text style={styles.arrow}>→</Text>
-      </Pressable>
+    <CosmicScreen refreshing={loading} onRefresh={() => void reload()}>
+      <Text style={styles.kicker}>COMMUNITY</Text>
+      <Text style={styles.title}>Connection without a public feed.</Text>
+      <Text style={styles.body}>This space shows consented presence and shared-room actions. It never exposes private notes, popularity counts, or inferred compatibility.</Text>
+      {view === 'stale' ? <StaleNotice error={error} onRetry={() => void reload()} busy={loading} /> : null}
+      <CommunityCard hasMatch={hasMatch} partnerPresent={partnerPresent} onPress={() => router.push(hasMatch ? '/rooms' : '/scan')} />
+      <View style={styles.boundary}><Text style={styles.boundaryTitle}>The boundary</Text><Text style={styles.boundaryBody}>No stranger browsing, public profiles, or activity leaderboard exists in this beta.</Text></View>
+      <Pressable onPress={() => router.push('/safety-privacy')} accessibilityRole="button" accessibilityLabel="Open community safety and privacy" style={({ pressed }) => [styles.action, pressed && styles.pressed]}><Text style={styles.actionText}>Safety & privacy</Text></Pressable>
     </CosmicScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  screenLabel: {
-    ...type.eyebrow,
-    color: brand.inkLow,
-    fontSize: 9,
-    letterSpacing: 1.4,
-  },
-  title: {
-    ...type.display,
-    color: brand.ink,
-    fontSize: 36,
-    lineHeight: 41,
-    marginTop: space.sm,
-  },
-  subtitle: { ...type.body, color: brand.inkMid, marginTop: space.sm, maxWidth: 340 },
-  status: {
-    marginTop: space.xl,
-    paddingVertical: space.lg,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: brand.line,
-  },
-  statusLabel: {
-    ...type.eyebrow,
-    color: brand.inkLow,
-    fontSize: 8.5,
-    letterSpacing: 1.1,
-  },
-  statusValue: { ...type.bodyStrong, color: brand.ink, marginTop: 6 },
-  action: {
-    minHeight: 50,
-    marginTop: space.lg,
-    paddingHorizontal: space.lg,
-    borderRadius: radius.md,
-    backgroundColor: brand.rose,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  actionText: { ...type.bodyStrong, color: brand.void },
-  arrow: { color: brand.void, fontSize: 19 },
-  pressed: { opacity: 0.75 },
+  kicker: { ...type.eyebrow, color: brand.rose, fontSize: 9 }, title: { ...type.displayItalic, color: brand.ink, fontSize: 36, lineHeight: 42, marginTop: space.sm }, body: { ...type.body, color: brand.inkMid, marginTop: space.sm, maxWidth: 390 },
+  boundary: { marginTop: space.xl, padding: space.lg, borderRadius: radius.lg, borderWidth: 1, borderColor: brand.line, backgroundColor: brand.card }, boundaryTitle: { ...type.bodyStrong, color: brand.ink }, boundaryBody: { ...type.bodySmall, color: brand.inkMid, marginTop: space.xs },
+  action: { minHeight: 50, marginTop: space.lg, borderRadius: radius.pill, borderWidth: 1, borderColor: brand.line, alignItems: 'center', justifyContent: 'center' }, actionText: { ...type.bodyStrong, color: brand.rose }, pressed: { opacity: 0.72 },
 });

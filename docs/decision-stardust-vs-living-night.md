@@ -8,6 +8,21 @@
 > brand fork, ambient decoration, extra archetype system, matching changes,
 > compatibility numbers, and fabricated personalization remain rejected.
 
+> **Home contract amendment — 13 August 2026, Anushka.** The approved Home is
+> the provider-backed Stardust-style dashboard itself, not a separate preview:
+> header/date strip/status, forecast, two recommendations, social card, feeling
+> tags and Add More sheet, phase, reflection, privacy-safe ritual metrics,
+> community, cosmic/education, recap, then the cultural shelf. Persistent
+> navigation is Home, Journey, central Add, Community, and You. The Add action
+> owns tonight's private writing room; Journey owns progress and calendar.
+
+> **Visual hierarchy amendment — 13 August 2026, Anushka.** Home uses compact
+> editorial typography and strict display-copy budgets. Generated or variable
+> text is supporting copy, never oversized hero prose. The forecast hero has
+> one slow elliptical rose orbit with a breathing glow and static constellation;
+> all continuous motion stops when reduced motion is enabled. Other cards stay
+> visually quiet so the orbit remains the single ambient motion anchor.
+
 Decided 18 July 2026. Two decisions, recorded together because they came from the same review.
 
 ## 1. Living Night stands. Stardust is not the direction.
