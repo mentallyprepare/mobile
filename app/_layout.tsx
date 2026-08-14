@@ -14,6 +14,7 @@ import { SessionProvider, useSession } from '../src/session';
 import { MeProvider } from '../src/api/me-provider';
 import { ShelfProvider } from '../src/api/shelf-provider';
 import NotificationRouting from '../src/notifications/NotificationRouting';
+import WebUpdatePrompt from '../src/components/app/WebUpdatePrompt';
 import { sky } from '../src/theme';
 import { brand, radius, space, type } from '../src/design';
 import { FONT_GATE_TIMEOUT_MS, fontFailureNote, fontGate } from '../src/fonts/gate';
@@ -135,6 +136,7 @@ export default function RootLayout() {
           <ShelfProvider>
             <NotificationRouting />
             <RootNavigator />
+            <WebUpdatePrompt />
           </ShelfProvider>
         </MeProvider>
       </SessionProvider>
