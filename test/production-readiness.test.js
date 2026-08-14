@@ -126,13 +126,18 @@ assert.match(
 
 assert.match(
   shelfCover,
-  /topline:[\s\S]*?backgroundColor: 'rgba\(8,5,15,0\.78\)'/,
-  'shelf cover metadata needs a stable dark scrim',
+  /bottomFade:[\s\S]*?height: '68%'/,
+  'shelf covers need a stable lower fade behind their titles',
 );
 assert.match(
   shelfCover,
-  /copy:[\s\S]*?backgroundColor: 'rgba\(8,5,15,0\.82\)'/,
-  'shelf cover titles need a stable dark scrim',
+  /colors=\{\['rgba\(8,5,15,0\)', 'rgba\(8,5,15,0\.76\)'\]\}/,
+  'shelf cover titles need a dark contrast fade',
+);
+assert.doesNotMatch(
+  shelfCover,
+  /topline:[\s\S]*?backgroundColor: 'rgba\(8,5,15,0\.78\)'/,
+  'shelf metadata should not sit inside a heavy black capsule',
 );
 assert.match(
   notificationSettings,
