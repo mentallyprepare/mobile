@@ -14,6 +14,7 @@ import { useShelf } from '../../src/api/shelf-provider';
 import { canRenderContent, describeLoad } from '../../src/api/load-state';
 import { SHELF_KINDS } from '../../src/api/shelf';
 import { useSession } from '../../src/session';
+import { PREVIEW_TOOLS_ENABLED } from '../../src/preview-tools';
 
 export default function Profile() {
   const {
@@ -142,6 +143,15 @@ export default function Profile() {
           detail="Choose which reminders may reach you"
           onPress={() => router.push('/notification-settings' as Href)}
         />
+
+        {PREVIEW_TOOLS_ENABLED ? (
+          <ActionRow
+            eyebrow="INTERNAL BUILD ONLY"
+            title="Interaction preview"
+            detail="A fully populated night, using sample data, for judging layout"
+            onPress={() => router.push('/daily-preview' as Href)}
+          />
+        ) : null}
 
         <Pressable
           onPress={signOut}

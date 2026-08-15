@@ -21,6 +21,7 @@ import TagGrid from '../src/components/home/TagGrid';
 import { FEELINGS, reflectionFor, type Feeling } from '../src/daily-edition';
 import { MORE_TAGS, PRIMARY_TAGS, RECOMMENDATIONS } from '../src/stardust-feed';
 import { brand, layout, radius, space, type } from '../src/design';
+import { PREVIEW_TOOLS_ENABLED } from '../src/preview-tools';
 
 export default function DailyPreview() {
   const router = useRouter();
@@ -38,7 +39,8 @@ export default function DailyPreview() {
   const [sealed, setSealed] = useState(false);
   const [completionVisible, setCompletionVisible] = useState(false);
 
-  if (!__DEV__) return <Redirect href="/sign-in" />;
+  // Reachable in dev and in internal preview builds, never in production.
+  if (!PREVIEW_TOOLS_ENABLED) return <Redirect href="/sign-in" />;
 
   const currentNight = sealed ? 5 : 4;
   const completed = sealed ? [1, 2, 3, 4] : [1, 2, 3];

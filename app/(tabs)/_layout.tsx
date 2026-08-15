@@ -2,7 +2,7 @@ import { Tabs, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { CommunityIcon, HomeIcon, JourneyIcon, YouIcon } from '../../src/components/Icons';
+import { CommunityIcon, HomeIcon, JourneyIcon, SparkIcon, YouIcon } from '../../src/components/Icons';
 import { TAB_BAR_CONTENT_HEIGHT } from '../../src/components/app/tab-bar';
 import { brand, type } from '../../src/design';
 import StardustBottomNav from '../../src/components/home/StardustBottomNav';
@@ -57,7 +57,7 @@ function Shell() {
       <Tabs.Screen name="rooms" options={{ href: null }} />
       <Tabs.Screen
         name="create"
-        options={{ href: null }}
+        options={{ title: 'Shelf', tabBarIcon: ({ color }) => <SparkIcon color={color} /> }}
       />
       <Tabs.Screen
         name="discover"
