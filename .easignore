@@ -1,0 +1,39 @@
+# Dependencies and generated outputs
+node_modules/
+.expo/
+dist/
+web-build/
+build/
+android/
+ios/
+test/.build/
+*.tsbuildinfo
+
+# Credentials and local configuration
+.env
+.env.*
+!.env.example
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+google-services.json
+GoogleService-Info.plist
+credentials.json
+
+# Local tooling and workspace-only files
+.claude/
+.idea/
+.vscode/
+_ren_b
+_wt_probe
+*.log
+*.db
+*.db-shm
+*.db-wal
+*.apk
+*.aab
+*.ipa
+.DS_Store
+Thumbs.db
