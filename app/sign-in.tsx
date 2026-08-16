@@ -9,7 +9,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, type Href } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AuthPrimaryButton from '../src/components/auth/AuthPrimaryButton';
 import AppBackdrop from '../src/components/app/AppBackdrop';
@@ -168,7 +168,7 @@ export default function SignIn() {
               </Text>
 
               <Pressable
-                onPress={() => router.push('/support')}
+                onPress={() => router.push('/support' as Href)}
                 accessibilityRole="button"
                 accessibilityLabel="Find support"
                 accessibilityHint="Crisis helplines by region"

@@ -94,6 +94,19 @@ export default function ReportScreen() {
         the safety team needs to understand the problem.
       </Text>
 
+      <Pressable
+        onPress={() => router.push('/support' as Href)}
+        accessibilityRole="link"
+        accessibilityLabel="Find crisis support"
+        accessibilityHint="Helplines by region — this screen is not an emergency service"
+        hitSlop={12}
+        style={({ pressed }) => [styles.urgentLink, pressed && styles.pressed]}
+      >
+        <Text style={styles.urgentLabel}>
+          if you need urgent help, find a crisis helpline →
+        </Text>
+      </Pressable>
+
       <Text style={styles.section}>WHAT BEST FITS?</Text>
       <View style={styles.categories}>
         {REPORT_CATEGORIES.map((item) => {
@@ -161,6 +174,12 @@ const styles = StyleSheet.create({
     color: daylight.ink,
   },
   intro: { marginTop: space.md, ...type.body, lineHeight: 23, color: daylight.inkMid },
+  urgentLink: { marginTop: space.md, minHeight: 44, justifyContent: 'center' },
+  urgentLabel: {
+    ...type.bodySmall,
+    color: daylight.accent,
+    textDecorationLine: 'underline',
+  },
   section: {
     marginTop: space.xl,
     marginBottom: space.sm,

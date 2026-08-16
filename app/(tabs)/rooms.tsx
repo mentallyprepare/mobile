@@ -7,7 +7,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, type Href } from 'expo-router';
 import CosmicScreen from '../../src/components/app/CosmicScreen';
 import LivingNightScene from '../../src/components/ritual/LivingNightScene';
 import {
@@ -234,7 +234,7 @@ export default function Night() {
               <Text style={styles.counter}>{draft.length}/5000</Text>
             </View>
             <Pressable
-              onPress={() => router.push('/support')}
+              onPress={() => router.push('/support' as Href)}
               accessibilityRole="button"
               accessibilityLabel="Find support"
               accessibilityHint="Crisis helplines by region"
