@@ -114,6 +114,14 @@ export default function SafetyPrivacyScreen() {
         in a connection to protect a streak or another person&apos;s feelings.
       </Text>
 
+      <View style={styles.group}>
+        <ActionRow
+          title="find support"
+          body="Crisis helplines by region. Mentally is not an emergency service."
+          onPress={() => router.push('/support' as Href)}
+        />
+      </View>
+
       <Text style={styles.section}>CONNECTION</Text>
       <View style={styles.group}>
         <ActionRow

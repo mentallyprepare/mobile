@@ -166,6 +166,17 @@ export default function SignIn() {
               <Text style={styles.privacyNote}>
                 18+ · private by default · no public feed
               </Text>
+
+              <Pressable
+                onPress={() => router.push('/support')}
+                accessibilityRole="button"
+                accessibilityLabel="Find support"
+                accessibilityHint="Crisis helplines by region"
+                hitSlop={12}
+                style={styles.supportLink}
+              >
+                <Text style={styles.supportLabel}>if tonight is heavy, find support</Text>
+              </Pressable>
             </View>
           </ScrollView>
         </KeyboardAvoidingView>
@@ -322,4 +333,11 @@ const styles = StyleSheet.create({
   previewEyebrow: { ...type.eyebrow, color: brand.gold, fontSize: 8, letterSpacing: 1.1 },
   previewLabel: { ...type.bodyStrong, color: brand.ink, fontSize: 14, marginTop: 3 },
   pressed: { opacity: 0.82 },
+  supportLink: {
+    alignSelf: 'center',
+    minHeight: 44,
+    justifyContent: 'center',
+    paddingHorizontal: space.md,
+  },
+  supportLabel: { ...type.bodySmall, color: brand.inkMid, textDecorationLine: 'underline' },
 });

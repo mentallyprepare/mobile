@@ -65,6 +65,12 @@ export default function ReportScreen() {
             onPress={() => router.replace('/safety-privacy' as Href)}
             block
           />
+          <DaylightButton
+            label="find support"
+            variant="ghost"
+            onPress={() => router.push('/support' as Href)}
+            block
+          />
         </View>
       </DaylightScreen>
     );

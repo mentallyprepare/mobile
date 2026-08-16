@@ -233,6 +233,17 @@ export default function Night() {
               />
               <Text style={styles.counter}>{draft.length}/5000</Text>
             </View>
+            <Pressable
+              onPress={() => router.push('/support')}
+              accessibilityRole="button"
+              accessibilityLabel="Find support"
+              accessibilityHint="Crisis helplines by region"
+              hitSlop={10}
+              style={styles.supportLink}
+            >
+              <Text style={styles.supportLabel}>if tonight is heavy, find support</Text>
+            </Pressable>
+
             <View style={styles.privacyRow}>
               <View style={styles.privacyDot} />
               <Text style={styles.privacy}>
@@ -383,6 +394,8 @@ const styles = StyleSheet.create({
     backgroundColor: brand.gold,
   },
   privacy: { ...type.bodySmall, flex: 1, color: brand.inkLow },
+  supportLink: { alignSelf: 'flex-start', minHeight: 44, justifyContent: 'center' },
+  supportLabel: { ...type.bodySmall, color: brand.inkMid, textDecorationLine: 'underline' },
   error: { ...type.bodySmall, color: brand.rose, marginTop: space.md },
   primary: {
     minHeight: 58,
