@@ -26,7 +26,7 @@ const COPY_BANK: Record<NotificationMoment, readonly NotificationCopy[]> = {
     { title: 'your room kept its place.', body: 'return when you are ready.', route: '/rooms' },
   ],
   entry_unlocked: [
-    { title: 'midnight moved the story.', body: 'something new is ready in your room.', route: '/rooms' },
+    { title: 'the day turned.', body: 'something new is ready in your room.', route: '/rooms' },
     { title: 'new lore unlocked.', body: 'open it when you have a quiet minute.', route: '/rooms' },
   ],
   milestone: [

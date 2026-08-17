@@ -3,7 +3,9 @@
 import { brand } from './design';
 
 export const sky = {
-  // Time-aware background. `early` before 23:30 IST, `late` after.
+  // Historical: this pair was intended for a time-of-day palette swap that
+  // was never implemented — every consumer today uses `late`. `early` is
+  // kept exported to avoid churn on the deprecated theme shim.
   early: brand.sky,
   late: brand.void,
   // The mark's own sky gradient.

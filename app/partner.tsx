@@ -45,6 +45,21 @@ export default function PartnerReaderScreen() {
     return [...(data?.partnerEntries ?? [])].sort((a, b) => b.day - a.day);
   }, [data?.partnerEntries]);
 
+  // The server sends the exact next-unlock as an ISO timestamp — rendering
+  // it in the device's own timezone is more honest than saying "midnight"
+  // and letting a US user guess which midnight it means.
+  const nextUnlockCopy = useMemo(() => {
+    const iso = data?.partnerStatus?.nextUnsealAt;
+    if (!iso) return null;
+    const d = new Date(iso);
+    if (Number.isNaN(d.getTime())) return null;
+    return d.toLocaleString(undefined, {
+      weekday: 'short',
+      hour: 'numeric',
+      minute: '2-digit',
+    });
+  }, [data?.partnerStatus?.nextUnsealAt]);
+
   return (
     <View style={styles.root}>
       <Stack.Screen options={{ title: 'What they wrote' }} />
@@ -67,7 +82,9 @@ export default function PartnerReaderScreen() {
               What they wrote
             </Text>
             <Text style={styles.subtitle}>
-              Each night unlocks at midnight, once you both sealed.
+              {nextUnlockCopy
+                ? `Each night unlocks at the day-turn (~${nextUnlockCopy} your time), once you both sealed.`
+                : 'Each night unlocks at the day-turn, once you both sealed.'}
             </Text>
           </View>
 
@@ -81,7 +98,11 @@ export default function PartnerReaderScreen() {
             ) : entries.length === 0 ? (
               <EmptyPanel
                 title="Nothing unlocked yet."
-                body="Once you both seal on a night, the partner side of that night appears here on the next midnight."
+                body={
+                  nextUnlockCopy
+                    ? `Once you both seal on a night, the partner side appears here at the next day-turn — around ${nextUnlockCopy} your time.`
+                    : 'Once you both seal on a night, the partner side appears here at the next day-turn.'
+                }
               />
             ) : (
               entries.map((entry) => (
