@@ -52,6 +52,7 @@ const SOURCES = [
   'auth/password-reset.ts',
   'auth/sign-up.ts',
   'safety/contracts.ts',
+  'safety/rematch.ts',
 ];
 
 let built = false;

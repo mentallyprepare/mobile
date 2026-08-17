@@ -72,6 +72,8 @@ function goodMe() {
       canSwitch: true,
       switchesRemaining: 2,
       status: 'active',
+      daysSinceActive: 0,
+      nextSwitchAvailableAt: null,
     },
     streak: 3,
     reveal: null,

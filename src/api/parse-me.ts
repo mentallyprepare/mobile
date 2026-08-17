@@ -181,6 +181,8 @@ function parsePartnerStatus(v: unknown, p: string): PartnerStatus {
     canSwitch: field(o, p, 'canSwitch', asBoolean),
     switchesRemaining: field(o, p, 'switchesRemaining', asNumber),
     status: field(o, p, 'status', asString),
+    daysSinceActive: field(o, p, 'daysSinceActive', nullable(asNumber)),
+    nextSwitchAvailableAt: field(o, p, 'nextSwitchAvailableAt', nullable(asString)),
   };
 }
 

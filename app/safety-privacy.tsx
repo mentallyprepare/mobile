@@ -11,6 +11,7 @@ import {
 } from '../src/api/safety';
 import { useMeShared } from '../src/api/me-provider';
 import { prepareAndShareDataExport } from '../src/privacy/export';
+import { describeRematchAvailability } from '../src/safety/rematch';
 import { daylight, radius, space, type } from '../src/design';
 
 type Confirmation = 'block' | 'rematch' | 'switch' | null;
@@ -25,6 +26,7 @@ export default function SafetyPrivacyScreen() {
 
   const hasMatch = !!data?.match;
   const canSwitch = !!data?.partnerStatus?.canSwitch;
+  const rematch = describeRematchAvailability(data?.partnerStatus);
 
   async function performConfirmedAction() {
     if (!confirmation) return;
@@ -137,11 +139,7 @@ export default function SafetyPrivacyScreen() {
         />
         <ActionRow
           title="find someone new"
-          body={
-            canSwitch
-              ? 'Available because this connection has been inactive.'
-              : 'Available after the current connection has been inactive long enough.'
-          }
+          body={rematch.long}
           disabled={!hasMatch || !canSwitch}
           onPress={() => setConfirmation('switch')}
         />

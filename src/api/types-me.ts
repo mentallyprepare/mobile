@@ -84,7 +84,16 @@ export type PartnerStatus = {
   nextUnsealAt: string | null;
   canSwitch: boolean;
   switchesRemaining: number;
+  /** 'waiting' | 'active' | 'recent' | 'quiet' | 'dormant' (server-owned). */
   status: string;
+  /** Whole days since the partner was last active. Null when no partner. */
+  daysSinceActive: number | null;
+  /**
+   * ISO timestamp when a switch will become allowed, based on the 5-day
+   * quiet window. Null when a switch is already allowed, or when there is
+   * no partner. Used by the safety screen to render an honest countdown.
+   */
+  nextSwitchAvailableAt: string | null;
 };
 
 /**
