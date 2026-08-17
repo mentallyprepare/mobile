@@ -52,6 +52,12 @@ export default function SignUpScreen() {
   const [error, setError] = useState<string | null>(null);
   const [accountExists, setAccountExists] = useState(false);
   const [busy, setBusy] = useState(false);
+  // The pre-account explainer that spells out what "anonymous" means in
+  // this app before any name/email/college is asked for. Session-scoped
+  // by design: a user who quits mid-signup sees it again next time — it
+  // is a gate, not a preference, and never getting to see it is worse
+  // than seeing it twice.
+  const [explainerAccepted, setExplainerAccepted] = useState(false);
 
   function update<K extends keyof SignUpDraft>(key: K, value: SignUpDraft[K]) {
     setDraft((current) => ({ ...current, [key]: value }));
@@ -98,6 +104,15 @@ export default function SignUpScreen() {
     }
   }
 
+  if (!explainerAccepted) {
+    return (
+      <AnonymousExplainer
+        onContinue={() => setExplainerAccepted(true)}
+        onCancel={() => router.back()}
+      />
+    );
+  }
+
   return (
     <View style={styles.root}>
       <AppBackdrop />
@@ -113,7 +128,7 @@ export default function SignUpScreen() {
           >
             <View style={styles.column}>
               <Pressable
-                onPress={() => (step === 1 ? router.back() : setStep((value) => value - 1))}
+                onPress={() => (step === 1 ? setExplainerAccepted(false) : setStep((value) => value - 1))}
                 accessibilityRole="button"
                 accessibilityLabel={step === 1 ? 'Back to sign in' : 'Previous step'}
                 style={styles.back}
@@ -565,4 +580,221 @@ const styles = StyleSheet.create({
   },
   signIn: { alignSelf: 'center', marginTop: space.xl, paddingVertical: space.sm },
   signInLabel: { ...type.bodySmall, color: brand.ink },
+});
+
+// -------------------------------------------------------------------------
+// Anonymous explainer — the gate before name/email/college is collected.
+// -------------------------------------------------------------------------
+
+/**
+ * Shown once before the sign-up flow starts collecting identifying data.
+ * Names the four concrete things "anonymous" means in this app, in the
+ * exact terms the landing page uses. Nothing here is legal copy — it is
+ * the honest promise the product actually keeps at the server level.
+ *
+ * "Continue" reveals the existing three-step flow. "Not now" returns to
+ * whichever screen sent the user here (sign-in, most commonly).
+ */
+function AnonymousExplainer({
+  onContinue,
+  onCancel,
+}: {
+  onContinue: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <View style={explainerStyles.root}>
+      <AppBackdrop />
+      <SafeAreaView style={explainerStyles.safe} edges={['top', 'bottom']}>
+        <ScrollView
+          contentContainerStyle={explainerStyles.scroll}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={explainerStyles.column}>
+            <Pressable
+              onPress={onCancel}
+              accessibilityRole="button"
+              accessibilityLabel="Back"
+              style={explainerStyles.back}
+            >
+              <Text style={explainerStyles.backLabel}>← back</Text>
+            </Pressable>
+
+            <View style={explainerStyles.topline}>
+              <Text style={explainerStyles.wordmark}>MENTALLY PREPARE</Text>
+              <OrbitArtifact size={62} />
+            </View>
+
+            <Text style={explainerStyles.kicker} accessibilityRole="header">
+              WHAT ANONYMOUS MEANS
+            </Text>
+            <Text style={explainerStyles.title}>a small, honest promise.</Text>
+            <Text style={explainerStyles.intro}>
+              Before we ask for your name and email — here is what this app does
+              and does not do with them.
+            </Text>
+
+            <View style={explainerStyles.promises}>
+              <Promise
+                index="01"
+                title="Your name and email are never shown to another user."
+                body="They live on your account for sign-in, password reset, and data export. No profile page displays them."
+              />
+              <Promise
+                index="02"
+                title="Your partner never sees who you are."
+                body="For 21 nights, you both write anonymously. On Day 21 you both choose separately what to reveal — anywhere from staying anonymous to sharing contact details. If either of you picks anonymous, neither identity crosses."
+              />
+              <Promise
+                index="03"
+                title="College and year are used only to match you."
+                body="They are not displayed on any profile. We avoid pairing you with someone from the same school unless you consent later."
+              />
+              <Promise
+                index="04"
+                title="You can delete everything at any time."
+                body="Sign in, tap Safety & Privacy, tap Delete. Your account and every entry is removed from our servers."
+              />
+            </View>
+
+            <Text style={explainerStyles.footnote}>
+              This app is for adults 18+. It is not therapy, medical care, or a
+              crisis line — if you feel unsafe tonight, the Support screen has
+              helplines by region.
+            </Text>
+
+            <View style={explainerStyles.actions}>
+              <Pressable
+                onPress={onContinue}
+                accessibilityRole="button"
+                accessibilityLabel="I understand — continue"
+                style={({ pressed }) => [
+                  explainerStyles.continueBtn,
+                  pressed && explainerStyles.pressed,
+                ]}
+              >
+                <Text style={explainerStyles.continueLabel}>
+                  I understand — continue
+                </Text>
+              </Pressable>
+              <Pressable
+                onPress={onCancel}
+                accessibilityRole="button"
+                accessibilityLabel="Not now"
+                style={explainerStyles.cancel}
+              >
+                <Text style={explainerStyles.cancelLabel}>not now</Text>
+              </Pressable>
+            </View>
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </View>
+  );
+}
+
+function Promise({
+  index,
+  title,
+  body,
+}: {
+  index: string;
+  title: string;
+  body: string;
+}) {
+  return (
+    <View style={explainerStyles.promise}>
+      <View style={explainerStyles.promiseIndex}>
+        <Text style={explainerStyles.promiseIndexText}>{index}</Text>
+      </View>
+      <View style={explainerStyles.promiseCopy}>
+        <Text style={explainerStyles.promiseTitle}>{title}</Text>
+        <Text style={explainerStyles.promiseBody}>{body}</Text>
+      </View>
+    </View>
+  );
+}
+
+const explainerStyles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: brand.void },
+  safe: { flex: 1 },
+  scroll: { paddingHorizontal: space.lg, paddingBottom: space.huge },
+  column: { maxWidth: layout.maxWidth, alignSelf: 'center', width: '100%' },
+  back: { alignSelf: 'flex-start', paddingVertical: space.md, minHeight: 44 },
+  backLabel: { ...type.body, color: brand.inkMid },
+  topline: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: space.md,
+    marginBottom: space.xl,
+  },
+  wordmark: {
+    ...type.eyebrow,
+    color: brand.ink,
+    fontSize: 12,
+    letterSpacing: 2,
+  },
+  kicker: { ...type.eyebrow, color: brand.rose, letterSpacing: 1.6, fontSize: 11 },
+  title: {
+    ...type.displayItalic,
+    color: brand.ink,
+    fontSize: 30,
+    lineHeight: 36,
+    marginTop: space.sm,
+  },
+  intro: {
+    ...type.body,
+    color: brand.inkMid,
+    marginTop: space.md,
+    lineHeight: 22,
+  },
+  promises: { marginTop: space.xl, gap: space.lg },
+  promise: {
+    flexDirection: 'row',
+    gap: space.md,
+    padding: space.md,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: brand.line,
+    backgroundColor: brand.card,
+  },
+  promiseIndex: {
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    backgroundColor: brand.surface,
+    borderWidth: 1,
+    borderColor: brand.rose,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  promiseIndexText: { ...type.bodyStrong, color: brand.rose, fontSize: 12 },
+  promiseCopy: { flex: 1 },
+  promiseTitle: { ...type.bodyStrong, color: brand.ink, fontSize: 14, lineHeight: 20 },
+  promiseBody: {
+    ...type.bodySmall,
+    color: brand.inkMid,
+    marginTop: space.xs,
+    lineHeight: 19,
+  },
+  footnote: {
+    ...type.bodySmall,
+    color: brand.inkFaint,
+    marginTop: space.xl,
+    lineHeight: 18,
+  },
+  actions: { marginTop: space.xl, gap: space.md },
+  continueBtn: {
+    minHeight: 52,
+    paddingHorizontal: space.lg,
+    borderRadius: radius.pill,
+    backgroundColor: brand.rose,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  continueLabel: { ...type.bodyStrong, color: brand.void, fontSize: 15 },
+  cancel: { alignSelf: 'center', paddingVertical: space.md, minHeight: 44 },
+  cancelLabel: { ...type.bodySmall, color: brand.inkMid, textDecorationLine: 'underline' },
+  pressed: { opacity: 0.78 },
 });
