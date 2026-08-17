@@ -23,6 +23,31 @@ import { drafts } from '../../src/drafts';
 import { failureDetail } from '../../src/api/failures';
 import { ApiError } from '../../src/api';
 
+/**
+ * Milestone notes for the sealed state. Night 21 is deliberately omitted —
+ * the Day-21 reveal CTA at the top of the sheet is the moment there. These
+ * two are quiet acknowledgements of showing up, not celebrations.
+ */
+function milestoneFor(
+  night: number,
+): { kicker: string; title: string; body: string } | null {
+  if (night === 7) {
+    return {
+      kicker: 'NIGHT 7',
+      title: 'A week in.',
+      body: 'You kept showing up. That was the whole ask.',
+    };
+  }
+  if (night === 14) {
+    return {
+      kicker: 'NIGHT 14',
+      title: 'Past the halfway point.',
+      body: 'Two-thirds of the ritual is behind you. Seven nights to go.',
+    };
+  }
+  return null;
+}
+
 export default function Night() {
   const router = useRouter();
   const { data, loading, error: loadError, hasLoaded, reload } = useMeShared();
@@ -246,6 +271,19 @@ export default function Night() {
             <Text style={styles.sheetBody}>
               Nothing more is required tonight. This note stays private to your account.
             </Text>
+            {milestoneFor(night) ? (
+              <View style={styles.milestone} accessibilityLiveRegion="polite">
+                <Text style={styles.milestoneKicker}>
+                  {milestoneFor(night)!.kicker}
+                </Text>
+                <Text style={styles.milestoneTitle}>
+                  {milestoneFor(night)!.title}
+                </Text>
+                <Text style={styles.milestoneBody}>
+                  {milestoneFor(night)!.body}
+                </Text>
+              </View>
+            ) : null}
           </View>
         ) : (
           <>
@@ -482,6 +520,29 @@ const styles = StyleSheet.create({
   },
   moodChipOn: { borderColor: brand.rose, backgroundColor: brand.surface },
   moodEmoji: { fontSize: 18 },
+  milestone: {
+    marginTop: space.xl,
+    paddingTop: space.lg,
+    borderTopWidth: 1,
+    borderTopColor: brand.line,
+    alignItems: 'center',
+  },
+  milestoneKicker: { ...type.eyebrow, color: brand.gold, letterSpacing: 1.8, fontSize: 10 },
+  milestoneTitle: {
+    ...type.displayItalic,
+    color: brand.ink,
+    fontSize: 22,
+    lineHeight: 28,
+    marginTop: space.sm,
+    textAlign: 'center',
+  },
+  milestoneBody: {
+    ...type.bodySmall,
+    color: brand.inkMid,
+    marginTop: space.sm,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
   supportLabel: { ...type.bodySmall, color: brand.inkMid, textDecorationLine: 'underline' },
   error: { ...type.bodySmall, color: brand.rose, marginTop: space.md },
   primary: {
