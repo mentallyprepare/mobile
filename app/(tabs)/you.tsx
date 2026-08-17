@@ -131,6 +131,15 @@ export default function Profile() {
         ) : null}
 
         <SectionHeader title="Control your account" />
+        {data?.user && !data.user.emailVerified ? (
+          <ActionRow
+            eyebrow="AWAITING CONFIRMATION"
+            title="Verify your email"
+            detail="Helps with password resets and recovery. One tap resends the link."
+            onPress={() => router.push('/verify-email' as Href)}
+            highlighted
+          />
+        ) : null}
         <ActionRow
           eyebrow="SAFETY"
           title="Safety & privacy"
