@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import CosmicScreen from '../../src/components/app/CosmicScreen';
+import Constellation from '../../src/components/journey/Constellation';
 import DateStrip from '../../src/components/home/DateStrip';
 import PhaseVisualization from '../../src/components/home/PhaseVisualization';
 import RecapCard from '../../src/components/home/RecapCard';
@@ -32,6 +33,15 @@ export default function Journey() {
         <DateStrip selectedNight={selectedNight} currentNight={currentNight} completedNights={completed} onSelect={(night, locked) => { if (locked) return setNotice(`Night ${night} opens when it arrives.`); setNotice(null); setSelectedNight(night); }} />
       </View>
       {notice ? <Text style={styles.notice} accessibilityLiveRegion="polite">{notice}</Text> : null}
+      <Constellation
+        entries={data?.entries ?? []}
+        partnerEntries={data?.partnerEntries ?? []}
+        userId={data?.user?.id ?? 0}
+        onSelectNight={(night) => {
+          setSelectedNight(night);
+          setNotice(null);
+        }}
+      />
       <PhaseVisualization night={data?.match ? currentNight : 0} completed={completed.length} onPress={() => router.push('/rooms')} />
       <RecapCard completed={completed.length} streak={data?.streak ?? 0} onPress={() => router.push('/rooms')} />
     </CosmicScreen>
