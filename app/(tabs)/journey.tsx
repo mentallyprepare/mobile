@@ -37,6 +37,7 @@ export default function Journey() {
         entries={data?.entries ?? []}
         partnerEntries={data?.partnerEntries ?? []}
         userId={data?.user?.id ?? 0}
+        currentNight={data?.match?.day ?? null}
         onSelectNight={(night) => {
           setSelectedNight(night);
           setNotice(null);

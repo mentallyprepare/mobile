@@ -22,15 +22,25 @@ export type ConstellationProps = {
   entries: SkyEntry[];
   partnerEntries: SkyEntry[];
   userId: number;
+  /** The night the ritual is currently on, if a match is active. */
+  currentNight?: number | null;
   onSelectNight?: (night: number) => void;
 };
 
 const DEFAULT_HEIGHT = 260;
 
+/**
+ * A stable evening time for placeholder dots (nights not yet sealed). Kept
+ * at a single moment so placeholders form a neat implied line — the y-jitter
+ * comes from the seeded jitter in starPositions, not from time-of-seal.
+ */
+const PLACEHOLDER_ISO = '1970-01-01T21:00:00Z';
+
 export default function Constellation({
   entries,
   partnerEntries,
   userId,
+  currentNight,
   onSelectNight,
 }: ConstellationProps) {
   const [width, setWidth] = useState(0);
@@ -44,6 +54,21 @@ export default function Constellation({
   const myStars = width > 0 ? starPositions(entries, userId, bounds) : [];
   const partnerStars =
     width > 0 ? starPositions(partnerEntries, -userId, bounds) : [];
+
+  // Placeholder dots for every night the user hasn't sealed. Split into
+  // "pending" (<= currentNight, not sealed yet — a night missed or tonight
+  // in progress) and "locked" (> currentNight, hasn't happened yet). The
+  // parent screen already stops these being tap targets.
+  const sealed = new Set(entries.map((e) => e.day));
+  const current = typeof currentNight === 'number' ? currentNight : 0;
+  const placeholderEntries: SkyEntry[] = [];
+  for (let day = 1; day <= TOTAL_NIGHTS; day += 1) {
+    if (!sealed.has(day)) {
+      placeholderEntries.push({ day, created_at: PLACEHOLDER_ISO });
+    }
+  }
+  const placeholderStars =
+    width > 0 ? starPositions(placeholderEntries, userId, bounds) : [];
 
   // A gentle vertical band suggests the night as a whole, not any specific
   // hour. Drawn once — the stars are what breathes.
@@ -72,7 +97,25 @@ export default function Constellation({
               opacity={0.35}
             />
 
-            {/* partner stars first so ours draw on top of collisions */}
+            {/* placeholder dots first so everything else draws over them */}
+            {placeholderStars.map((s) => {
+              const isCurrent = s.day === current;
+              const isPast = s.day < current;
+              return (
+                <Circle
+                  key={`ph-${s.day}`}
+                  cx={s.x}
+                  cy={s.y}
+                  r={isCurrent ? 3 : 1.5}
+                  fill={brand.inkFaint}
+                  // Pending nights (including tonight) glow a little; locked
+                  // future nights read as very quiet placeholders.
+                  opacity={isCurrent ? 0.55 : isPast ? 0.35 : 0.22}
+                />
+              );
+            })}
+
+            {/* partner stars over placeholders, but under mine on collisions */}
             {partnerStars.map((s) => (
               <Circle
                 key={`p-${s.day}`}
