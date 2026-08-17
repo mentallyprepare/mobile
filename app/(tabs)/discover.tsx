@@ -25,6 +25,23 @@ export default function Community() {
       {view === 'stale' ? <StaleNotice error={error} onRetry={() => void reload()} busy={loading} /> : null}
       <CommunityCard hasMatch={hasMatch} partnerPresent={partnerPresent} onPress={() => router.push(hasMatch ? '/rooms' : '/scan')} />
 
+      {!hasMatch ? (
+        <Pressable
+          onPress={() => router.push('/tonights' as Href)}
+          accessibilityRole="button"
+          accessibilityLabel="Open Tonight's Question"
+          accessibilityHint="A community writing prompt for anyone still waiting to be paired"
+          style={({ pressed }) => [styles.tonights, pressed && styles.pressed]}
+        >
+          <Text style={styles.tonightsKicker}>TONIGHT&apos;S QUESTION</Text>
+          <Text style={styles.tonightsTitle}>write while you wait.</Text>
+          <Text style={styles.tonightsBody}>
+            One prompt tonight, shared with others still waiting to be paired.
+          </Text>
+          <Text style={styles.tonightsArrow}>open →</Text>
+        </Pressable>
+      ) : null}
+
       <Pressable
         onPress={() => router.push('/silent' as Href)}
         accessibilityRole="button"
@@ -54,5 +71,10 @@ const styles = StyleSheet.create({
   silentTitle: { ...type.displayItalic, color: brand.ink, fontSize: 22, lineHeight: 28, marginTop: space.xs },
   silentBody: { ...type.bodySmall, color: brand.inkMid, marginTop: space.sm, lineHeight: 19 },
   silentArrow: { ...type.bodyStrong, color: brand.rose, marginTop: space.md, fontSize: 14 },
+  tonights: { marginTop: space.lg, padding: space.lg, borderRadius: radius.lg, borderWidth: 1, borderColor: brand.line, backgroundColor: brand.card },
+  tonightsKicker: { ...type.eyebrow, color: brand.gold, fontSize: 10, letterSpacing: 1.6 },
+  tonightsTitle: { ...type.displayItalic, color: brand.ink, fontSize: 22, lineHeight: 28, marginTop: space.xs },
+  tonightsBody: { ...type.bodySmall, color: brand.inkMid, marginTop: space.sm, lineHeight: 19 },
+  tonightsArrow: { ...type.bodyStrong, color: brand.gold, marginTop: space.md, fontSize: 14 },
   action: { minHeight: 50, marginTop: space.lg, borderRadius: radius.pill, borderWidth: 1, borderColor: brand.line, alignItems: 'center', justifyContent: 'center' }, actionText: { ...type.bodyStrong, color: brand.rose }, pressed: { opacity: 0.72 },
 });

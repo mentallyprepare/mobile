@@ -29,6 +29,10 @@ const {
   parseSilentResonate,
   parseSilentSubmit,
 } = require(path.join(OUT, 'api/parse-silent.js'));
+const {
+  parseTonights,
+  parseTonightsSubmit,
+} = require(path.join(OUT, 'api/parse-tonights.js'));
 
 let passed = 0;
 const tests = [];
@@ -416,6 +420,85 @@ test('parseSilentResonate returns resonated + count', () => {
     parseSilentResonate({ resonated: true, resonance_count: 4 }),
     { resonated: true, resonance_count: 4 },
   );
+});
+
+// --- parseTonights* ------------------------------------------------------
+
+test('parseTonights returns the matched short-circuit when user is in a room', () => {
+  const result = parseTonights({ matched: true });
+  assert.strictEqual(result.matched, true);
+});
+
+test('parseTonights returns the full feed for a waiting user', () => {
+  const result = parseTonights({
+    matched: false,
+    prompt: 'What are you carrying?',
+    promptIndex: 7,
+    myEntry: null,
+    whispers: [{ text: 'a', mood: '🌓', created_at: '2026-08-02T21:00:00Z' }],
+    writerCount: 12,
+    nightsWritten: 3,
+  });
+  assert.strictEqual(result.matched, false);
+  if (!result.matched) {
+    assert.strictEqual(result.prompt, 'What are you carrying?');
+    assert.strictEqual(result.whispers.length, 1);
+  }
+});
+
+test('parseTonights validates myEntry when present', () => {
+  try {
+    parseTonights({
+      matched: false,
+      prompt: 'x',
+      promptIndex: 0,
+      myEntry: { text: 'ok', mood: '🌓' /* missing created_at */ },
+      whispers: [],
+      writerCount: 0,
+      nightsWritten: 0,
+    });
+    assert.fail('should have thrown');
+  } catch (err) {
+    assert.strictEqual(err.path, 'myEntry.created_at');
+  }
+});
+
+test('parseTonights names the offending whisper index', () => {
+  try {
+    parseTonights({
+      matched: false,
+      prompt: 'x',
+      promptIndex: 0,
+      myEntry: null,
+      whispers: [
+        { text: 'ok', mood: '🌓', created_at: '2026-08-02T21:00:00Z' },
+        { text: 'broken' /* no mood */, created_at: '2026-08-02T21:05:00Z' },
+      ],
+      writerCount: 0,
+      nightsWritten: 0,
+    });
+    assert.fail('should have thrown');
+  } catch (err) {
+    assert.strictEqual(err.path, 'whispers[1].mood');
+  }
+});
+
+test('parseTonightsSubmit returns safety flags including helplines passthrough', () => {
+  const result = parseTonightsSubmit({
+    ok: true,
+    safety: { crisis: true, pii: false, helplines: [{ name: '988' }] },
+  });
+  assert.strictEqual(result.safety.crisis, true);
+  assert.strictEqual(result.safety.pii, false);
+});
+
+test('parseTonightsSubmit rejects a false ok — server said no despite 200', () => {
+  try {
+    parseTonightsSubmit({ ok: false, safety: { crisis: false, pii: false, helplines: null } });
+    assert.fail('should have thrown');
+  } catch (err) {
+    assert.strictEqual(err.path, 'ok');
+  }
 });
 
 // --- run -----------------------------------------------------------------
