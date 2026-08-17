@@ -73,6 +73,8 @@ function goodMe() {
     },
     streak: 3,
     reveal: null,
+    comments: [],
+    reactions: [],
   };
 }
 
@@ -255,6 +257,35 @@ test('parseMe rejects an unknown reveal choice — a rename cannot ship unseen',
   } catch (err) {
     assert.strictEqual(err.path, 'reveal.myChoice');
     assert.match(err.message, /unknown reveal choice: phone_only/);
+  }
+});
+
+test('parseMe accepts comments and reactions from both sides', () => {
+  const good = goodMe();
+  good.comments = [
+    { day: 2, text: 'this landed', from: 'partner', created_at: '2026-07-04T21:00:00Z' },
+    { day: 2, text: 'thank you', from: 'me', created_at: '2026-07-04T22:00:00Z' },
+  ];
+  good.reactions = [
+    { day: 1, emoji: '🤍', from: 'partner' },
+    { day: 3, emoji: '🌙', from: 'me' },
+  ];
+  const result = parseMe(good);
+  assert.strictEqual(result.comments.length, 2);
+  assert.strictEqual(result.reactions.length, 2);
+  assert.strictEqual(result.comments[0].from, 'partner');
+});
+
+test('parseMe rejects a bad "from" value on a comment — spoofed identity cannot ship', () => {
+  const good = goodMe();
+  good.comments = [
+    { day: 2, text: 'x', from: 'admin', created_at: '2026-07-04T21:00:00Z' },
+  ];
+  try {
+    parseMe(good);
+    assert.fail('should have thrown');
+  } catch (err) {
+    assert.strictEqual(err.path, 'comments[0].from');
   }
 });
 

@@ -38,6 +38,39 @@ export type PartnerEntryPresence = {
   created_at: string;
 };
 
+/**
+ * The six emoji the server accepts on POST /api/react. Duplicated from
+ * routes/app.js:VALID_REACTIONS. A drift on either side surfaces as a 400
+ * "Invalid reaction" from the server or a SchemaError on read here.
+ */
+export const VALID_REACTIONS = ['🤍', '🥺', '💛', '🫂', '✨', '🌙'] as const;
+export type ReactionEmoji = (typeof VALID_REACTIONS)[number];
+
+/** Whether an item originated from the current user or their partner. */
+export type FromSide = 'me' | 'partner';
+
+/**
+ * A comment on an unsealed entry from either side. Keyed by day; upsertion
+ * on the server means at most one comment per user per day.
+ */
+export type EntryComment = {
+  day: number;
+  text: string;
+  from: FromSide;
+  created_at: string;
+};
+
+/**
+ * An emoji reaction to an unsealed entry from either side. Multiple emoji
+ * per day are possible (server upserts by (user, match, day, emoji) — the
+ * exact key varies by version, treat as a list).
+ */
+export type EntryReaction = {
+  day: number;
+  emoji: string;
+  from: FromSide;
+};
+
 export type PartnerStatus = {
   hasPartner: boolean;
   /** The presence-moon signal: has the match sealed something tonight. */
@@ -105,4 +138,8 @@ export type MeResponse = {
   streak: number;
   /** Present only from Day 21 onward for a matched user. */
   reveal: RevealState | null;
+  /** Both sides of every commented night. Empty when no match or none written. */
+  comments: EntryComment[];
+  /** Both sides of every reacted night. Empty when no match or none set. */
+  reactions: EntryReaction[];
 };

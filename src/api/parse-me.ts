@@ -2,6 +2,9 @@
 // react/react-native imports and can be tested in plain Node.
 
 import type {
+  EntryComment,
+  EntryReaction,
+  FromSide,
   MeEntry,
   MeMatch,
   MeResponse,
@@ -57,6 +60,33 @@ function parseRevealedPartner(v: unknown, p: string): RevealedPartner {
     partner.email = field(o, p, 'email', asString);
   }
   return partner;
+}
+
+function parseFromSide(v: unknown, p: string): FromSide {
+  const s = asString(v, p);
+  if (s !== 'me' && s !== 'partner') {
+    throw new SchemaError(p, `expected "me" or "partner", got "${s}"`);
+  }
+  return s;
+}
+
+function parseComment(v: unknown, p: string): EntryComment {
+  const o = asObject(v, p);
+  return {
+    day: field(o, p, 'day', asNumber),
+    text: field(o, p, 'text', asString),
+    from: field(o, p, 'from', parseFromSide),
+    created_at: field(o, p, 'created_at', asString),
+  };
+}
+
+function parseReaction(v: unknown, p: string): EntryReaction {
+  const o = asObject(v, p);
+  return {
+    day: field(o, p, 'day', asNumber),
+    emoji: field(o, p, 'emoji', asString),
+    from: field(o, p, 'from', parseFromSide),
+  };
 }
 
 function parseRevealState(v: unknown, p: string): RevealState {
@@ -154,5 +184,9 @@ export function parseMe(v: unknown): MeResponse {
     partnerStatus: field(o, '', 'partnerStatus', parsePartnerStatus),
     streak: field(o, '', 'streak', asNumber),
     reveal: field(o, '', 'reveal', nullable(parseRevealState)),
+    // The server always projects these as arrays (empty when no match); a
+    // missing field would be a genuine shape drift, not an optional slot.
+    comments: field(o, '', 'comments', (cv, cp) => arrayOf(cv, cp, parseComment)),
+    reactions: field(o, '', 'reactions', (rv, rp) => arrayOf(rv, rp, parseReaction)),
   };
 }
