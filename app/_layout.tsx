@@ -19,11 +19,14 @@ import { sky } from '../src/theme';
 import { brand, radius, space, type } from '../src/design';
 import { FONT_GATE_TIMEOUT_MS, fontFailureNote, fontGate } from '../src/fonts/gate';
 import { adoptDeviceLocale } from '../src/i18n/device-locale';
+import { restoreSavedLanguage } from '../src/i18n/persistence';
 
-// Set the app's language from the device locale before any screen renders.
-// Runs once at module load — no state hook needed because t() is a pure
-// lookup that reads the current-language slot on every call.
+// Set the app's language from the device locale before any screen renders,
+// then asynchronously restore the user's manual choice on top of it. The
+// manual choice wins because it fires after the sync default. If nothing
+// was saved, the device locale stands.
 adoptDeviceLocale();
+void restoreSavedLanguage();
 
 void SplashScreen.preventAutoHideAsync().catch(() => {
   // Expo can reject when another runtime already owns the splash lifecycle.

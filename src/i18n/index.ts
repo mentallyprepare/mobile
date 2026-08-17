@@ -26,14 +26,53 @@ const DICTIONARIES: Partial<Record<LanguageCode, StringsShape>> = {
 };
 
 let currentLanguage: LanguageCode = 'en';
+const subscribers = new Set<() => void>();
+let notifying = false;
 
+/**
+ * Change the current language. Notifies subscribers so React components
+ * that call useLanguage() re-render with the new strings — a language
+ * change that only affected future mounts would leave the settings screen
+ * itself in the old language.
+ *
+ * Unknown codes are ignored silently (no crash, no state change).
+ */
 export function setLanguage(code: LanguageCode): void {
   if (!SUPPORTED_LANGUAGES.includes(code)) return;
+  if (code === currentLanguage) return;
   currentLanguage = code;
+  notify();
 }
 
 export function getLanguage(): LanguageCode {
   return currentLanguage;
+}
+
+/**
+ * Subscribe to language changes. Returns an unsubscribe function. Used by
+ * useLanguage() in i18n/react.ts; the pure module stays react-free.
+ */
+export function subscribe(fn: () => void): () => void {
+  subscribers.add(fn);
+  return () => {
+    subscribers.delete(fn);
+  };
+}
+
+function notify(): void {
+  if (notifying) return;
+  notifying = true;
+  try {
+    for (const fn of subscribers) {
+      try {
+        fn();
+      } catch {
+        // one bad subscriber must not stop the rest from hearing
+      }
+    }
+  } finally {
+    notifying = false;
+  }
 }
 
 /**

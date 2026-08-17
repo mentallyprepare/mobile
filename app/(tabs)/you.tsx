@@ -152,6 +152,12 @@ export default function Profile() {
           detail="Choose which reminders may reach you"
           onPress={() => router.push('/notification-settings' as Href)}
         />
+        <ActionRow
+          eyebrow="LANGUAGE"
+          title="App language"
+          detail="English or one of four Indian languages"
+          onPress={() => router.push('/language' as Href)}
+        />
 
         {PREVIEW_TOOLS_ENABLED ? (
           <ActionRow
