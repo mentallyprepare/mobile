@@ -181,6 +181,12 @@ export default function Night() {
             detail="Songs, film, book, and one memory"
             onPress={() => router.push('/create')}
           />
+          <SetupAction
+            index="03"
+            title="Write your Day 1"
+            detail="It becomes the first note your match reads"
+            onPress={() => router.push('/waiting' as Href)}
+          />
         </View>
       </CosmicScreen>
     );

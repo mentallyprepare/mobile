@@ -14,6 +14,7 @@ import type {
   RevealChoice,
   RevealState,
   RevealedPartner,
+  WaitingInfo,
 } from './types-me';
 import {
   arrayOf,
@@ -86,6 +87,15 @@ function parseReaction(v: unknown, p: string): EntryReaction {
     day: field(o, p, 'day', asNumber),
     emoji: field(o, p, 'emoji', asString),
     from: field(o, p, 'from', parseFromSide),
+  };
+}
+
+function parseWaitingInfo(v: unknown, p: string): WaitingInfo {
+  const o = asObject(v, p);
+  return {
+    archetype: field(o, p, 'archetype', nullable(asString)),
+    day1Prompt: field(o, p, 'day1Prompt', asString),
+    savedEntry: field(o, p, 'savedEntry', asString),
   };
 }
 
@@ -190,5 +200,10 @@ export function parseMe(v: unknown): MeResponse {
     // missing field would be a genuine shape drift, not an optional slot.
     comments: field(o, '', 'comments', (cv, cp) => arrayOf(cv, cp, parseComment)),
     reactions: field(o, '', 'reactions', (rv, rp) => arrayOf(rv, rp, parseReaction)),
+    // The server omits waitingInfo entirely once the user is matched; only
+    // validate when actually present.
+    ...(o.waitingInfo !== undefined
+      ? { waitingInfo: parseWaitingInfo(o.waitingInfo, 'waitingInfo') }
+      : {}),
   };
 }

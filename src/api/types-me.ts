@@ -135,6 +135,18 @@ export type RevealState = {
   partnerUnsentLetter: string | null;
 };
 
+/**
+ * Pre-match state: the Day-1 prompt and any saved draft that will become
+ * the writer's first entry when they get paired. Present only when the
+ * user has no match. Absent (undefined) for matched users.
+ */
+export type WaitingInfo = {
+  archetype: string | null;
+  day1Prompt: string;
+  /** '' when nothing has been saved yet. */
+  savedEntry: string;
+};
+
 export type MeResponse = {
   user: MeUser;
   match: MeMatch | null;
@@ -148,4 +160,6 @@ export type MeResponse = {
   comments: EntryComment[];
   /** Both sides of every reacted night. Empty when no match or none set. */
   reactions: EntryReaction[];
+  /** Only present pre-match; the server omits it once the user is paired. */
+  waitingInfo?: WaitingInfo;
 };
