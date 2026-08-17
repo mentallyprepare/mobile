@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, type Href } from 'expo-router';
 import CosmicScreen from '../../src/components/app/CosmicScreen';
 import Constellation from '../../src/components/journey/Constellation';
 import DateStrip from '../../src/components/home/DateStrip';
@@ -40,6 +40,13 @@ export default function Journey() {
         onSelectNight={(night) => {
           setSelectedNight(night);
           setNotice(null);
+          // Only navigate for nights the user actually sealed. Constellation
+          // renders my stars separate from theirs; the tap targets are
+          // over my stars only, but guard anyway so a future addition of
+          // partner tap targets can't accidentally route into my reader.
+          if (completed.includes(night)) {
+            router.push(`/entry/${night}` as Href);
+          }
         }}
       />
       <PhaseVisualization night={data?.match ? currentNight : 0} completed={completed.length} onPress={() => router.push('/rooms')} />
