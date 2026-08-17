@@ -45,7 +45,7 @@ assert.match(completionBanner, /Your words remain private/);
 const previewRoute = fs.readFileSync(path.resolve(__dirname, '..', 'app', 'daily-preview.tsx'), 'utf8');
 assert.match(previewRoute, /Sample state .* nothing is saved/);
 assert.match(previewRoute, /No real partner, account, note, or match/);
-assert.match(previewRoute, /if \(!__DEV__\) return <Redirect/);
+assert.match(previewRoute, /if \(!PREVIEW_TOOLS_ENABLED\) return <Redirect/);
 assert.match(previewRoute, /Seal preview/);
 assert.match(previewRoute, /DateStrip/);
 assert.match(previewRoute, /AddMoreSheet/);
@@ -83,7 +83,9 @@ const tabLayout = fs.readFileSync(path.resolve(__dirname, '..', 'app', '(tabs)',
 assert.match(tabLayout, /StardustBottomNav/);
 assert.match(tabLayout, /title: 'Journey'/);
 assert.match(tabLayout, /title: 'Community'/);
-assert.match(tabLayout, /name="create"[\s\S]*?href: null/);
+// Note: the tab-hiding assertion for "create" was removed once the Create
+// tab was surfaced as "Shelf" in the current five-tab shell. The rooms
+// tab is still hidden (reached only by push from Journey / Home CTAs).
 assert.match(tabLayout, /name="rooms" options=\{\{ href: null \}\}/);
 
 const journeyRoute = fs.readFileSync(path.resolve(__dirname, '..', 'app', '(tabs)', 'journey.tsx'), 'utf8');
