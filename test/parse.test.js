@@ -62,7 +62,9 @@ function goodMe() {
       { day: 1, text: 'first', mood: null, created_at: '2026-07-01T21:00:00Z' },
       { day: 2, text: 'second', mood: 'quiet', created_at: '2026-07-02T21:10:00Z' },
     ],
-    partnerEntries: [{ day: 1, created_at: '2026-07-01T22:00:00Z' }],
+    partnerEntries: [
+      { day: 1, text: 'first thing they wrote', mood: 'quiet', created_at: '2026-07-01T22:00:00Z' },
+    ],
     partnerStatus: {
       hasPartner: true,
       partnerHasWrittenToday: false,

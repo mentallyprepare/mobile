@@ -271,6 +271,17 @@ export default function Night() {
             <Text style={styles.sheetBody}>
               Nothing more is required tonight. This note stays private to your account.
             </Text>
+            {(data?.partnerEntries?.length ?? 0) > 0 ? (
+              <Pressable
+                onPress={() => router.push('/partner' as Href)}
+                accessibilityRole="button"
+                accessibilityLabel="Read what your partner wrote on earlier nights"
+                hitSlop={10}
+                style={({ pressed }) => [styles.readPartner, pressed && styles.pressed]}
+              >
+                <Text style={styles.readPartnerLabel}>read what they wrote →</Text>
+              </Pressable>
+            ) : null}
             {milestoneFor(night) ? (
               <View style={styles.milestone} accessibilityLiveRegion="polite">
                 <Text style={styles.milestoneKicker}>
@@ -543,6 +554,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     lineHeight: 20,
   },
+  readPartner: {
+    alignSelf: 'center',
+    marginTop: space.lg,
+    minHeight: 44,
+    justifyContent: 'center',
+    paddingHorizontal: space.md,
+  },
+  readPartnerLabel: { ...type.bodyStrong, color: brand.rose },
   supportLabel: { ...type.bodySmall, color: brand.inkMid, textDecorationLine: 'underline' },
   error: { ...type.bodySmall, color: brand.rose, marginTop: space.md },
   primary: {

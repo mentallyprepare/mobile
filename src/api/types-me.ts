@@ -28,13 +28,19 @@ export type MeEntry = {
 };
 
 /**
- * Native clients render a partner's presence in the Living Night sky. The
- * partner's journal text and mood are deliberately never part of this
- * contract; the server projects them out before the response crosses the
- * mobile boundary.
+ * A partner's past entry, once the day has unlocked (midnight after the
+ * partner sealed). The server sends `text` and `mood` too — matching the
+ * web app's partner-reader — and the mobile client now surfaces them so
+ * reactions and comments can hang off the actual writing.
+ *
+ * Only entries the server has decided are unlocked reach here; today's
+ * still-sealed entry never crosses. The name stays `PartnerEntryPresence`
+ * for now to avoid a rename churn; the shape is what changed.
  */
 export type PartnerEntryPresence = {
   day: number;
+  text: string;
+  mood: string | null;
   created_at: string;
 };
 

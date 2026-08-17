@@ -156,6 +156,8 @@ function parsePartnerEntry(v: unknown, p: string): PartnerEntryPresence {
   const o = asObject(v, p);
   return {
     day: field(o, p, 'day', asNumber),
+    text: field(o, p, 'text', asString),
+    mood: field(o, p, 'mood', nullable(asString)),
     created_at: field(o, p, 'created_at', asString),
   };
 }
