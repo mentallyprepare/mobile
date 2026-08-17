@@ -35,7 +35,12 @@ export default function Night() {
   const [error, setError] = useState<string | null>(null);
   const [justSealed, setJustSealed] = useState(false);
   const [restoredScope, setRestoredScope] = useState<string | null>(null);
+  const [mood, setMood] = useState<string>('🌓');
   const scrollRef = useRef<ScrollView | null>(null);
+
+  // The mood emojis the web app sends. Kept in sync with routes/app.js so a
+  // sealed entry reads the same on both surfaces.
+  const MOODS = ['🌓', '🌘', '🌑', '🌒', '🌕', '☁️', '⚡'] as const;
 
   // Keep text attached to the account and night it belongs to. When the
   // provider moves to another room, the old draft cannot flash or autosave
@@ -167,7 +172,7 @@ export default function Night() {
     setError(null);
     setJustSealed(false);
     try {
-      await sealEntry({ text: draft.trim(), selectedPrompt: prompt });
+      await sealEntry({ text: draft.trim(), mood, selectedPrompt: prompt });
       // Sealed is the one moment the local copy is no longer needed.
       await drafts.discard(scope);
       setDraft('');
@@ -246,6 +251,32 @@ export default function Night() {
           <>
             <Text style={styles.sheetLabel}>YOUR PRIVATE RESPONSE</Text>
             <Text style={styles.sheetTitle}>Write before you polish it.</Text>
+            <View style={styles.moodRow}>
+              <Text style={styles.moodLabel}>tonight&apos;s mood</Text>
+              <View style={styles.moodOptions}>
+                {MOODS.map((m) => {
+                  const active = mood === m;
+                  return (
+                    <Pressable
+                      key={m}
+                      onPress={() => setMood(m)}
+                      disabled={busy}
+                      accessibilityRole="radio"
+                      accessibilityState={{ selected: active, disabled: busy }}
+                      accessibilityLabel={`Mood ${m}`}
+                      hitSlop={6}
+                      style={({ pressed }) => [
+                        styles.moodChip,
+                        active && styles.moodChipOn,
+                        pressed && styles.pressed,
+                      ]}
+                    >
+                      <Text style={styles.moodEmoji}>{m}</Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+            </View>
             <View style={styles.inputShell}>
               <TextInput
                 style={styles.input}
@@ -436,6 +467,21 @@ const styles = StyleSheet.create({
   revealTitle: { ...type.displayItalic, color: brand.ink, fontSize: 20, lineHeight: 26, marginTop: space.xs },
   revealBody: { ...type.bodySmall, color: brand.inkMid, marginTop: space.sm, lineHeight: 19 },
   revealArrow: { ...type.bodyStrong, color: brand.rose, marginTop: space.md, fontSize: 14 },
+  moodRow: { marginBottom: space.md },
+  moodLabel: { ...type.eyebrow, color: brand.inkMid, fontSize: 10, marginBottom: space.xs },
+  moodOptions: { flexDirection: 'row', flexWrap: 'wrap', gap: space.xs },
+  moodChip: {
+    minWidth: 40,
+    minHeight: 40,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: brand.line,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: space.sm,
+  },
+  moodChipOn: { borderColor: brand.rose, backgroundColor: brand.surface },
+  moodEmoji: { fontSize: 18 },
   supportLabel: { ...type.bodySmall, color: brand.inkMid, textDecorationLine: 'underline' },
   error: { ...type.bodySmall, color: brand.rose, marginTop: space.md },
   primary: {
