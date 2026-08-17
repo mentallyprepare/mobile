@@ -18,7 +18,7 @@
     "typecheck": "tsc --noEmit",
     "test:api": "node test/client.test.js",
     "test:sky": "node test/sky.test.js",
-    "test": "npm run test:api && npm run test:sky && npm run test:daily && npm run test:quiz && npm run test:notifications && npm run test:safety && npm run test:password-reset && npm run test:sign-up && npm run test:providers && npm run test:load-state && npm run test:keyboard && npm run test:drafts && npm run test:contrast && npm run test:font-gate && npm run test:support && npm run test:deployment && npm run test:profile && npm run test:readiness && npm run test:error-boundary && npm run test:parse && npm run test:rematch",
+    "test": "npm run test:api && npm run test:sky && npm run test:daily && npm run test:quiz && npm run test:notifications && npm run test:safety && npm run test:password-reset && npm run test:sign-up && npm run test:providers && npm run test:load-state && npm run test:keyboard && npm run test:drafts && npm run test:contrast && npm run test:font-gate && npm run test:support && npm run test:deployment && npm run test:profile && npm run test:readiness && npm run test:error-boundary && npm run test:parse && npm run test:rematch && npm run test:i18n",
     "test:daily": "node test/daily-edition.test.js",
     "test:quiz": "node test/quiz.test.js",
     "test:notifications": "node test/notifications.test.js",
@@ -37,6 +37,7 @@
     "test:error-boundary": "node test/error-boundary.test.js",
     "test:parse": "node test/parse.test.js",
     "test:rematch": "node test/rematch.test.js",
+    "test:i18n": "node test/i18n.test.js",
     "test:support": "node test/support.test.js"
   },
   "dependencies": {

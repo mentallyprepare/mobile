@@ -4,11 +4,22 @@ import DaylightScreen from '../src/components/DaylightScreen';
 import {
   CRISIS_REGIONS,
   HELPLINE_DIRECTORY,
-  SUPPORT_STATEMENT,
   dialable,
   type Helpline,
 } from '../src/safety/support';
+import { t } from '../src/i18n';
 import { daylight, radius, space, type } from '../src/design';
+
+/**
+ * Region keys line up with the CRISIS_REGIONS entries so the display copy
+ * comes from the current-language dictionary while the numbers themselves
+ * stay in one authoritative English data file.
+ */
+const REGION_KEY: Record<string, string> = {
+  'India': 'support.india',
+  'United States & Canada': 'support.us_canada',
+  'United Kingdom, Ireland & Europe': 'support.uk_ireland_europe',
+};
 
 /**
  * Support and crisis resources.
@@ -31,19 +42,19 @@ export default function SupportScreen() {
         hitSlop={12}
         style={styles.back}
       >
-        <Text style={styles.backLabel}>← back</Text>
+        <Text style={styles.backLabel}>{t('support.back')}</Text>
       </Pressable>
 
       <Text style={styles.eyebrow} accessibilityRole="header">
-        SUPPORT
+        {t('support.heading')}
       </Text>
-      <Text style={styles.title}>if tonight is heavy.</Text>
-      <Text style={styles.intro}>{SUPPORT_STATEMENT.ifUnsafe}</Text>
+      <Text style={styles.title}>{t('support.title')}</Text>
+      <Text style={styles.intro}>{t('support.ifUnsafe')}</Text>
 
       {CRISIS_REGIONS.map((region) => (
         <View key={region.region} style={styles.block}>
           <Text style={styles.region} accessibilityRole="header">
-            {region.region}
+            {REGION_KEY[region.region] ? t(REGION_KEY[region.region]) : region.region}
           </Text>
           <View style={styles.group}>
             {region.helplines.map((helpline) => (
@@ -55,7 +66,7 @@ export default function SupportScreen() {
 
       <View style={styles.block}>
         <Text style={styles.region} accessibilityRole="header">
-          Anywhere else
+          {t('support.anywhere_else')}
         </Text>
         <Pressable
           onPress={() => void Linking.openURL(HELPLINE_DIRECTORY.url)}
@@ -66,16 +77,16 @@ export default function SupportScreen() {
         >
           <View style={styles.rowCopy}>
             <Text style={styles.rowTitle}>{HELPLINE_DIRECTORY.label}</Text>
-            <Text style={styles.rowDetail}>{HELPLINE_DIRECTORY.description}</Text>
+            <Text style={styles.rowDetail}>{t('support.directory_description')}</Text>
           </View>
           <Text style={styles.arrow}>↗</Text>
         </Pressable>
       </View>
 
       <View style={styles.statement}>
-        <Text style={styles.statementTitle}>what this is.</Text>
-        <Text style={styles.statementBody}>{SUPPORT_STATEMENT.notAService}</Text>
-        <Text style={styles.statementBody}>{SUPPORT_STATEMENT.humanReview}</Text>
+        <Text style={styles.statementTitle}>{t('support.what_this_is_title')}</Text>
+        <Text style={styles.statementBody}>{t('support.not_service')}</Text>
+        <Text style={styles.statementBody}>{t('support.human_review')}</Text>
       </View>
     </DaylightScreen>
   );

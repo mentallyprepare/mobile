@@ -53,6 +53,10 @@ const SOURCES = [
   'auth/sign-up.ts',
   'safety/contracts.ts',
   'safety/rematch.ts',
+  'i18n/types.ts',
+  'i18n/en.ts',
+  'i18n/hi.ts',
+  'i18n/index.ts',
 ];
 
 let built = false;
