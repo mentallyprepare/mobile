@@ -23,6 +23,12 @@ const {
   parseSealResponse,
   parseSwitchPartnerResponse,
 } = require(path.join(OUT, 'api/parse-endpoints.js'));
+const {
+  parseSilentFeed,
+  parseSilentPresence,
+  parseSilentResonate,
+  parseSilentSubmit,
+} = require(path.join(OUT, 'api/parse-silent.js'));
 
 let passed = 0;
 const tests = [];
@@ -326,6 +332,90 @@ test('parseSwitchPartnerResponse rejects an unknown state so a UI branch cannot 
     assert.strictEqual(err.path, 'state');
     assert.match(err.message, /matched.*waiting/);
   }
+});
+
+// --- parseSilent* --------------------------------------------------------
+
+test('parseSilentPresence returns a count', () => {
+  assert.deepStrictEqual(parseSilentPresence({ count: 42 }), { count: 42 });
+});
+
+test('parseSilentFeed accepts an empty room', () => {
+  const feed = parseSilentFeed({ lines: [], next_cursor: null });
+  assert.deepStrictEqual(feed, { lines: [], next_cursor: null });
+});
+
+test('parseSilentFeed validates each line and names the bad one', () => {
+  const good = {
+    id: 'sl_a',
+    content: 'the room is quiet.',
+    seen_count: 1,
+    resonance_count: 0,
+    resonated: false,
+  };
+  try {
+    parseSilentFeed({
+      lines: [good, { ...good, resonated: 'yes' }],
+      next_cursor: null,
+    });
+    assert.fail('should have thrown');
+  } catch (err) {
+    assert.strictEqual(err.path, 'lines[1].resonated');
+  }
+});
+
+test('parseSilentSubmit branches on status — success shape', () => {
+  const out = parseSilentSubmit({
+    id: 'sl_x',
+    status: 'approved',
+    expires_at: '2026-08-09T00:00:00Z',
+    presence_count: 12,
+    random_line: 'somebody else is up.',
+  });
+  assert.strictEqual(out.status, 'approved');
+  assert.strictEqual(out.id, 'sl_x');
+});
+
+test('parseSilentSubmit branches on status — pending shape', () => {
+  const out = parseSilentSubmit({
+    id: 'sl_y',
+    status: 'pending',
+    expires_at: '2026-08-09T00:00:00Z',
+    presence_count: 3,
+    random_line: null,
+  });
+  assert.strictEqual(out.status, 'pending');
+  assert.strictEqual(out.random_line, null);
+});
+
+test('parseSilentSubmit branches on status — crisis intercept shape', () => {
+  const out = parseSilentSubmit({
+    id: null,
+    status: 'crisis_intercepted',
+    show_resources: true,
+    message: 'You are not alone tonight.',
+    helplines: [{ name: 'iCall', numbers: ['9152987821'] }],
+  });
+  assert.strictEqual(out.status, 'crisis_intercepted');
+  assert.strictEqual(out.id, null);
+  assert.strictEqual(out.message, 'You are not alone tonight.');
+});
+
+test('parseSilentSubmit rejects an unknown status so a UI branch cannot go dark', () => {
+  try {
+    parseSilentSubmit({ id: 'x', status: 'weird', expires_at: '', presence_count: 0, random_line: null });
+    assert.fail('should have thrown');
+  } catch (err) {
+    assert.strictEqual(err.path, 'status');
+    assert.match(err.message, /approved.*pending.*crisis_intercepted/);
+  }
+});
+
+test('parseSilentResonate returns resonated + count', () => {
+  assert.deepStrictEqual(
+    parseSilentResonate({ resonated: true, resonance_count: 4 }),
+    { resonated: true, resonance_count: 4 },
+  );
 });
 
 // --- run -----------------------------------------------------------------
