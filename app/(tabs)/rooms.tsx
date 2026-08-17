@@ -202,6 +202,35 @@ export default function Night() {
 
       <View style={styles.sheet}>
         {staleBanner}
+        {data?.reveal?.available ? (
+          <Pressable
+            onPress={() => router.push('/reveal' as Href)}
+            accessibilityRole="button"
+            accessibilityLabel={
+              data.reveal.myChoice
+                ? 'Open Day 21 reveal — your choice is locked'
+                : 'Open Day 21 reveal — choose what to share'
+            }
+            style={({ pressed }) => [styles.revealCta, pressed && styles.pressed]}
+          >
+            <Text style={styles.revealKicker}>DAY 21</Text>
+            <Text style={styles.revealTitle}>
+              {data.reveal.revealed
+                ? 'Reveal is open.'
+                : data.reveal.myChoice
+                  ? 'You chose. Waiting for the other person.'
+                  : 'Choose what you want to share.'}
+            </Text>
+            <Text style={styles.revealBody}>
+              {data.reveal.revealed
+                ? 'The partnership can be seen.'
+                : data.reveal.myChoice
+                  ? 'The choice is locked. This screen will update when your partner chooses.'
+                  : 'Both of you decide separately. Either one anonymous keeps both private.'}
+            </Text>
+            <Text style={styles.revealArrow}>open →</Text>
+          </Pressable>
+        ) : null}
         {sealedTonight ? (
           <View style={styles.sealedState}>
             <View style={styles.sealedMark}>
@@ -395,6 +424,18 @@ const styles = StyleSheet.create({
   },
   privacy: { ...type.bodySmall, flex: 1, color: brand.inkLow },
   supportLink: { alignSelf: 'flex-start', minHeight: 44, justifyContent: 'center' },
+  revealCta: {
+    marginBottom: space.lg,
+    padding: space.lg,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: brand.rose,
+    backgroundColor: brand.surface,
+  },
+  revealKicker: { ...type.eyebrow, color: brand.rose, letterSpacing: 1.8, fontSize: 10 },
+  revealTitle: { ...type.displayItalic, color: brand.ink, fontSize: 20, lineHeight: 26, marginTop: space.xs },
+  revealBody: { ...type.bodySmall, color: brand.inkMid, marginTop: space.sm, lineHeight: 19 },
+  revealArrow: { ...type.bodyStrong, color: brand.rose, marginTop: space.md, fontSize: 14 },
   supportLabel: { ...type.bodySmall, color: brand.inkMid, textDecorationLine: 'underline' },
   error: { ...type.bodySmall, color: brand.rose, marginTop: space.md },
   primary: {

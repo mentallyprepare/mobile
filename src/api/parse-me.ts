@@ -8,6 +8,9 @@ import type {
   MeUser,
   PartnerEntryPresence,
   PartnerStatus,
+  RevealChoice,
+  RevealState,
+  RevealedPartner,
 } from './types-me';
 import {
   arrayOf,
@@ -17,7 +20,64 @@ import {
   asString,
   field,
   nullable,
+  SchemaError,
 } from './parse';
+
+const REVEAL_CHOICES: readonly RevealChoice[] = [
+  'stay_anonymous',
+  'first_name',
+  'name_college',
+  'contact_details',
+];
+
+function parseRevealChoice(v: unknown, p: string): RevealChoice {
+  const s = asString(v, p);
+  if (!(REVEAL_CHOICES as readonly string[]).includes(s)) {
+    throw new SchemaError(p, `unknown reveal choice: ${s}`);
+  }
+  return s as RevealChoice;
+}
+
+function parseRevealedPartner(v: unknown, p: string): RevealedPartner {
+  const o = asObject(v, p);
+  const partner: RevealedPartner = {
+    name: field(o, p, 'name', asString),
+  };
+  // Optional fields the server projects only at higher reveal levels.
+  if (o.fullName !== undefined && o.fullName !== null) {
+    partner.fullName = field(o, p, 'fullName', asString);
+  }
+  if (o.college !== undefined) {
+    partner.college = field(o, p, 'college', nullable(asString));
+  }
+  if (o.year !== undefined) {
+    partner.year = field(o, p, 'year', nullable(asString));
+  }
+  if (o.email !== undefined && o.email !== null) {
+    partner.email = field(o, p, 'email', asString);
+  }
+  return partner;
+}
+
+function parseRevealState(v: unknown, p: string): RevealState {
+  const o = asObject(v, p);
+  // `available` guards this whole shape; if the server ever sends the field
+  // without `available: true`, we treat it as malformed so callers don't
+  // render a reveal surface based on stale server behaviour.
+  const available = field(o, p, 'available', asBoolean);
+  if (!available) {
+    throw new SchemaError(`${p}.available`, 'expected true when reveal state is present');
+  }
+  return {
+    available: true,
+    myChoice: field(o, p, 'myChoice', nullable(parseRevealChoice)),
+    partnerChose: field(o, p, 'partnerChose', asBoolean),
+    revealed: field(o, p, 'revealed', asBoolean),
+    anonymous: field(o, p, 'anonymous', asBoolean),
+    partner: field(o, p, 'partner', nullable(parseRevealedPartner)),
+    partnerUnsentLetter: field(o, p, 'partnerUnsentLetter', nullable(asString)),
+  };
+}
 
 function parseUser(v: unknown, p: string): MeUser {
   const o = asObject(v, p);
@@ -93,5 +153,6 @@ export function parseMe(v: unknown): MeResponse {
     ),
     partnerStatus: field(o, '', 'partnerStatus', parsePartnerStatus),
     streak: field(o, '', 'streak', asNumber),
+    reveal: field(o, '', 'reveal', nullable(parseRevealState)),
   };
 }

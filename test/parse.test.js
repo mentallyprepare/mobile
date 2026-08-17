@@ -72,6 +72,7 @@ function goodMe() {
       status: 'active',
     },
     streak: 3,
+    reveal: null,
   };
 }
 
@@ -201,6 +202,79 @@ test('parseMe tolerates extra server fields (superset ok)', () => {
   good.experimentalFlag = 'ignored';
   good.user.internalId = 999;
   assert.doesNotThrow(() => parseMe(good));
+});
+
+// --- reveal state --------------------------------------------------------
+
+test('parseMe accepts a reveal state with a null myChoice (Day 21 opened, not yet chosen)', () => {
+  const good = goodMe();
+  good.reveal = {
+    available: true,
+    myChoice: null,
+    partnerChose: false,
+    revealed: false,
+    anonymous: false,
+    partner: null,
+    partnerUnsentLetter: null,
+  };
+  const result = parseMe(good);
+  assert.strictEqual(result.reveal?.myChoice, null);
+});
+
+test('parseMe accepts a fully revealed state with partner identity and letter', () => {
+  const good = goodMe();
+  good.reveal = {
+    available: true,
+    myChoice: 'first_name',
+    partnerChose: true,
+    revealed: true,
+    anonymous: false,
+    partner: { name: 'Riya', fullName: 'Riya S.', college: 'JMI', year: '3rd' },
+    partnerUnsentLetter: 'if i could tell you one thing —',
+  };
+  const result = parseMe(good);
+  assert.strictEqual(result.reveal?.revealed, true);
+  assert.strictEqual(result.reveal?.partner?.college, 'JMI');
+  assert.strictEqual(result.reveal?.partnerUnsentLetter, 'if i could tell you one thing —');
+});
+
+test('parseMe rejects an unknown reveal choice — a rename cannot ship unseen', () => {
+  const good = goodMe();
+  good.reveal = {
+    available: true,
+    myChoice: 'phone_only',
+    partnerChose: false,
+    revealed: false,
+    anonymous: false,
+    partner: null,
+    partnerUnsentLetter: null,
+  };
+  try {
+    parseMe(good);
+    assert.fail('should have thrown');
+  } catch (err) {
+    assert.strictEqual(err.path, 'reveal.myChoice');
+    assert.match(err.message, /unknown reveal choice: phone_only/);
+  }
+});
+
+test('parseMe rejects a reveal shape with available:false — should not have been sent at all', () => {
+  const good = goodMe();
+  good.reveal = {
+    available: false,
+    myChoice: null,
+    partnerChose: false,
+    revealed: false,
+    anonymous: false,
+    partner: null,
+    partnerUnsentLetter: null,
+  };
+  try {
+    parseMe(good);
+    assert.fail('should have thrown');
+  } catch (err) {
+    assert.strictEqual(err.path, 'reveal.available');
+  }
 });
 
 // --- parseShelf ----------------------------------------------------------
