@@ -73,6 +73,9 @@ export default function TonightsQuestionScreen() {
   }, [router]);
 
   useEffect(() => {
+    // Classic on-mount fetch — setState calls happen inside `load` on
+    // completion, not synchronously in the effect body.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
   }, [load]);
 

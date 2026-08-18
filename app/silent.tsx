@@ -66,6 +66,10 @@ export default function SilentRoomScreen() {
   }, []);
 
   useEffect(() => {
+    // Classic on-mount fetch. The setState calls happen inside `load` on
+    // completion, not synchronously in the effect body — the rule
+    // over-fires on this pattern.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
   }, [load]);
 

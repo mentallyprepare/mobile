@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Platform,
@@ -43,15 +43,16 @@ export default function WaitingEntryScreen() {
   const [saveError, setSaveError] = useState<string | null>(null);
   const [piiPrompt, setPiiPrompt] = useState<string[] | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
-  const [hydrated, setHydrated] = useState(false);
+  // Ref-based hydration guard so the effect doesn't re-run itself by
+  // setting state that's in its own deps list. Fires exactly once, when
+  // `waiting` first crosses from null to populated.
+  const hydratedRef = useRef(false);
 
   useEffect(() => {
-    if (hydrated) return;
-    if (waiting) {
-      setText(waiting.savedEntry);
-      setHydrated(true);
-    }
-  }, [waiting, hydrated]);
+    if (hydratedRef.current || !waiting) return;
+    hydratedRef.current = true;
+    setText(waiting.savedEntry);
+  }, [waiting]);
 
   async function save(piiConfirmed: boolean) {
     const content = text.trim();

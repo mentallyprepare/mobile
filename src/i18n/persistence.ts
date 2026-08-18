@@ -23,6 +23,7 @@ async function read(): Promise<string | null> {
   }
   // Lazy-required so a broken native module can't break the whole graph.
   try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const store = require('expo-secure-store') as {
       getItemAsync?: (k: string) => Promise<string | null>;
     };
@@ -43,6 +44,7 @@ async function write(value: string): Promise<void> {
     return;
   }
   try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const store = require('expo-secure-store') as {
       setItemAsync?: (k: string, v: string) => Promise<void>;
     };
