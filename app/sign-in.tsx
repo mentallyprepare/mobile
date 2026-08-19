@@ -16,11 +16,16 @@ import AppBackdrop from '../src/components/app/AppBackdrop';
 import OrbitArtifact from '../src/components/brand/OrbitArtifact';
 import { useSession } from '../src/session';
 import { ApiError } from '../src/api';
+import { t } from '../src/i18n';
+import { useLanguage } from '../src/i18n/react';
 import { brand, layout, radius, space, type } from '../src/design';
 
 export default function SignIn() {
   const router = useRouter();
   const { signIn } = useSession();
+  // Subscribe to language changes so a picker choice re-renders this screen
+  // with the new copy immediately, not on next navigation.
+  useLanguage();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -61,7 +66,7 @@ export default function SignIn() {
               <View style={styles.topbar}>
                 <View>
                   <Text style={styles.wordmark}>MENTALLY PREPARE</Text>
-                  <Text style={styles.screenLabel}>PRIVATE 21-NIGHT RITUAL</Text>
+                  <Text style={styles.screenLabel}>{t('sign_in.screen_label')}</Text>
                 </View>
                 <View style={styles.guide}>
                   <OrbitArtifact size={68} />
@@ -69,12 +74,12 @@ export default function SignIn() {
               </View>
 
               <View style={styles.heading}>
-                <Text style={styles.title}>welcome back.</Text>
-                <Text style={styles.sub}>Return to the world you are building.</Text>
+                <Text style={styles.title}>{t('sign_in.title')}</Text>
+                <Text style={styles.sub}>{t('sign_in.sub')}</Text>
               </View>
 
               <View style={styles.form}>
-                <Text style={styles.label}>EMAIL</Text>
+                <Text style={styles.label}>{t('sign_in.email_label')}</Text>
                 <TextInput
                   style={styles.input}
                   value={email}
@@ -82,17 +87,17 @@ export default function SignIn() {
                     setEmail(value);
                     if (error) setError(null);
                   }}
-                  placeholder="you@college.edu"
+                  placeholder={t('sign_in.email_placeholder')}
                   placeholderTextColor={brand.inkLow}
                   autoCapitalize="none"
                   autoCorrect={false}
                   keyboardType="email-address"
                   textContentType="emailAddress"
                   editable={!busy}
-                  accessibilityLabel="Email"
+                  accessibilityLabel={t('sign_in.email_a11y')}
                 />
 
-                <Text style={[styles.label, styles.labelSpaced]}>PASSWORD</Text>
+                <Text style={[styles.label, styles.labelSpaced]}>{t('sign_in.password_label')}</Text>
                 <TextInput
                   style={styles.input}
                   value={password}
@@ -108,16 +113,16 @@ export default function SignIn() {
                   editable={!busy}
                   onSubmitEditing={onSubmit}
                   returnKeyType="go"
-                  accessibilityLabel="Password"
+                  accessibilityLabel={t('sign_in.password_a11y')}
                 />
 
                 <Pressable
                   onPress={() => router.push('/forgot-password')}
                   accessibilityRole="button"
-                  accessibilityLabel="Forgot password"
+                  accessibilityLabel={t('sign_in.forgot_a11y')}
                   style={styles.forgot}
                 >
-                  <Text style={styles.forgotLabel}>forgot password?</Text>
+                  <Text style={styles.forgotLabel}>{t('sign_in.forgot')}</Text>
                 </Pressable>
 
                 {error ? (
@@ -129,7 +134,7 @@ export default function SignIn() {
 
                 <View style={styles.actions}>
                   <AuthPrimaryButton
-                    label={busy ? 'Signing in…' : 'Sign in'}
+                    label={busy ? t('sign_in.submit_busy') : t('sign_in.submit')}
                     onPress={onSubmit}
                     disabled={!canSubmit}
                   />
@@ -139,14 +144,14 @@ export default function SignIn() {
               <Pressable
                 onPress={() => router.push('/sign-up')}
                 accessibilityRole="button"
-                accessibilityLabel="Create account"
+                accessibilityLabel={t('sign_in.create_a11y')}
                 style={({ pressed }) => [
                   styles.createAccount,
                   pressed && styles.pressed,
                 ]}
               >
-                <Text style={styles.createEyebrow}>NEW TO MENTALLY PREPARE?</Text>
-                <Text style={styles.createLabel}>create your account</Text>
+                <Text style={styles.createEyebrow}>{t('sign_in.create_eyebrow')}</Text>
+                <Text style={styles.createLabel}>{t('sign_in.create_label')}</Text>
                 <Text style={styles.createArrow}>→</Text>
               </Pressable>
 
@@ -163,19 +168,17 @@ export default function SignIn() {
                 </Pressable>
               ) : null}
 
-              <Text style={styles.privacyNote}>
-                18+ · private by default · no public feed
-              </Text>
+              <Text style={styles.privacyNote}>{t('sign_in.privacy_note')}</Text>
 
               <Pressable
                 onPress={() => router.push('/support' as Href)}
                 accessibilityRole="button"
-                accessibilityLabel="Find support"
-                accessibilityHint="Crisis helplines by region"
+                accessibilityLabel={t('sign_in.support_a11y')}
+                accessibilityHint={t('sign_in.support_hint')}
                 hitSlop={12}
                 style={styles.supportLink}
               >
-                <Text style={styles.supportLabel}>if tonight is heavy, find support</Text>
+                <Text style={styles.supportLabel}>{t('sign_in.support_link')}</Text>
               </Pressable>
             </View>
           </ScrollView>

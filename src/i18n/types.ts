@@ -20,6 +20,27 @@ export type StringsShape = {
     not_service: string;
     human_review: string;
   };
+  sign_in: {
+    screen_label: string;
+    title: string;
+    sub: string;
+    email_label: string;
+    email_placeholder: string;
+    email_a11y: string;
+    password_label: string;
+    password_a11y: string;
+    forgot: string;
+    forgot_a11y: string;
+    submit: string;
+    submit_busy: string;
+    create_eyebrow: string;
+    create_label: string;
+    create_a11y: string;
+    privacy_note: string;
+    support_link: string;
+    support_a11y: string;
+    support_hint: string;
+  };
 };
 
 export type LanguageCode = 'en' | 'hi' | 'ta' | 'bn' | 'mr';
