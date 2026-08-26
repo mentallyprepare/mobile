@@ -41,6 +41,41 @@ export type StringsShape = {
     support_a11y: string;
     support_hint: string;
   };
+  reveal: {
+    kicker: string;
+    back_a11y: string;
+    // State 1: reveal not yet available.
+    not_yet_title: string;
+    not_yet_body: string;
+    // State 2: choose panel.
+    choose_title: string;
+    choose_body: string;
+    // Reveal choice labels — mirrors REVEAL_LABELS in src/api/reveal.ts.
+    choice_stay_anonymous_short: string;
+    choice_stay_anonymous_long: string;
+    choice_first_name_short: string;
+    choice_first_name_long: string;
+    choice_name_college_short: string;
+    choice_name_college_long: string;
+    choice_contact_details_short: string;
+    choice_contact_details_long: string;
+    // State 3: locked, waiting for partner.
+    waiting_title_prefix: string; // "You chose "
+    waiting_title_suffix: string; // "."
+    waiting_body: string;
+    waiting_locked: string;
+    // State 4a: both chose stay_anonymous.
+    anonymous_title: string;
+    anonymous_body: string;
+    // State 4b: both revealed.
+    revealed_title: string;
+    partner_card_label: string;
+    partner_email_a11y_prefix: string; // "Contact email "
+    unsent_letter_label: string;
+    // Fallback branch.
+    settling_title: string;
+    settling_body: string;
+  };
 };
 
 export type LanguageCode = 'en' | 'hi' | 'ta' | 'bn' | 'mr';
