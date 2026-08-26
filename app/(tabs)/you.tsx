@@ -1,219 +1,340 @@
-import { View, Text, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
-import { useRouter } from 'expo-router';
-import DaylightScreen from '../../src/components/DaylightScreen';
-import DaylightCard from '../../src/components/DaylightCard';
-import Illustration from '../../src/components/Illustration';
-import { daylight, radius, space, type } from '../../src/design';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useRouter, type Href } from 'expo-router';
+import CosmicScreen from '../../src/components/app/CosmicScreen';
+import InnerUniverseScene from '../../src/components/profile/InnerUniverseScene';
+import ShelfStrip from '../../src/components/shelf/ShelfStrip';
+import {
+  LoadFailure,
+  LoadPlaceholder,
+  StaleNotice,
+} from '../../src/components/app/LoadFailure';
+import { brand, radius, space, type } from '../../src/design';
 import { useMeShared } from '../../src/api/me-provider';
 import { useShelf } from '../../src/api/shelf-provider';
-import { KIND_META, SHELF_KINDS, type ShelfKind } from '../../src/api/shelf';
+import { canRenderContent, describeLoad } from '../../src/api/load-state';
+import { SHELF_KINDS } from '../../src/api/shelf';
 import { useSession } from '../../src/session';
+import { PREVIEW_TOOLS_ENABLED } from '../../src/preview-tools';
 
-/**
- * You — identity, real shelf, streak, sign out. Daylight surface. The shelf
- * shows only slots the user has filled; empty slots invite one-tap add.
- */
-export default function You() {
-  const { data, loading: meLoading } = useMeShared();
-  const { byKind, loading: shelfLoading } = useShelf();
+export default function Profile() {
+  const {
+    data,
+    loading: meLoading,
+    error: meError,
+    hasLoaded: meHasLoaded,
+    reload: reloadMe,
+  } = useMeShared();
+  const shelf = useShelf();
+  const { byKind } = shelf;
   const { signOut } = useSession();
   const router = useRouter();
 
-  if (meLoading) {
+  const view = describeLoad({
+    loading: meLoading,
+    error: meError,
+    hasLoaded: meHasLoaded,
+  });
+  const shelfView = describeLoad({
+    loading: shelf.loading,
+    error: shelf.error,
+    hasLoaded: shelf.hasLoaded,
+  });
+  // An unreachable shelf is not an empty shelf. Counts stay unknown until we
+  // have actually heard back.
+  const shelfKnown = canRenderContent(shelfView);
+
+  if (view === 'first-load') {
     return (
-      <DaylightScreen>
-        <ActivityIndicator color={daylight.accent} style={{ marginTop: space.huge }} />
-      </DaylightScreen>
+      <CosmicScreen>
+        <LoadPlaceholder label="Loading your profile" />
+      </CosmicScreen>
+    );
+  }
+
+  if (view === 'failed') {
+    return (
+      <CosmicScreen>
+        <LoadFailure error={meError} onRetry={() => void reloadMe()} busy={meLoading} />
+      </CosmicScreen>
     );
   }
 
   const archetype = data?.user?.archetype ?? null;
-  const name = data?.user?.name ?? null;
+  const name = data?.user?.name?.trim() || 'Your profile';
+  const initial = name === 'Your profile' ? 'M' : name.charAt(0).toUpperCase();
   const streak = data?.streak ?? 0;
+  const entries = data?.entries ?? [];
   const match = data?.match ?? null;
-  const filledKinds = SHELF_KINDS.filter((k) => byKind[k]);
+  const filledKinds = SHELF_KINDS.filter((kind) => byKind[kind]);
 
   return (
-    <DaylightScreen>
-      <View style={styles.header}>
-        <Illustration slot="you-hero" size={72} />
-        <View style={styles.headerText}>
-          <Text style={styles.archetype}>{archetype ?? 'not scanned yet'}</Text>
-          {name ? <Text style={styles.name}>{name}</Text> : null}
+    <CosmicScreen contentStyle={styles.immersiveContent}>
+      <InnerUniverseScene
+        name={name}
+        initial={initial}
+        archetype={archetype}
+        entries={entries}
+        userId={data?.user?.id ?? 0}
+        filledKinds={filledKinds}
+        currentNight={match?.day ?? null}
+      />
+
+      <View style={styles.sheet}>
+        <Text style={styles.sheetLabel}>YOUR PRIVATE RECORD</Text>
+
+        {view === 'stale' ? (
+          <StaleNotice error={meError} onRetry={() => void reloadMe()} busy={meLoading} />
+        ) : null}
+        <View style={styles.stats}>
+          <Stat value={String(entries.length)} label="sealed nights" />
+          <View style={styles.statRule} />
+          <Stat
+            value={shelfKnown ? `${filledKinds.length}/5` : '—'}
+            label="shelf objects"
+          />
+          <View style={styles.statRule} />
+          <Stat value={String(streak)} label="night streak" />
         </View>
-      </View>
 
-      {streak > 0 ? (
-        <DaylightCard style={styles.card} accent="amber">
-          <Text style={styles.streak}>
-            {streak} {streak === 1 ? 'night' : 'nights'} in a row.
-          </Text>
-        </DaylightCard>
-      ) : null}
+        {!archetype ? (
+          <ActionRow
+            eyebrow="PROFILE FOUNDATION"
+            title="Explore your connection pattern"
+            detail="Eleven reflective, non-diagnostic questions"
+            onPress={() => router.push('/scan')}
+            highlighted
+          />
+        ) : null}
 
-      <Text style={styles.section}>YOUR SHELF</Text>
-      {shelfLoading ? (
-        <ActivityIndicator color={daylight.accent} style={{ marginTop: space.md }} />
-      ) : filledKinds.length === 0 ? (
-        <Pressable
-          onPress={() => router.push('/create')}
-          accessibilityRole="button"
-          accessibilityLabel="Add to your shelf"
-          style={({ pressed }) => [styles.emptyShelf, pressed && styles.pressed]}
-        >
-          <Text style={styles.emptyShelfTitle}>your shelf is empty.</Text>
-          <Text style={styles.emptyShelfBody}>
-            add a song, a film, a book — one thing at a time.
-          </Text>
-        </Pressable>
-      ) : (
-        <View style={styles.shelfList}>
-          {filledKinds.map((k) => (
-            <ShelfDisplayRow key={k} kind={k} />
-          ))}
-          {SHELF_KINDS.length > filledKinds.length ? (
-            <Pressable
-              onPress={() => router.push('/create')}
-              accessibilityRole="button"
-              accessibilityLabel="Add more"
-              style={({ pressed }) => [styles.addMore, pressed && styles.pressed]}
-            >
-              <Text style={styles.addMoreLabel}>
-                {SHELF_KINDS.length - filledKinds.length} more to add
-              </Text>
-            </Pressable>
-          ) : null}
-        </View>
-      )}
+        {shelfKnown ? (
+          <ShelfStrip byKind={byKind} title="Objects in your orbit" />
+        ) : shelfView === 'failed' ? (
+          <LoadFailure
+            error={shelf.error}
+            onRetry={() => void shelf.reload()}
+            busy={shelf.loading}
+          />
+        ) : (
+          <LoadPlaceholder label="Loading your taste objects" />
+        )}
 
-      {match ? (
-        <DaylightCard style={styles.card} accent="violet">
-          <Text style={styles.section}>YOUR MATCH</Text>
-          <Text style={styles.matchLine}>
-            someone from another college, night {match.day} with you
-          </Text>
-        </DaylightCard>
-      ) : null}
+        {match ? (
+          <>
+            <SectionHeader title="Your current room" />
+            <ActionRow
+              eyebrow={`NIGHT ${String(match.day).padStart(2, '0')} OF 21`}
+              title="Continue tonight’s ritual"
+              detail="Your writing stays private to your account"
+              onPress={() => router.push('/rooms')}
+            />
+          </>
+        ) : null}
 
-      <View style={styles.foot}>
+        <SectionHeader title="Control your account" />
+        {data?.user && !data.user.emailVerified ? (
+          <ActionRow
+            eyebrow="AWAITING CONFIRMATION"
+            title="Verify your email"
+            detail="Helps with password resets and recovery. One tap resends the link."
+            onPress={() => router.push('/verify-email' as Href)}
+            highlighted
+          />
+        ) : null}
+        <ActionRow
+          eyebrow="SAFETY"
+          title="Safety & privacy"
+          detail="Connections, reports, export, and deletion"
+          onPress={() => router.push('/safety-privacy' as Href)}
+        />
+        <ActionRow
+          eyebrow="ATTENTION"
+          title="Notification rhythm"
+          detail="Choose which reminders may reach you"
+          onPress={() => router.push('/notification-settings' as Href)}
+        />
+        <ActionRow
+          eyebrow="LANGUAGE"
+          title="App language"
+          detail="English or one of four Indian languages"
+          onPress={() => router.push('/language' as Href)}
+        />
+
+        {PREVIEW_TOOLS_ENABLED ? (
+          <ActionRow
+            eyebrow="INTERNAL BUILD ONLY"
+            title="Interaction preview"
+            detail="A fully populated night, using sample data, for judging layout"
+            onPress={() => router.push('/daily-preview' as Href)}
+          />
+        ) : null}
+
         <Pressable
           onPress={signOut}
           accessibilityRole="button"
           accessibilityLabel="Sign out"
-          style={styles.signOut}
+          style={({ pressed }) => [styles.signOut, pressed && styles.pressed]}
         >
-          <Text style={styles.signOutLabel}>sign out</Text>
+          <Text style={styles.signOutText}>Sign out</Text>
         </Pressable>
       </View>
-    </DaylightScreen>
+    </CosmicScreen>
   );
 }
 
-function ShelfDisplayRow({ kind }: { kind: ShelfKind }) {
-  const { byKind } = useShelf();
-  const router = useRouter();
-  const item = byKind[kind]!;
-  const meta = KIND_META[kind];
+function Stat({ value, label }: { value: string; label: string }) {
+  return (
+    <View style={styles.stat}>
+      <Text style={styles.statValue}>{value}</Text>
+      <Text style={styles.statLabel}>{label}</Text>
+    </View>
+  );
+}
+
+function SectionHeader({ title }: { title: string }) {
+  return (
+    <View style={styles.sectionHeader}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+    </View>
+  );
+}
+
+function ActionRow({
+  eyebrow,
+  title,
+  detail,
+  onPress,
+  highlighted = false,
+}: {
+  eyebrow: string;
+  title: string;
+  detail: string;
+  onPress: () => void;
+  highlighted?: boolean;
+}) {
   return (
     <Pressable
-      onPress={() => router.push({ pathname: '/shelf/[kind]', params: { kind } })}
+      onPress={onPress}
       accessibilityRole="button"
-      accessibilityLabel={`Edit ${meta.label}: ${item.title}`}
-      style={({ pressed }) => [styles.shelfRow, pressed && styles.pressed]}
+      accessibilityLabel={title}
+      style={({ pressed }) => [
+        styles.row,
+        highlighted && styles.rowHighlighted,
+        pressed && styles.pressed,
+      ]}
     >
-      <Text style={styles.shelfKind}>{meta.label.toUpperCase()}</Text>
-      <Text style={styles.shelfTitle} numberOfLines={1}>
-        {item.title}
-      </Text>
-      {item.detail ? (
-        <Text style={styles.shelfDetail} numberOfLines={1}>
-          {item.detail}
+      <View style={styles.rowCopy}>
+        <Text style={[styles.rowEyebrow, highlighted && styles.rowEyebrowHighlighted]}>
+          {eyebrow}
         </Text>
-      ) : null}
+        <Text style={[styles.rowTitle, highlighted && styles.rowTitleHighlighted]}>
+          {title}
+        </Text>
+        <Text style={[styles.rowDetail, highlighted && styles.rowDetailHighlighted]}>
+          {detail}
+        </Text>
+      </View>
+      <Text style={[styles.chevron, highlighted && styles.chevronHighlighted]}>→</Text>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
+  immersiveContent: { paddingHorizontal: 0, paddingBottom: 0 },
+  sheet: {
+    minHeight: 620,
+    marginTop: -24,
+    paddingHorizontal: space.lg,
+    paddingTop: space.xl,
+    paddingBottom: space.huge,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    backgroundColor: brand.card,
+    borderTopWidth: 1,
+    borderColor: brand.line,
+  },
+  sheetLabel: {
+    ...type.eyebrow,
+    color: brand.rose,
+    fontSize: 8.5,
+    letterSpacing: 1.25,
+  },
+  stats: {
+    minHeight: 92,
+    marginTop: space.md,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: brand.line,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: space.lg,
   },
-  headerText: { flex: 1 },
-  archetype: {
-    ...type.displayItalic,
-    fontSize: 32,
-    lineHeight: 38,
-    color: daylight.ink,
+  stat: { flex: 1, alignItems: 'center' },
+  statValue: { ...type.bodyStrong, color: brand.ink, fontSize: 18 },
+  statLabel: {
+    ...type.bodySmall,
+    color: brand.inkLow,
+    fontSize: 9.5,
+    marginTop: 3,
   },
-  name: {
-    ...type.body,
-    color: daylight.inkMid,
-    marginTop: 6,
-  },
-  card: { marginTop: space.xl },
-  streak: { ...type.displayItalic, fontSize: 22, color: daylight.ink },
-
-  section: {
+  statRule: { height: 34, width: 1, backgroundColor: brand.line },
+  sectionHeader: {
     marginTop: space.xl,
     marginBottom: space.sm,
-    ...type.eyebrow,
-    fontSize: 10,
-    letterSpacing: 1.6,
-    color: daylight.inkMid,
-    textTransform: 'uppercase',
+    paddingBottom: space.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: brand.line,
   },
-  emptyShelf: {
-    padding: space.xl,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: daylight.border,
-    backgroundColor: daylight.surface,
+  sectionTitle: {
+    ...type.bodyStrong,
+    color: brand.ink,
+    fontSize: 17,
   },
-  emptyShelfTitle: { ...type.displayItalic, fontSize: 22, color: daylight.ink },
-  emptyShelfBody: {
-    ...type.body,
-    color: daylight.inkMid,
-    marginTop: space.sm,
-  },
-  shelfList: { gap: space.md },
-  shelfRow: {
-    padding: space.lg,
-    borderRadius: radius.lg,
-    borderWidth: 1,
-    borderColor: daylight.border,
-    backgroundColor: daylight.surface,
-  },
-  shelfKind: {
-    ...type.eyebrow,
-    fontSize: 10,
-    letterSpacing: 1.2,
-    color: daylight.accent,
-    textTransform: 'uppercase',
-  },
-  shelfTitle: {
-    ...type.body,
-    fontSize: 15,
-    color: daylight.ink,
-    marginTop: 4,
-  },
-  shelfDetail: { ...type.bodySmall, color: daylight.inkMid, marginTop: 2 },
-  addMore: {
-    paddingVertical: space.md,
+  row: {
+    minHeight: 92,
+    paddingHorizontal: space.md,
+    borderBottomWidth: 1,
+    borderBottomColor: brand.line,
+    flexDirection: 'row',
     alignItems: 'center',
   },
-  addMoreLabel: {
-    ...type.eyebrow,
-    fontSize: 11,
-    letterSpacing: 1,
-    color: daylight.accent,
-    textTransform: 'lowercase',
+  rowHighlighted: {
+    marginTop: space.lg,
+    borderRadius: radius.md,
+    borderBottomWidth: 0,
+    backgroundColor: brand.rose,
   },
-  pressed: { opacity: 0.85 },
-
-  matchLine: { ...type.body, fontSize: 15, lineHeight: 23, color: daylight.ink },
-  foot: { marginTop: space.huge },
-  signOut: { alignSelf: 'flex-start', paddingVertical: 8 },
-  signOutLabel: { ...type.body, fontSize: 13.5, color: daylight.inkMid },
+  rowCopy: { flex: 1, paddingVertical: space.md },
+  rowEyebrow: {
+    ...type.eyebrow,
+    color: brand.rose,
+    fontSize: 7.5,
+    letterSpacing: 0.9,
+  },
+  rowEyebrowHighlighted: { color: 'rgba(8,5,15,0.58)' },
+  rowTitle: {
+    ...type.bodyStrong,
+    color: brand.ink,
+    fontSize: 14.5,
+    marginTop: 3,
+  },
+  rowTitleHighlighted: { color: brand.void },
+  rowDetail: {
+    ...type.bodySmall,
+    color: brand.inkLow,
+    fontSize: 10.5,
+    marginTop: 2,
+  },
+  rowDetailHighlighted: { color: 'rgba(8,5,15,0.68)' },
+  chevron: { color: brand.gold, fontSize: 19, marginLeft: space.md },
+  chevronHighlighted: { color: brand.void },
+  signOut: {
+    minHeight: 52,
+    marginTop: space.xl,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: brand.line,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  signOutText: { ...type.bodyStrong, color: brand.rose },
+  pressed: { opacity: 0.72, transform: [{ scale: 0.99 }] },
 });

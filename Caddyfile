@@ -1,0 +1,32 @@
+{
+  admin off
+  persist_config off
+  auto_https off
+  log {
+    format json
+  }
+  servers {
+    trusted_proxies static private_ranges 100.0.0.0/8
+  }
+}
+
+:{$PORT:3000} {
+  log {
+    format json
+  }
+
+  rewrite /health /*
+  root * dist
+  encode gzip
+
+  @bundles path /_expo/*
+  header @bundles Cache-Control "public, max-age=31536000, immutable"
+
+  @documents {
+    not path /_expo/*
+  }
+  header @documents Cache-Control "no-cache, no-store, must-revalidate"
+
+  try_files {path} /index.html
+  file_server
+}

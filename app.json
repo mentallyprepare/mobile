@@ -15,7 +15,12 @@
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "allowBackup": false
+    },
+    "ios": {
+      "bundleIdentifier": "com.mentallyprepare.app",
+      "supportsTablet": true
     },
     "web": {
       "bundler": "metro",
@@ -33,10 +38,20 @@
         }
       ],
       "expo-font",
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-notifications",
+      "expo-sharing",
+      "expo-status-bar"
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "7457c18a-bff3-493c-b7e8-057ded0c3a19"
+      }
+    },
+    "owner": "aashi12"
   }
 }

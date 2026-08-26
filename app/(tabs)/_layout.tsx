@@ -1,173 +1,99 @@
 import { Tabs, useRouter } from 'expo-router';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { MeProvider, useMeShared } from '../../src/api/me-provider';
-import { ShelfProvider } from '../../src/api/shelf-provider';
-import {
-  HomeIcon,
-  DiscoverIcon,
-  CreateIcon,
-  RoomsIcon,
-  YouIcon,
-} from '../../src/components/Icons';
-import { daylight, radius, space, type } from '../../src/design';
+import { useState } from 'react';
+import { StyleSheet, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CommunityIcon, HomeIcon, JourneyIcon, SparkIcon, YouIcon } from '../../src/components/Icons';
+import { TAB_BAR_CONTENT_HEIGHT } from '../../src/components/app/tab-bar';
+import { brand, type } from '../../src/design';
+import StardustBottomNav from '../../src/components/home/StardustBottomNav';
+import QuickActionSheet, { type QuickAction } from '../../src/components/home/QuickActionSheet';
 
-// Five tabs, EQUALS-shaped: visible labels, a raised center Create. See
-// docs/design-daylight-world.md.
 function Shell() {
+  // The bar is absolutely positioned, so without this it sits underneath the
+  // Android gesture pill on most current devices.
+  const insets = useSafeAreaInsets();
+  const router = useRouter();
+  const [actionsOpen, setActionsOpen] = useState(false);
+
+  function handleAction(action: QuickAction) {
+    setActionsOpen(false);
+    if (action === 'write' || action === 'reflection') router.push('/rooms');
+    else router.push({ pathname: '/', params: { section: action } });
+  }
+
   return (
+    <View style={styles.root}>
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarShowLabel: true,
-        tabBarActiveTintColor: daylight.ink,
-        tabBarInactiveTintColor: daylight.inkLow,
-        sceneStyle: { backgroundColor: daylight.bg },
+        tabBarActiveTintColor: brand.rose,
+        tabBarInactiveTintColor: brand.inkLow,
+        sceneStyle: { backgroundColor: brand.void },
         tabBarLabelStyle: {
           ...type.eyebrow,
-          fontSize: 10,
-          letterSpacing: 0.6,
+          fontSize: 8.5,
+          letterSpacing: 0.2,
           textTransform: 'none',
         },
-        tabBarStyle: styles.tabBar,
+        tabBarStyle: [
+          styles.tabBar,
+          {
+            height: TAB_BAR_CONTENT_HEIGHT + insets.bottom,
+            paddingBottom: 8 + insets.bottom,
+          },
+        ],
         tabBarItemStyle: styles.tabItem,
       }}
     >
       <Tabs.Screen
         name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <HomeIcon color={color} />,
-        }}
+        options={{ title: 'Home', tabBarIcon: ({ color }) => <HomeIcon color={color} /> }}
+      />
+      <Tabs.Screen
+        name="journey"
+        options={{ title: 'Journey', tabBarIcon: ({ color }) => <JourneyIcon color={color} /> }}
+      />
+      <Tabs.Screen name="rooms" options={{ href: null }} />
+      <Tabs.Screen
+        name="create"
+        options={{ title: 'Shelf', tabBarIcon: ({ color }) => <SparkIcon color={color} /> }}
       />
       <Tabs.Screen
         name="discover"
-        options={{
-          title: 'Discover',
-          tabBarIcon: ({ color }) => <DiscoverIcon color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="create"
-        options={{
-          title: '',
-          tabBarLabel: () => null,
-          tabBarButton: CreateTabButton,
-        }}
-      />
-      <Tabs.Screen
-        name="rooms"
-        options={{
-          title: 'Rooms',
-          tabBarIcon: ({ color }) => <RoomsIcon color={color} />,
-        }}
+        options={{ title: 'Community', tabBarIcon: ({ color }) => <CommunityIcon color={color} /> }}
       />
       <Tabs.Screen
         name="you"
-        options={{
-          title: 'You',
-          tabBarIcon: ({ color }) => <YouIcon color={color} />,
-        }}
+        options={{ title: 'You', tabBarIcon: ({ color }) => <YouIcon color={color} /> }}
       />
     </Tabs>
-  );
-}
-
-/**
- * Contextual center button. The label + destination change with state:
- * "Write tonight" when a Room is active, "Add to shelf" otherwise.
- * Also carries the raised-disc visual — the EQUALS-shape.
- */
-function CreateTabButton({ style: _style }: any) {
-  const { data } = useMeShared();
-  const router = useRouter();
-  const inRoom = !!data?.match;
-  const label = inRoom ? 'Write tonight' : 'Add to shelf';
-
-  return (
-    <View style={styles.createSlot}>
-      <Pressable
-        onPress={() => router.push(inRoom ? '/rooms' : '/create')}
-        accessibilityRole="button"
-        accessibilityLabel={label}
-        accessibilityHint={
-          inRoom ? 'Opens tonight\'s writing' : 'Opens shelf, if available'
-        }
-        style={({ pressed }) => [styles.createDisc, pressed && styles.pressed]}
-      >
-        <CreateIcon color={daylight.surface} size={24} />
-      </Pressable>
-      <Text style={styles.createLabel} numberOfLines={1}>
-        {label}
-      </Text>
+      <StardustBottomNav onPress={() => setActionsOpen(true)} />
+      <QuickActionSheet visible={actionsOpen} onClose={() => setActionsOpen(false)} onAction={handleAction} />
     </View>
   );
 }
 
 export default function TabsLayout() {
-  return (
-    <MeProvider>
-      <ShelfProvider>
-        <Shell />
-      </ShelfProvider>
-    </MeProvider>
-  );
+  return <Shell />;
 }
 
 const styles = StyleSheet.create({
+  root: { flex: 1 },
   tabBar: {
     position: 'absolute',
-    left: 12,
-    right: 12,
-    bottom: 12,
-    height: 76,
-    paddingTop: 10,
-    paddingBottom: 10,
-    borderRadius: radius.xl,
-    backgroundColor: daylight.surface,
-    borderTopWidth: 0,
-    borderWidth: 1,
-    borderColor: daylight.border,
-    shadowColor: '#25152E',
-    shadowOpacity: 0.08,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingTop: 8,
+    backgroundColor: brand.card,
+    borderTopWidth: 1,
+    borderTopColor: brand.line,
+    shadowColor: '#000000',
+    shadowOpacity: 0.34,
     shadowRadius: 20,
-    shadowOffset: { width: 0, height: 8 },
-    elevation: 6,
+    shadowOffset: { width: 0, height: -8 },
+    elevation: 12,
   },
-  tabItem: { paddingHorizontal: 2 },
-
-  createSlot: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingTop: 2,
-  },
-  createDisc: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: daylight.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: daylight.accent,
-    shadowOpacity: 0.35,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
-    elevation: 4,
-    marginTop: -12,
-  },
-  pressed: { opacity: 0.85 },
-  createLabel: {
-    ...type.eyebrow,
-    fontSize: 10,
-    letterSpacing: 0.6,
-    textTransform: 'none',
-    color: daylight.ink,
-    marginTop: 4,
-    maxWidth: space.huge + 20,
-    textAlign: 'center',
-  },
+  tabItem: { paddingHorizontal: 0 },
 });
-
-// Give screens breathing room so the floating tab bar doesn't cover content.
-// Screens compose DaylightScreen which pads paddingBottom: space.huge — that
-// keeps the last row above the 76+12 bar.

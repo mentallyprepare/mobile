@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "generator": "sharp@0.35.3",
+  "sources": [
+    "brand/logo-mark.svg",
+    "brand/logo-mark-transparent.svg"
+  ],
+  "sourceSha256": "1f6a317d580f867ea13a131979bcbba200cc7b797885edf56f4f36ea8c28fdbd",
+  "outputs": {
+    "brand/app-icon-1024.png": {
+      "width": 1024,
+      "height": 1024,
+      "sha256": "bc65860cf8cd347d3dc82740dc6d96aad013cdac8242736c52aacada2e4a789e"
+    },
+    "brand/app-icon-512.png": {
+      "width": 512,
+      "height": 512,
+      "sha256": "f053ae9ea253ed15ae8f9920c64d76e3a5bca403dff282845ce5fe91b15df01c"
+    },
+    "brand/app-icon-192.png": {
+      "width": 192,
+      "height": 192,
+      "sha256": "3f3e71086134f4c5ba131f15bbd70cf5251debe302588302896d37356fa2aa12"
+    },
+    "brand/logo-mark-transparent-512.png": {
+      "width": 512,
+      "height": 335,
+      "sha256": "9e83cbf39e52f6602993e8b5a8ad8de1a1532d44ec97e0940958157378e8728c"
+    },
+    "assets/images/icon.png": {
+      "width": 1024,
+      "height": 1024,
+      "sha256": "bc65860cf8cd347d3dc82740dc6d96aad013cdac8242736c52aacada2e4a789e"
+    },
+    "assets/images/favicon.png": {
+      "width": 48,
+      "height": 48,
+      "sha256": "6529e6a1d6ffbf4c7674f48f75f82e9b422cdd2b97b6f28573c5a3e2b509733a"
+    },
+    "assets/images/splash-icon.png": {
+      "width": 512,
+      "height": 335,
+      "sha256": "9e83cbf39e52f6602993e8b5a8ad8de1a1532d44ec97e0940958157378e8728c"
+    },
+    "assets/images/android-icon-foreground.png": {
+      "width": 1024,
+      "height": 1024,
+      "sha256": "74eef80e74d5c3b1ceb952c71b7a64e9d45351653b8df6c4597a164ad3b5ed3b"
+    },
+    "assets/images/android-icon-background.png": {
+      "width": 1024,
+      "height": 1024,
+      "sha256": "65de209d1a57f9d391a3a587046071a8e6869bb6858ec943a2ac2fe8eeaa4c73"
+    }
+  }
+}

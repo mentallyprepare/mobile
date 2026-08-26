@@ -1,60 +1,97 @@
-// Two visual worlds, one file. Daylight is the outer app (Home, Discover,
-// Create, You); Living Night is the ritual interior. Utility surfaces
-// (settings/safety) use native controls and are covered by neither.
-//
-// See docs/design-daylight-world.md and docs/directive-native-social-app.md.
+/**
+ * Authoritative Mentally Prepare palette.
+ * Matched to the live website design system artifact on 2026-07-30.
+ * Mobile and web share one dark world; context changes hierarchy, not brand.
+ */
+export const brand = {
+  void: '#08050F',
+  card: '#0E0A18',
+  sky: '#0B0820',
+  ink: '#F8F2FF',
+  rose: '#EBB4C2',
+  gold: '#ECC885',
+  purple: '#896CB5',
+  /**
+   * Destructive actions. Replaces a hard-coded #A1445A that measured 3.36:1
+   * and so failed as both error text and a button fill.
+   */
+  danger: '#C96B80',
 
-/** Daylight — the finding phase. Warm cream, illustrated, rounded. */
+  line: 'rgba(248,242,255,0.08)',
+  surface: 'rgba(248,242,255,0.04)',
+
+  /**
+   * The supporting-text ramp.
+   *
+   * Every step here that carries words clears WCAG AA (4.5:1) against void,
+   * card and sky. test/contrast.test.js fails if one drifts back below it.
+   *
+   * inkLow used to be 0.38 — 3.25:1 — and it carries the sentences that matter
+   * most: the account-privacy line, every row
+   * detail, every counter. The privacy promise was the least readable text on
+   * the screen. It is still visibly quieter than inkMid; it is no longer
+   * unreadable.
+   */
+  inkMid: 'rgba(248,242,255,0.62)',
+  inkLow: 'rgba(248,242,255,0.55)',
+
+  /** Structural only — hairlines, unlit orbit nodes. Never put words in this. */
+  inkFaint: 'rgba(248,242,255,0.36)',
+} as const;
+
+/** Legacy utility token name, now mapped into the shared dark brand world. */
 export const daylight = {
-  bg: '#F5F0E7', // cream
-  bgAlt: '#E7E1F8', // pale lilac
-  surface: '#FFFFFF',
-  surfaceMuted: 'rgba(9,7,26,0.03)',
-  border: 'rgba(9,7,26,0.09)',
+  bg: brand.void,
+  bgAlt: brand.sky,
+  surface: brand.card,
+  surfaceMuted: brand.surface,
+  border: brand.line,
 
-  ink: '#25152E', // dark plum, high-contrast
-  inkMid: 'rgba(37,21,46,0.62)',
-  inkLow: 'rgba(37,21,46,0.38)',
+  ink: brand.ink,
+  inkMid: brand.inkMid,
+  inkLow: brand.inkLow,
 
-  // Accents used sparingly, one per surface.
-  accent: '#A99BF0', // moon violet
-  accentRose: '#D98EA4',
-  accentAmber: '#D7A64A',
-  accentMoss: '#74836B',
-  accentBlue: '#86A5BE',
-  accentCoral: '#E58B75',
+  accent: brand.rose,
+  accentRose: brand.rose,
+  accentAmber: brand.gold,
+  accentMoss: brand.purple,
+  accentBlue: brand.purple,
+  accentCoral: brand.rose,
+
+  danger: brand.danger,
+  /** Type drawn on top of a danger fill. */
+  onDanger: brand.void,
 };
 
-/** Living Night — the ritual interior. Unchanged: this is a re-export of the
- *  existing brand tokens so ritual screens keep working exactly as approved. */
+/** Living Night uses the same ground, type and accents as the website. */
 export const night = {
-  bg: '#050311',
-  bgAlt: '#171126',
+  bg: brand.void,
+  bgAlt: brand.card,
 
-  moonQuiet: '#6B5FAE',
-  moonPresent: '#A89BF0',
-  ringFront: '#DDD6FF',
-  ringBack: '#453E75',
+  moonQuiet: brand.purple,
+  moonPresent: brand.rose,
+  ringFront: brand.ink,
+  ringBack: brand.purple,
 
-  starYours: '#CFC7FF',
-  starPending: '#EFEAFF',
-  starTheirs: '#A89BF0',
+  starYours: brand.rose,
+  starPending: brand.ink,
+  starTheirs: brand.purple,
 
-  ink: '#EFEAFF',
-  inkMid: '#8F87BB',
-  inkLow: 'rgba(239,234,255,0.5)',
-  inkFaint: 'rgba(143,135,187,0.5)',
-  border: 'rgba(239,234,255,0.08)',
+  ink: brand.ink,
+  inkMid: brand.inkMid,
+  inkLow: brand.inkLow,
+  inkFaint: brand.inkFaint,
+  border: brand.line,
 
   surface: {
-    gradient: ['rgba(248,242,255,0.045)', 'rgba(212,133,154,0.025)'] as [string, string],
-    border: 'rgba(248,242,255,0.105)',
-    fill: 'rgba(248,242,255,0.03)',
+    gradient: [brand.surface, 'rgba(235,180,194,0.025)'] as [string, string],
+    border: brand.line,
+    fill: brand.surface,
   },
 
   cta: {
-    gradient: ['#B7657B', '#765996'] as [string, string],
-    shadow: 'rgba(155,79,102,0.30)',
+    gradient: [brand.rose, brand.purple] as [string, string],
+    shadow: 'rgba(235,180,194,0.24)',
   },
 };
 
@@ -64,6 +101,6 @@ export const night = {
  * not touch those screens — this migration is opt-in per screen.
  */
 export const legacy = {
-  sky: { early: '#0B0820', late: night.bg, gradientFrom: '#100C2E', gradientTo: night.bg },
+  sky: { early: brand.sky, late: brand.void, gradientFrom: brand.sky, gradientTo: brand.void },
   moon: { quiet: night.moonQuiet, present: night.moonPresent },
 };

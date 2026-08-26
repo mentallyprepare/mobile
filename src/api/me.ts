@@ -1,52 +1,23 @@
 import { useCallback, useEffect, useState } from 'react';
 import { api } from './index';
+import { parseMe } from './parse-me';
+import type { MeResponse } from './types-me';
 
 // Shapes mirror the real /api/me response in the web repo (routes/app.js).
-// Only the fields the app actually reads are typed; the endpoint returns more.
+// Types live in types-me.ts so parse-me.ts can share them without pulling
+// react through the graph — see the comment atop that file for why.
+export type {
+  MeEntry,
+  MeMatch,
+  MeResponse,
+  MeUser,
+  PartnerEntryPresence,
+  PartnerStatus,
+} from './types-me';
 
-export type MeUser = {
-  id: number;
-  name: string;
-  email: string;
-  college: string | null;
-  year: string | null;
-  emailVerified: boolean;
-  archetype: string | null;
-};
-
-export type MeMatch = {
-  id: number;
-  day: number;
-  currentPrompt: string;
-  partner: { archetype: string | null } | null;
-  startedAt: string;
-};
-
-export type MeEntry = {
-  day: number;
-  text: string;
-  mood: string | null;
-  created_at: string;
-};
-
-export type PartnerStatus = {
-  hasPartner: boolean;
-  /** The presence-moon signal: has the match sealed something tonight. */
-  partnerHasWrittenToday: boolean;
-  nextUnsealAt: string | null;
-};
-
-export type MeResponse = {
-  user: MeUser;
-  match: MeMatch | null;
-  entries: MeEntry[];
-  partnerEntries: MeEntry[];
-  partnerStatus: PartnerStatus;
-  streak: number;
-};
-
-export function getMe() {
-  return api.request<MeResponse>('/api/me');
+export async function getMe(): Promise<MeResponse> {
+  const body = await api.request<unknown>('/api/me');
+  return parseMe(body);
 }
 
 type MeState = {
@@ -77,7 +48,7 @@ export function useMe() {
   }, []);
 
   useEffect(() => {
-    load();
+    void Promise.resolve().then(load);
   }, [load]);
 
   return { ...state, reload: load };
