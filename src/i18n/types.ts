@@ -92,6 +92,45 @@ export type StringsShape = {
     continue: string;
     not_now: string;
   };
+  sign_up: {
+    back: string;
+    eyebrow_prefix: string; // "CREATE ACCOUNT · "
+    eyebrow_suffix: string; // " OF 3"
+    step1_title: string;
+    step2_title: string;
+    step3_title: string;
+    step1_intro: string;
+    step2_intro: string;
+    step3_intro: string;
+    name_label: string;
+    name_placeholder: string;
+    email_label: string;
+    email_placeholder: string;
+    password_label: string;
+    password_placeholder: string;
+    confirm_label: string;
+    confirm_placeholder: string;
+    college_label: string;
+    college_placeholder: string;
+    year_label: string;
+    gender_label: string;
+    match_gender_label: string;
+    age_title: string;
+    age_body: string;
+    consent_title: string;
+    consent_body: string;
+    read_terms: string;
+    read_privacy: string;
+    account_exists_title: string;
+    account_exists_body: string;
+    continue: string;
+    sign_in_instead: string;
+    reset_password: string;
+    use_different_email: string;
+    creating: string;
+    create_account: string;
+    already_have: string;
+  };
 };
 
 export type LanguageCode = 'en' | 'hi' | 'ta' | 'bn' | 'mr';

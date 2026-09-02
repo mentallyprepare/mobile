@@ -49,6 +49,9 @@ const EMPTY_DRAFT: SignUpDraft = {
 export default function SignUpScreen() {
   const router = useRouter();
   const { signUp } = useSession();
+  // Re-render the form on language change so a picker choice takes effect
+  // without leaving the screen.
+  useLanguage();
   const [step, setStep] = useState(1);
   const [draft, setDraft] = useState(EMPTY_DRAFT);
   const [error, setError] = useState<string | null>(null);
@@ -135,7 +138,7 @@ export default function SignUpScreen() {
                 accessibilityLabel={step === 1 ? 'Back to sign in' : 'Previous step'}
                 style={styles.back}
               >
-                <Text style={styles.backLabel}>← back</Text>
+                <Text style={styles.backLabel}>{t('sign_up.back')}</Text>
               </Pressable>
 
               <View style={styles.topline}>
@@ -152,56 +155,58 @@ export default function SignUpScreen() {
                 ))}
               </View>
 
-              <Text style={styles.eyebrow}>CREATE ACCOUNT · {step} OF 3</Text>
+              <Text style={styles.eyebrow}>
+                {t('sign_up.eyebrow_prefix')}{step}{t('sign_up.eyebrow_suffix')}
+              </Text>
               <Text style={styles.title}>
                 {step === 1
-                  ? 'begin with you.'
+                  ? t('sign_up.step1_title')
                   : step === 2
-                    ? 'set your boundaries.'
-                    : 'choose with clarity.'}
+                    ? t('sign_up.step2_title')
+                    : t('sign_up.step3_title')}
               </Text>
               <Text style={styles.intro}>
                 {step === 1
-                  ? 'Create a private account you can return to.'
+                  ? t('sign_up.step1_intro')
                   : step === 2
-                    ? 'These details help keep introductions relevant and respectful.'
-                    : 'Your age and consent are required before an account is created.'}
+                    ? t('sign_up.step2_intro')
+                    : t('sign_up.step3_intro')}
               </Text>
 
               <DaylightCard style={styles.card}>
                 {step === 1 ? (
                   <>
                     <Field
-                      label="YOUR NAME"
+                      label={t('sign_up.name_label')}
                       value={draft.name}
                       onChangeText={(value) => update('name', value)}
-                      placeholder="the name we should use"
+                      placeholder={t('sign_up.name_placeholder')}
                       textContentType="name"
                       autoComplete="name"
                     />
                     <Field
-                      label="EMAIL"
+                      label={t('sign_up.email_label')}
                       value={draft.email}
                       onChangeText={(value) => update('email', value)}
-                      placeholder="you@college.edu"
+                      placeholder={t('sign_up.email_placeholder')}
                       keyboardType="email-address"
                       textContentType="emailAddress"
                       autoComplete="email"
                     />
                     <Field
-                      label="PASSWORD"
+                      label={t('sign_up.password_label')}
                       value={draft.password}
                       onChangeText={(value) => update('password', value)}
-                      placeholder="at least 8 characters"
+                      placeholder={t('sign_up.password_placeholder')}
                       secureTextEntry
                       textContentType="newPassword"
                       autoComplete="new-password"
                     />
                     <Field
-                      label="CONFIRM PASSWORD"
+                      label={t('sign_up.confirm_label')}
                       value={draft.passwordConfirmation}
                       onChangeText={(value) => update('passwordConfirmation', value)}
-                      placeholder="repeat your password"
+                      placeholder={t('sign_up.confirm_placeholder')}
                       secureTextEntry
                       textContentType="newPassword"
                       autoComplete="new-password"
@@ -210,25 +215,25 @@ export default function SignUpScreen() {
                 ) : step === 2 ? (
                   <>
                     <Field
-                      label="COLLEGE OR UNIVERSITY"
+                      label={t('sign_up.college_label')}
                       value={draft.college}
                       onChangeText={(value) => update('college', value)}
-                      placeholder="where you study"
+                      placeholder={t('sign_up.college_placeholder')}
                     />
                     <ChoiceGroup
-                      label="CURRENT YEAR"
+                      label={t('sign_up.year_label')}
                       options={YEAR_OPTIONS.map((value) => ({ value, label: value }))}
                       value={draft.year}
                       onChange={(value) => update('year', value)}
                     />
                     <ChoiceGroup
-                      label="I DESCRIBE MYSELF AS"
+                      label={t('sign_up.gender_label')}
                       options={[...GENDER_OPTIONS]}
                       value={draft.gender}
                       onChange={(value) => update('gender', value)}
                     />
                     <ChoiceGroup
-                      label="I FEEL COMFORTABLE MEETING"
+                      label={t('sign_up.match_gender_label')}
                       options={[...MATCH_GENDER_OPTIONS]}
                       value={draft.matchGenderPref}
                       onChange={(value) => update('matchGenderPref', value)}
@@ -238,23 +243,23 @@ export default function SignUpScreen() {
                   <>
                     <ConsentRow
                       checked={draft.ageConfirmed}
-                      title="I am 18 or older"
-                      body="Mentally Prepare is currently for adults only."
+                      title={t('sign_up.age_title')}
+                      body={t('sign_up.age_body')}
                       onPress={() => update('ageConfirmed', !draft.ageConfirmed)}
                     />
                     <ConsentRow
                       checked={draft.consentGiven}
-                      title="I agree to the Terms and Privacy Policy"
-                      body="I understand how my account information is used and how I can export or delete it."
+                      title={t('sign_up.consent_title')}
+                      body={t('sign_up.consent_body')}
                       onPress={() => update('consentGiven', !draft.consentGiven)}
                     />
                     <View style={styles.policyLinks}>
                       <PolicyLink
-                        label="read terms"
+                        label={t('sign_up.read_terms')}
                         url="https://mymentallyprepare.com/terms"
                       />
                       <PolicyLink
-                        label="read privacy policy"
+                        label={t('sign_up.read_privacy')}
                         url="https://mymentallyprepare.com/privacy"
                       />
                     </View>
@@ -267,10 +272,9 @@ export default function SignUpScreen() {
                       <Text style={styles.accountExistsIconText}>✦</Text>
                     </View>
                     <View style={styles.accountExistsCopy}>
-                      <Text style={styles.accountExistsTitle}>you already have an account.</Text>
+                      <Text style={styles.accountExistsTitle}>{t('sign_up.account_exists_title')}</Text>
                       <Text style={styles.accountExistsBody}>
-                        Your details are safe. Sign in, reset the password, or return to
-                        step one to use another email.
+                        {t('sign_up.account_exists_body')}
                       </Text>
                     </View>
                   </View>
@@ -282,15 +286,15 @@ export default function SignUpScreen() {
 
                 <View style={styles.actions}>
                   {step < 3 ? (
-                    <AuthPrimaryButton label="continue" onPress={continueForward} />
+                    <AuthPrimaryButton label={t('sign_up.continue')} onPress={continueForward} />
                   ) : accountExists ? (
                     <>
                       <AuthPrimaryButton
-                        label="sign in instead"
+                        label={t('sign_up.sign_in_instead')}
                         onPress={() => router.replace('/sign-in')}
                       />
                       <DaylightButton
-                        label="reset my password"
+                        label={t('sign_up.reset_password')}
                         variant="ghost"
                         onPress={() => router.push('/forgot-password')}
                         block
@@ -304,12 +308,12 @@ export default function SignUpScreen() {
                         accessibilityRole="button"
                         style={styles.differentEmail}
                       >
-                        <Text style={styles.differentEmailLabel}>use a different email</Text>
+                        <Text style={styles.differentEmailLabel}>{t('sign_up.use_different_email')}</Text>
                       </Pressable>
                     </>
                   ) : (
                     <AuthPrimaryButton
-                      label={busy ? 'creating your account…' : 'create my account'}
+                      label={busy ? t('sign_up.creating') : t('sign_up.create_account')}
                       onPress={() => void createAccount()}
                       disabled={busy}
                     />
@@ -322,7 +326,7 @@ export default function SignUpScreen() {
                 accessibilityRole="button"
                 style={styles.signIn}
               >
-                <Text style={styles.signInLabel}>already have an account? sign in</Text>
+                <Text style={styles.signInLabel}>{t('sign_up.already_have')}</Text>
               </Pressable>
             </View>
           </ScrollView>
