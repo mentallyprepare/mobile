@@ -76,6 +76,22 @@ export type StringsShape = {
     settling_title: string;
     settling_body: string;
   };
+  sign_up_explainer: {
+    kicker: string;
+    title: string;
+    intro: string;
+    promise1_title: string;
+    promise1_body: string;
+    promise2_title: string;
+    promise2_body: string;
+    promise3_title: string;
+    promise3_body: string;
+    promise4_title: string;
+    promise4_body: string;
+    footnote: string;
+    continue: string;
+    not_now: string;
+  };
 };
 
 export type LanguageCode = 'en' | 'hi' | 'ta' | 'bn' | 'mr';

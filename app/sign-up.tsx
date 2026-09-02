@@ -29,6 +29,8 @@ import {
   type SignUpDraft,
   YEAR_OPTIONS,
 } from '../src/auth/sign-up';
+import { t } from '../src/i18n';
+import { useLanguage } from '../src/i18n/react';
 import { brand, layout, radius, space, type } from '../src/design';
 
 const EMPTY_DRAFT: SignUpDraft = {
@@ -602,6 +604,8 @@ function AnonymousExplainer({
   onContinue: () => void;
   onCancel: () => void;
 }) {
+  // Re-render on language change so the consent copy follows the picker.
+  useLanguage();
   return (
     <View style={explainerStyles.root}>
       <AppBackdrop />
@@ -626,64 +630,59 @@ function AnonymousExplainer({
             </View>
 
             <Text style={explainerStyles.kicker} accessibilityRole="header">
-              WHAT ANONYMOUS MEANS
+              {t('sign_up_explainer.kicker')}
             </Text>
-            <Text style={explainerStyles.title}>a small, honest promise.</Text>
-            <Text style={explainerStyles.intro}>
-              Before we ask for your name and email — here is what this app does
-              and does not do with them.
-            </Text>
+            <Text style={explainerStyles.title}>{t('sign_up_explainer.title')}</Text>
+            <Text style={explainerStyles.intro}>{t('sign_up_explainer.intro')}</Text>
 
             <View style={explainerStyles.promises}>
               <Promise
                 index="01"
-                title="Your name and email are never shown to another user."
-                body="They live on your account for sign-in, password reset, and data export. No profile page displays them."
+                title={t('sign_up_explainer.promise1_title')}
+                body={t('sign_up_explainer.promise1_body')}
               />
               <Promise
                 index="02"
-                title="Your partner never sees who you are."
-                body="For 21 nights, you both write anonymously. On Day 21 you both choose separately what to reveal — anywhere from staying anonymous to sharing contact details. If either of you picks anonymous, neither identity crosses."
+                title={t('sign_up_explainer.promise2_title')}
+                body={t('sign_up_explainer.promise2_body')}
               />
               <Promise
                 index="03"
-                title="College and year are used only to match you."
-                body="They are not displayed on any profile. We avoid pairing you with someone from the same school unless you consent later."
+                title={t('sign_up_explainer.promise3_title')}
+                body={t('sign_up_explainer.promise3_body')}
               />
               <Promise
                 index="04"
-                title="You can delete everything at any time."
-                body="Sign in, tap Safety & Privacy, tap Delete. Your account and every entry is removed from our servers."
+                title={t('sign_up_explainer.promise4_title')}
+                body={t('sign_up_explainer.promise4_body')}
               />
             </View>
 
             <Text style={explainerStyles.footnote}>
-              This app is for adults 18+. It is not therapy, medical care, or a
-              crisis line — if you feel unsafe tonight, the Support screen has
-              helplines by region.
+              {t('sign_up_explainer.footnote')}
             </Text>
 
             <View style={explainerStyles.actions}>
               <Pressable
                 onPress={onContinue}
                 accessibilityRole="button"
-                accessibilityLabel="I understand — continue"
+                accessibilityLabel={t('sign_up_explainer.continue')}
                 style={({ pressed }) => [
                   explainerStyles.continueBtn,
                   pressed && explainerStyles.pressed,
                 ]}
               >
                 <Text style={explainerStyles.continueLabel}>
-                  I understand — continue
+                  {t('sign_up_explainer.continue')}
                 </Text>
               </Pressable>
               <Pressable
                 onPress={onCancel}
                 accessibilityRole="button"
-                accessibilityLabel="Not now"
+                accessibilityLabel={t('sign_up_explainer.not_now')}
                 style={explainerStyles.cancel}
               >
-                <Text style={explainerStyles.cancelLabel}>not now</Text>
+                <Text style={explainerStyles.cancelLabel}>{t('sign_up_explainer.not_now')}</Text>
               </Pressable>
             </View>
           </View>

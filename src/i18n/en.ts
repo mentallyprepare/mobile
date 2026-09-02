@@ -81,4 +81,26 @@ export const en: StringsShape = {
     settling_body:
       'The reveal is settling. This screen will update on your next visit.',
   },
+  sign_up_explainer: {
+    kicker: 'WHAT ANONYMOUS MEANS',
+    title: 'a small, honest promise.',
+    intro:
+      'Before we ask for your name and email — here is what this app does and does not do with them.',
+    promise1_title: 'Your name and email are never shown to another user.',
+    promise1_body:
+      'They live on your account for sign-in, password reset, and data export. No profile page displays them.',
+    promise2_title: 'Your partner never sees who you are.',
+    promise2_body:
+      'For 21 nights, you both write anonymously. On Day 21 you both choose separately what to reveal — anywhere from staying anonymous to sharing contact details. If either of you picks anonymous, neither identity crosses.',
+    promise3_title: 'College and year are used only to match you.',
+    promise3_body:
+      'They are not displayed on any profile. We avoid pairing you with someone from the same school unless you consent later.',
+    promise4_title: 'You can delete everything at any time.',
+    promise4_body:
+      'Sign in, tap Safety & Privacy, tap Delete. Your account and every entry is removed from our servers.',
+    footnote:
+      'This app is for adults 18+. It is not therapy, medical care, or a crisis line — if you feel unsafe tonight, the Support screen has helplines by region.',
+    continue: 'I understand — continue',
+    not_now: 'not now',
+  },
 };
