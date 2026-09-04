@@ -131,6 +131,55 @@ export type StringsShape = {
     create_account: string;
     already_have: string;
   };
+  rooms: {
+    opening: string;
+    // pre-match "before night one" setup
+    setup_label: string;
+    setup_title: string;
+    setup_body: string;
+    setup1_title: string;
+    setup1_detail: string;
+    setup2_title: string;
+    setup2_detail: string;
+    setup3_title: string;
+    setup3_detail: string;
+    // day-21 reveal CTA (three states)
+    reveal_a11y_locked: string;
+    reveal_a11y_choose: string;
+    reveal_title_open: string;
+    reveal_title_chose: string;
+    reveal_title_choose: string;
+    reveal_body_open: string;
+    reveal_body_chose: string;
+    reveal_body_choose: string;
+    // sealed state
+    sealed_label: string;
+    sealed_title: string;
+    sealed_body: string;
+    read_partner_a11y: string;
+    read_partner_label: string;
+    // milestones (nights 7 and 14)
+    milestone7_kicker: string;
+    milestone7_title: string;
+    milestone7_body: string;
+    milestone14_kicker: string;
+    milestone14_title: string;
+    milestone14_body: string;
+    // write state
+    write_label: string;
+    write_title: string;
+    mood_label: string;
+    mood_a11y_prefix: string; // "Mood "
+    write_placeholder: string;
+    note_a11y: string;
+    support_a11y: string;
+    support_hint: string;
+    support_link: string;
+    privacy: string;
+    seal_a11y: string;
+    sealing: string;
+    seal: string;
+  };
 };
 
 export type LanguageCode = 'en' | 'hi' | 'ta' | 'bn' | 'mr';
