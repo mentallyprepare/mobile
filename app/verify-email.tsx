@@ -6,6 +6,8 @@ import { useMeShared } from '../src/api/me-provider';
 import { isVerificationRateLimit, resendVerification } from '../src/api/verification';
 import { ApiError } from '../src/api';
 import { brand, radius, space, type } from '../src/design';
+import { t } from '../src/i18n';
+import { useLanguage } from '../src/i18n/react';
 
 /**
  * Email verification — asks the server to resend the confirmation link and
@@ -18,6 +20,7 @@ import { brand, radius, space, type } from '../src/design';
  */
 export default function VerifyEmailScreen() {
   const router = useRouter();
+  useLanguage(); // re-render when the language changes
   const { data, reload } = useMeShared();
   const email = data?.user?.email ?? '';
   const verified = !!data?.user?.emailVerified;
@@ -34,17 +37,17 @@ export default function VerifyEmailScreen() {
     try {
       const result = await resendVerification();
       if (result.verified) {
-        setMessage('Already verified. Reloading your account.');
+        setMessage(t('verify_email.flash_already_verified'));
         await reload();
       } else {
-        setMessage('A fresh verification email is on its way.');
+        setMessage(t('verify_email.flash_sent'));
       }
     } catch (err) {
       if (isVerificationRateLimit(err)) {
         setError(
           err instanceof ApiError && typeof err.message === 'string'
             ? err.message
-            : 'Please wait a minute before requesting another verification email.',
+            : t('verify_email.error_rate_limit'),
         );
       } else {
         setError(messageFor(err));
@@ -56,50 +59,49 @@ export default function VerifyEmailScreen() {
 
   return (
     <View style={styles.root}>
-      <Stack.Screen options={{ title: 'Verify email' }} />
+      <Stack.Screen options={{ title: t('verify_email.screen_title') }} />
       <SafeAreaView style={styles.safe} edges={['top']}>
         <View style={styles.header}>
           <Pressable
             onPress={() => router.back()}
             accessibilityRole="button"
-            accessibilityLabel="Back"
+            accessibilityLabel={t('verify_email.back_a11y')}
             hitSlop={12}
             style={({ pressed }) => [styles.back, pressed && styles.pressed]}
           >
-            <Text style={styles.backLabel}>← back</Text>
+            <Text style={styles.backLabel}>{t('verify_email.back')}</Text>
           </Pressable>
         </View>
 
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          <Text style={styles.kicker}>EMAIL VERIFICATION</Text>
+          <Text style={styles.kicker}>{t('verify_email.kicker')}</Text>
           <Text style={styles.title}>
-            {verified ? 'Your email is verified.' : 'Confirm your email.'}
+            {verified
+              ? t('verify_email.title_verified')
+              : t('verify_email.title_unverified')}
           </Text>
 
           <View style={styles.emailCard}>
-            <Text style={styles.emailLabel}>ACCOUNT EMAIL</Text>
+            <Text style={styles.emailLabel}>{t('verify_email.email_label')}</Text>
             <Text style={styles.email} selectable>
               {email || '—'}
             </Text>
             <Text style={styles.status}>
-              {verified ? '● verified' : '○ awaiting confirmation'}
+              {verified
+                ? t('verify_email.status_verified')
+                : t('verify_email.status_unverified')}
             </Text>
           </View>
 
           {!verified ? (
             <>
-              <Text style={styles.body}>
-                We&apos;ll send a link to your email. Clicking it opens the
-                Mentally Prepare web app in your browser and confirms the
-                account. Then you can come back here — everything on this
-                device stays as it is.
-              </Text>
+              <Text style={styles.body}>{t('verify_email.body_unverified')}</Text>
 
               <Pressable
                 onPress={() => void resend()}
                 disabled={sending}
                 accessibilityRole="button"
-                accessibilityLabel="Resend verification email"
+                accessibilityLabel={t('verify_email.resend_a11y')}
                 accessibilityState={{ disabled: sending }}
                 style={({ pressed }) => [
                   styles.primary,
@@ -108,16 +110,13 @@ export default function VerifyEmailScreen() {
                 ]}
               >
                 <Text style={styles.primaryLabel}>
-                  {sending ? 'sending…' : 'send verification email'}
+                  {sending ? t('verify_email.sending') : t('verify_email.send')}
                 </Text>
                 {sending ? <ActivityIndicator color={brand.void} style={styles.spinner} /> : null}
               </Pressable>
             </>
           ) : (
-            <Text style={styles.body}>
-              You can close this screen. Verification helps with password
-              resets and recovery if you ever lose access.
-            </Text>
+            <Text style={styles.body}>{t('verify_email.body_verified')}</Text>
           )}
 
           {message ? (
@@ -138,7 +137,7 @@ export default function VerifyEmailScreen() {
 
 function messageFor(err: unknown): string {
   if (err instanceof ApiError) return err.message;
-  return 'Something went wrong. Try again in a moment.';
+  return t('verify_email.generic_error');
 }
 
 const styles = StyleSheet.create({

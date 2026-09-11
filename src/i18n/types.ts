@@ -347,6 +347,26 @@ export type StringsShape = {
     delete: string;
     keep: string;
   };
+  verify_email: {
+    screen_title: string;
+    back: string;
+    back_a11y: string;
+    kicker: string;
+    title_verified: string;
+    title_unverified: string;
+    email_label: string;
+    status_verified: string;
+    status_unverified: string;
+    body_unverified: string;
+    body_verified: string;
+    resend_a11y: string;
+    sending: string;
+    send: string;
+    flash_already_verified: string;
+    flash_sent: string;
+    error_rate_limit: string;
+    generic_error: string;
+  };
 };
 
 export type LanguageCode = 'en' | 'hi' | 'ta' | 'bn' | 'mr';

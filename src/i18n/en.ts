@@ -370,4 +370,26 @@ export const en: StringsShape = {
     delete: 'permanently delete account',
     keep: 'keep my account',
   },
+  verify_email: {
+    screen_title: 'Verify email',
+    back: '← back',
+    back_a11y: 'Back',
+    kicker: 'EMAIL VERIFICATION',
+    title_verified: 'Your email is verified.',
+    title_unverified: 'Confirm your email.',
+    email_label: 'ACCOUNT EMAIL',
+    status_verified: '● verified',
+    status_unverified: '○ awaiting confirmation',
+    body_unverified:
+      "We'll send a link to your email. Clicking it opens the Mentally Prepare web app in your browser and confirms the account. Then you can come back here — everything on this device stays as it is.",
+    body_verified:
+      'You can close this screen. Verification helps with password resets and recovery if you ever lose access.',
+    resend_a11y: 'Resend verification email',
+    sending: 'sending…',
+    send: 'send verification email',
+    flash_already_verified: 'Already verified. Reloading your account.',
+    flash_sent: 'A fresh verification email is on its way.',
+    error_rate_limit: 'Please wait a minute before requesting another verification email.',
+    generic_error: 'Something went wrong. Try again in a moment.',
+  },
 };
