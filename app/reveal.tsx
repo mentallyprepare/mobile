@@ -5,12 +5,26 @@ import { Stack, useRouter } from 'expo-router';
 import { useMeShared } from '../src/api/me-provider';
 import {
   REVEAL_CHOICES,
-  REVEAL_LABELS,
   submitRevealChoice,
 } from '../src/api/reveal';
 import { ApiError } from '../src/api';
 import type { RevealChoice, RevealState, RevealedPartner } from '../src/api/reveal';
+import { t } from '../src/i18n';
+import { useLanguage } from '../src/i18n/react';
 import { brand, radius, space, type } from '../src/design';
+
+/**
+ * Localised label lookup for each RevealChoice. Reads from t() so the choice
+ * text follows the picker's language. Kept as a function (not a memoised
+ * table) so a language change re-renders correctly — useLanguage() up in
+ * the component causes a re-render, this helper then returns fresh strings.
+ */
+function choiceLabels(choice: RevealChoice): { short: string; long: string } {
+  return {
+    short: t(`reveal.choice_${choice}_short`),
+    long: t(`reveal.choice_${choice}_long`),
+  };
+}
 
 /**
  * Day 21 reveal — the product's climax.
@@ -30,6 +44,9 @@ import { brand, radius, space, type } from '../src/design';
 export default function RevealScreen() {
   const router = useRouter();
   const { data, reload } = useMeShared();
+  // Subscribe to language changes so a picker choice re-renders the reveal
+  // copy immediately, not on next mount.
+  useLanguage();
   const [submitting, setSubmitting] = useState<RevealChoice | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -62,11 +79,11 @@ export default function RevealScreen() {
           <Pressable
             onPress={() => router.back()}
             accessibilityRole="button"
-            accessibilityLabel="Back"
+            accessibilityLabel={t('reveal.back_a11y')}
             hitSlop={12}
             style={({ pressed }) => [styles.back, pressed && styles.pressed]}
           >
-            <Text style={styles.backLabel}>← back</Text>
+            <Text style={styles.backLabel}>← {t('reveal.back_a11y').toLowerCase()}</Text>
           </Pressable>
         </View>
 
@@ -96,12 +113,9 @@ export default function RevealScreen() {
 function NotYet() {
   return (
     <View style={styles.panel}>
-      <Text style={styles.kicker}>DAY 21</Text>
-      <Text style={styles.title}>Reveal opens on the twenty-first night.</Text>
-      <Text style={styles.body}>
-        Come back after tonight&apos;s note is sealed on Night 21. Until then,
-        the choice hasn&apos;t appeared yet.
-      </Text>
+      <Text style={styles.kicker}>{t('reveal.kicker')}</Text>
+      <Text style={styles.title}>{t('reveal.not_yet_title')}</Text>
+      <Text style={styles.body}>{t('reveal.not_yet_body')}</Text>
     </View>
   );
 }
@@ -117,24 +131,22 @@ function ChoosePanel({
 }) {
   return (
     <View>
-      <Text style={styles.kicker}>DAY 21</Text>
-      <Text style={styles.title}>Choose what you want to share.</Text>
-      <Text style={styles.body}>
-        Both of you choose separately. If either one of you stays anonymous,
-        neither identity crosses. Your choice locks after you submit.
-      </Text>
+      <Text style={styles.kicker}>{t('reveal.kicker')}</Text>
+      <Text style={styles.title}>{t('reveal.choose_title')}</Text>
+      <Text style={styles.body}>{t('reveal.choose_body')}</Text>
 
       <View style={styles.choices}>
         {REVEAL_CHOICES.map((choice) => {
           const isBusy = submitting === choice;
           const anyBusy = submitting !== null;
+          const labels = choiceLabels(choice);
           return (
             <Pressable
               key={choice}
               onPress={() => onChoose(choice)}
               disabled={anyBusy}
               accessibilityRole="button"
-              accessibilityLabel={REVEAL_LABELS[choice].short}
+              accessibilityLabel={labels.short}
               accessibilityState={{ disabled: anyBusy }}
               style={({ pressed }) => [
                 styles.choice,
@@ -149,9 +161,9 @@ function ChoosePanel({
                   choice === 'stay_anonymous' && styles.choiceShortMuted,
                 ]}
               >
-                {REVEAL_LABELS[choice].short}
+                {labels.short}
               </Text>
-              <Text style={styles.choiceLong}>{REVEAL_LABELS[choice].long}</Text>
+              <Text style={styles.choiceLong}>{labels.long}</Text>
               {isBusy ? <ActivityIndicator color={brand.rose} style={styles.spinner} /> : null}
             </Pressable>
           );
@@ -175,13 +187,14 @@ function AfterChoice({ reveal }: { reveal: RevealState }) {
   if (!reveal.partnerChose) {
     return (
       <View>
-        <Text style={styles.kicker}>DAY 21</Text>
-        <Text style={styles.title}>You chose {REVEAL_LABELS[myChoice].short}.</Text>
-        <Text style={styles.body}>
-          Waiting for the other person to make their choice. When they do,
-          this screen updates on its own — or on your next visit.
+        <Text style={styles.kicker}>{t('reveal.kicker')}</Text>
+        <Text style={styles.title}>
+          {t('reveal.waiting_title_prefix')}
+          {choiceLabels(myChoice).short}
+          {t('reveal.waiting_title_suffix')}
         </Text>
-        <Text style={styles.locked}>your choice is locked.</Text>
+        <Text style={styles.body}>{t('reveal.waiting_body')}</Text>
+        <Text style={styles.locked}>{t('reveal.waiting_locked')}</Text>
       </View>
     );
   }
@@ -190,12 +203,9 @@ function AfterChoice({ reveal }: { reveal: RevealState }) {
   if (reveal.anonymous) {
     return (
       <View>
-        <Text style={styles.kicker}>DAY 21</Text>
-        <Text style={styles.title}>This partnership stays private.</Text>
-        <Text style={styles.body}>
-          One of you chose to stay anonymous. Neither identity crosses.
-          The twenty-one nights stay yours.
-        </Text>
+        <Text style={styles.kicker}>{t('reveal.kicker')}</Text>
+        <Text style={styles.title}>{t('reveal.anonymous_title')}</Text>
+        <Text style={styles.body}>{t('reveal.anonymous_body')}</Text>
         {reveal.partnerUnsentLetter ? (
           <UnsentLetter text={reveal.partnerUnsentLetter} />
         ) : null}
@@ -207,8 +217,8 @@ function AfterChoice({ reveal }: { reveal: RevealState }) {
   if (reveal.revealed && reveal.partner) {
     return (
       <View>
-        <Text style={styles.kicker}>DAY 21</Text>
-        <Text style={styles.title}>Say hi.</Text>
+        <Text style={styles.kicker}>{t('reveal.kicker')}</Text>
+        <Text style={styles.title}>{t('reveal.revealed_title')}</Text>
         <PartnerCard partner={reveal.partner} />
         {reveal.partnerUnsentLetter ? (
           <UnsentLetter text={reveal.partnerUnsentLetter} />
@@ -221,11 +231,9 @@ function AfterChoice({ reveal }: { reveal: RevealState }) {
   // (usually a stale /api/me between the two writes); reload will fix it.
   return (
     <View>
-      <Text style={styles.kicker}>DAY 21</Text>
-      <Text style={styles.title}>Both of you have chosen.</Text>
-      <Text style={styles.body}>
-        The reveal is settling. This screen will update on your next visit.
-      </Text>
+      <Text style={styles.kicker}>{t('reveal.kicker')}</Text>
+      <Text style={styles.title}>{t('reveal.settling_title')}</Text>
+      <Text style={styles.body}>{t('reveal.settling_body')}</Text>
     </View>
   );
 }
@@ -233,7 +241,7 @@ function AfterChoice({ reveal }: { reveal: RevealState }) {
 function PartnerCard({ partner }: { partner: RevealedPartner }) {
   return (
     <View style={styles.partnerCard}>
-      <Text style={styles.partnerLabel}>YOUR PARTNER WAS</Text>
+      <Text style={styles.partnerLabel}>{t('reveal.partner_card_label')}</Text>
       <Text style={styles.partnerName}>{partner.fullName ?? partner.name}</Text>
       {partner.college ? (
         <Text style={styles.partnerDetail}>
@@ -244,7 +252,7 @@ function PartnerCard({ partner }: { partner: RevealedPartner }) {
       {partner.email ? (
         <Text
           style={styles.partnerEmail}
-          accessibilityLabel={`Contact email ${partner.email}`}
+          accessibilityLabel={`${t('reveal.partner_email_a11y_prefix')}${partner.email}`}
           selectable
         >
           {partner.email}
@@ -257,7 +265,7 @@ function PartnerCard({ partner }: { partner: RevealedPartner }) {
 function UnsentLetter({ text }: { text: string }) {
   return (
     <View style={styles.letter}>
-      <Text style={styles.letterLabel}>THE UNSENT LETTER</Text>
+      <Text style={styles.letterLabel}>{t('reveal.unsent_letter_label')}</Text>
       <Text style={styles.letterText}>{text}</Text>
     </View>
   );

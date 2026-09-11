@@ -22,27 +22,30 @@ import { sealEntry } from '../../src/api/entries';
 import { drafts } from '../../src/drafts';
 import { failureDetail } from '../../src/api/failures';
 import { ApiError } from '../../src/api';
+import { t } from '../../src/i18n';
+import { useLanguage } from '../../src/i18n/react';
 
 /**
  * Milestone notes for the sealed state. Night 21 is deliberately omitted —
  * the Day-21 reveal CTA at the top of the sheet is the moment there. These
- * two are quiet acknowledgements of showing up, not celebrations.
+ * two are quiet acknowledgements of showing up, not celebrations. Reads from
+ * t() so the copy follows the picker's language.
  */
 function milestoneFor(
   night: number,
 ): { kicker: string; title: string; body: string } | null {
   if (night === 7) {
     return {
-      kicker: 'NIGHT 7',
-      title: 'A week in.',
-      body: 'You kept showing up. That was the whole ask.',
+      kicker: t('rooms.milestone7_kicker'),
+      title: t('rooms.milestone7_title'),
+      body: t('rooms.milestone7_body'),
     };
   }
   if (night === 14) {
     return {
-      kicker: 'NIGHT 14',
-      title: 'Past the halfway point.',
-      body: 'Two-thirds of the ritual is behind you. Seven nights to go.',
+      kicker: t('rooms.milestone14_kicker'),
+      title: t('rooms.milestone14_title'),
+      body: t('rooms.milestone14_body'),
     };
   }
   return null;
@@ -50,6 +53,8 @@ function milestoneFor(
 
 export default function Night() {
   const router = useRouter();
+  // Re-render on language change so the writing surface follows the picker.
+  useLanguage();
   const { data, loading, error: loadError, hasLoaded, reload } = useMeShared();
   const userId = data?.user?.id ?? 0;
   const activeNight = data?.match?.day ?? 0;
@@ -126,7 +131,7 @@ export default function Night() {
   if (view === 'first-load') {
     return (
       <CosmicScreen>
-        <LoadPlaceholder label="Opening your room" />
+        <LoadPlaceholder label={t('rooms.opening')} />
       </CosmicScreen>
     );
   }
@@ -162,29 +167,26 @@ export default function Night() {
 
         <View style={styles.sheet}>
           {staleBanner}
-          <Text style={styles.sheetLabel}>BEFORE NIGHT ONE</Text>
-          <Text style={styles.sheetTitle}>Prepare your side of the room.</Text>
-          <Text style={styles.sheetBody}>
-            Your pattern and cultural shelf give a future match real context. The app never
-            invents a partner, a note, or a connection.
-          </Text>
+          <Text style={styles.sheetLabel}>{t('rooms.setup_label')}</Text>
+          <Text style={styles.sheetTitle}>{t('rooms.setup_title')}</Text>
+          <Text style={styles.sheetBody}>{t('rooms.setup_body')}</Text>
 
           <SetupAction
             index="01"
-            title="Complete your pattern"
-            detail="Eleven reflective, non-diagnostic questions"
+            title={t('rooms.setup1_title')}
+            detail={t('rooms.setup1_detail')}
             onPress={() => router.push('/scan')}
           />
           <SetupAction
             index="02"
-            title="Build your cultural shelf"
-            detail="Songs, film, book, and one memory"
+            title={t('rooms.setup2_title')}
+            detail={t('rooms.setup2_detail')}
             onPress={() => router.push('/create')}
           />
           <SetupAction
             index="03"
-            title="Write your Day 1"
-            detail="It becomes the first note your match reads"
+            title={t('rooms.setup3_title')}
+            detail={t('rooms.setup3_detail')}
             onPress={() => router.push('/waiting' as Href)}
           />
         </View>
@@ -244,25 +246,25 @@ export default function Night() {
             accessibilityRole="button"
             accessibilityLabel={
               data.reveal.myChoice
-                ? 'Open Day 21 reveal — your choice is locked'
-                : 'Open Day 21 reveal — choose what to share'
+                ? t('rooms.reveal_a11y_locked')
+                : t('rooms.reveal_a11y_choose')
             }
             style={({ pressed }) => [styles.revealCta, pressed && styles.pressed]}
           >
-            <Text style={styles.revealKicker}>DAY 21</Text>
+            <Text style={styles.revealKicker}>{t('reveal.kicker')}</Text>
             <Text style={styles.revealTitle}>
               {data.reveal.revealed
-                ? 'Reveal is open.'
+                ? t('rooms.reveal_title_open')
                 : data.reveal.myChoice
-                  ? 'You chose. Waiting for the other person.'
-                  : 'Choose what you want to share.'}
+                  ? t('rooms.reveal_title_chose')
+                  : t('rooms.reveal_title_choose')}
             </Text>
             <Text style={styles.revealBody}>
               {data.reveal.revealed
-                ? 'The partnership can be seen.'
+                ? t('rooms.reveal_body_open')
                 : data.reveal.myChoice
-                  ? 'The choice is locked. This screen will update when your partner chooses.'
-                  : 'Both of you decide separately. Either one anonymous keeps both private.'}
+                  ? t('rooms.reveal_body_chose')
+                  : t('rooms.reveal_body_choose')}
             </Text>
             <Text style={styles.revealArrow}>open →</Text>
           </Pressable>
@@ -272,20 +274,18 @@ export default function Night() {
             <View style={styles.sealedMark}>
               <View style={styles.sealedMarkCore} />
             </View>
-            <Text style={styles.sheetLabel}>SEALED LOCALLY AND ON YOUR ACCOUNT</Text>
-            <Text style={styles.sheetTitle}>Your note became a star.</Text>
-            <Text style={styles.sheetBody}>
-              Nothing more is required tonight. This note stays private to your account.
-            </Text>
+            <Text style={styles.sheetLabel}>{t('rooms.sealed_label')}</Text>
+            <Text style={styles.sheetTitle}>{t('rooms.sealed_title')}</Text>
+            <Text style={styles.sheetBody}>{t('rooms.sealed_body')}</Text>
             {(data?.partnerEntries?.length ?? 0) > 0 ? (
               <Pressable
                 onPress={() => router.push('/partner' as Href)}
                 accessibilityRole="button"
-                accessibilityLabel="Read what your partner wrote on earlier nights"
+                accessibilityLabel={t('rooms.read_partner_a11y')}
                 hitSlop={10}
                 style={({ pressed }) => [styles.readPartner, pressed && styles.pressed]}
               >
-                <Text style={styles.readPartnerLabel}>read what they wrote →</Text>
+                <Text style={styles.readPartnerLabel}>{t('rooms.read_partner_label')}</Text>
               </Pressable>
             ) : null}
             {milestoneFor(night) ? (
@@ -304,10 +304,10 @@ export default function Night() {
           </View>
         ) : (
           <>
-            <Text style={styles.sheetLabel}>YOUR PRIVATE RESPONSE</Text>
-            <Text style={styles.sheetTitle}>Write before you polish it.</Text>
+            <Text style={styles.sheetLabel}>{t('rooms.write_label')}</Text>
+            <Text style={styles.sheetTitle}>{t('rooms.write_title')}</Text>
             <View style={styles.moodRow}>
-              <Text style={styles.moodLabel}>tonight&apos;s mood</Text>
+              <Text style={styles.moodLabel}>{t('rooms.mood_label')}</Text>
               <View style={styles.moodOptions}>
                 {MOODS.map((m) => {
                   const active = mood === m;
@@ -318,7 +318,7 @@ export default function Night() {
                       disabled={busy}
                       accessibilityRole="radio"
                       accessibilityState={{ selected: active, disabled: busy }}
-                      accessibilityLabel={`Mood ${m}`}
+                      accessibilityLabel={`${t('rooms.mood_a11y_prefix')}${m}`}
                       hitSlop={6}
                       style={({ pressed }) => [
                         styles.moodChip,
@@ -338,32 +338,30 @@ export default function Night() {
                 value={draft}
                 onChangeText={setDraft}
                 onFocus={revealEditor}
-                placeholder="What is true for you tonight?"
+                placeholder={t('rooms.write_placeholder')}
                 placeholderTextColor={brand.inkLow}
                 multiline
                 textAlignVertical="top"
                 editable={!busy}
                 maxLength={5000}
-                accessibilityLabel="Tonight's private note"
+                accessibilityLabel={t('rooms.note_a11y')}
               />
               <Text style={styles.counter}>{draft.length}/5000</Text>
             </View>
             <Pressable
               onPress={() => router.push('/support' as Href)}
               accessibilityRole="button"
-              accessibilityLabel="Find support"
-              accessibilityHint="Crisis helplines by region"
+              accessibilityLabel={t('rooms.support_a11y')}
+              accessibilityHint={t('rooms.support_hint')}
               hitSlop={10}
               style={styles.supportLink}
             >
-              <Text style={styles.supportLabel}>if tonight is heavy, find support</Text>
+              <Text style={styles.supportLabel}>{t('rooms.support_link')}</Text>
             </Pressable>
 
             <View style={styles.privacyRow}>
               <View style={styles.privacyDot} />
-              <Text style={styles.privacy}>
-                Only you can see this note.
-              </Text>
+              <Text style={styles.privacy}>{t('rooms.privacy')}</Text>
             </View>
             {error ? (
               <Text accessibilityLiveRegion="polite" style={styles.error}>
@@ -374,14 +372,14 @@ export default function Night() {
               onPress={onSeal}
               disabled={!draft.trim() || busy}
               accessibilityRole="button"
-              accessibilityLabel="Seal tonight's note"
+              accessibilityLabel={t('rooms.seal_a11y')}
               style={({ pressed }) => [
                 styles.primary,
                 (!draft.trim() || busy) && styles.primaryDisabled,
                 pressed && styles.pressed,
               ]}
             >
-              <Text style={styles.primaryText}>{busy ? 'Sealing…' : 'Seal as a star'}</Text>
+              <Text style={styles.primaryText}>{busy ? t('rooms.sealing') : t('rooms.seal')}</Text>
               <Text style={styles.primaryArrow}>↑</Text>
             </Pressable>
           </>
