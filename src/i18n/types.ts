@@ -41,6 +41,47 @@ export type StringsShape = {
     support_a11y: string;
     support_hint: string;
   };
+  small_wins: {
+    tap_hint: string;
+    close: string;
+    // recognition beat
+    recognition_title: string;
+    tonights_win_label: string;
+    night_label: string;
+    of_total: string;
+    // consent beat
+    consent_title: string;
+    your_win_label: string;
+    consent_lock: string;
+    share_cta: string;
+    keep_cta: string;
+    // closing — shared
+    shared_title: string;
+    shared_body: string;
+    reaction_label: string;
+    // closing — kept private
+    kept_title: string;
+    kept_body: string;
+    // milestone intros (nights 1 / 3 / 7 / 14 / 20 / 21)
+    m1_kicker: string;
+    m1_title: string;
+    m1_body: string;
+    m3_kicker: string;
+    m3_title: string;
+    m3_body: string;
+    m7_kicker: string;
+    m7_title: string;
+    m7_body: string;
+    m14_kicker: string;
+    m14_title: string;
+    m14_body: string;
+    m20_kicker: string;
+    m20_title: string;
+    m20_body: string;
+    m21_kicker: string;
+    m21_title: string;
+    m21_body: string;
+  };
 };
 
 export type LanguageCode = 'en' | 'hi' | 'ta' | 'bn' | 'mr';
