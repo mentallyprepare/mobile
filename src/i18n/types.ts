@@ -180,6 +180,33 @@ export type StringsShape = {
     sealing: string;
     seal: string;
   };
+  silent: {
+    screen_title: string;
+    back: string;
+    back_a11y: string;
+    title: string;
+    subtitle: string;
+    placeholder: string;
+    input_a11y: string;
+    chars_left: string;
+    submit_a11y: string;
+    share: string;
+    sharing: string;
+    flash_shared: string;
+    flash_held: string;
+    person_wrote: string;
+    people_wrote: string;
+    generic_error: string;
+    retry: string;
+    empty: string;
+    load_more: string;
+    support_a11y: string;
+    support_link: string;
+    resonate_on_a11y: string;
+    resonate_off_a11y: string;
+    resonated: string;
+    resonate: string;
+  };
 };
 
 export type LanguageCode = 'en' | 'hi' | 'ta' | 'bn' | 'mr';
