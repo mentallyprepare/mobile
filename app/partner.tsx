@@ -22,6 +22,8 @@ import {
 } from '../src/api/interactions';
 import { ApiError } from '../src/api';
 import { brand, radius, space, type } from '../src/design';
+import { t } from '../src/i18n';
+import { useLanguage } from '../src/i18n/react';
 import type { PartnerEntryPresence } from '../src/api/types-me';
 
 /**
@@ -37,6 +39,7 @@ import type { PartnerEntryPresence } from '../src/api/types-me';
  */
 export default function PartnerReaderScreen() {
   const router = useRouter();
+  useLanguage(); // re-render when the language changes
   const { data, reload } = useMeShared();
 
   const entries = useMemo(() => {
@@ -62,7 +65,7 @@ export default function PartnerReaderScreen() {
 
   return (
     <View style={styles.root}>
-      <Stack.Screen options={{ title: 'What they wrote' }} />
+      <Stack.Screen options={{ title: t('partner.screen_title') }} />
       <SafeAreaView style={styles.safe} edges={['top']}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -72,19 +75,19 @@ export default function PartnerReaderScreen() {
             <Pressable
               onPress={() => router.back()}
               accessibilityRole="button"
-              accessibilityLabel="Back"
+              accessibilityLabel={t('partner.back_a11y')}
               hitSlop={12}
               style={({ pressed }) => [styles.back, pressed && styles.pressed]}
             >
-              <Text style={styles.backLabel}>← back</Text>
+              <Text style={styles.backLabel}>{t('partner.back')}</Text>
             </Pressable>
             <Text style={styles.title} accessibilityRole="header">
-              What they wrote
+              {t('partner.title')}
             </Text>
             <Text style={styles.subtitle}>
               {nextUnlockCopy
-                ? `Each night unlocks at the day-turn (~${nextUnlockCopy} your time), once you both sealed.`
-                : 'Each night unlocks at the day-turn, once you both sealed.'}
+                ? `${t('partner.subtitle_time_prefix')}${nextUnlockCopy}${t('partner.subtitle_time_suffix')}`
+                : t('partner.subtitle_plain')}
             </Text>
           </View>
 
@@ -94,14 +97,17 @@ export default function PartnerReaderScreen() {
             showsVerticalScrollIndicator={false}
           >
             {!data?.match ? (
-              <EmptyPanel title="No active room." body="This surface appears once you are paired." />
+              <EmptyPanel
+                title={t('partner.empty_nomatch_title')}
+                body={t('partner.empty_nomatch_body')}
+              />
             ) : entries.length === 0 ? (
               <EmptyPanel
-                title="Nothing unlocked yet."
+                title={t('partner.empty_locked_title')}
                 body={
                   nextUnlockCopy
-                    ? `Once you both seal on a night, the partner side appears here at the next day-turn — around ${nextUnlockCopy} your time.`
-                    : 'Once you both seal on a night, the partner side appears here at the next day-turn.'
+                    ? `${t('partner.empty_locked_body_time_prefix')}${nextUnlockCopy}${t('partner.empty_locked_body_time_suffix')}`
+                    : t('partner.empty_locked_body_plain')
                 }
               />
             ) : (
@@ -176,7 +182,10 @@ function EntryCard({
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
-        <Text style={styles.night}>Night {String(entry.day).padStart(2, '0')}</Text>
+        <Text style={styles.night}>
+          {t('partner.night_prefix')}
+          {String(entry.day).padStart(2, '0')}
+        </Text>
         {entry.mood ? <Text style={styles.mood}>{entry.mood}</Text> : null}
       </View>
       <Text style={styles.body}>{entry.text}</Text>
@@ -191,7 +200,7 @@ function EntryCard({
               onPress={() => void toggleReaction(emoji)}
               disabled={busy}
               accessibilityRole="button"
-              accessibilityLabel={`React with ${emoji}${active ? ', already sent' : ''}`}
+              accessibilityLabel={`${t('partner.react_a11y_prefix')}${emoji}${active ? t('partner.react_already_sent') : ''}`}
               accessibilityState={{ selected: active, disabled: busy }}
               hitSlop={4}
               style={({ pressed }) => [
@@ -212,7 +221,7 @@ function EntryCard({
           {dayComments.map((c, i) => (
             <View key={i} style={styles.comment}>
               <Text style={styles.commentFrom}>
-                {c.from === 'me' ? 'you' : 'them'}
+                {c.from === 'me' ? t('partner.from_you') : t('partner.from_them')}
               </Text>
               <Text style={styles.commentText}>{c.text}</Text>
             </View>
@@ -226,13 +235,15 @@ function EntryCard({
           disabled={busy}
           accessibilityRole="button"
           accessibilityLabel={
-            existingMyComment ? 'Edit your comment' : 'Write a small comment'
+            existingMyComment
+              ? t('partner.comment_edit_a11y')
+              : t('partner.comment_write_a11y')
           }
           hitSlop={8}
           style={({ pressed }) => [styles.commentBtn, pressed && styles.pressed]}
         >
           <Text style={styles.commentBtnLabel}>
-            {existingMyComment ? 'edit your comment' : 'write a small comment'}
+            {existingMyComment ? t('partner.comment_edit') : t('partner.comment_write')}
           </Text>
         </Pressable>
       ) : (
@@ -241,15 +252,15 @@ function EntryCard({
             value={draft}
             onChangeText={(v) => setDraft(v.slice(0, COMMENT_MAX_CHARS))}
             multiline
-            placeholder="say only what you mean."
+            placeholder={t('partner.comment_placeholder')}
             placeholderTextColor={brand.inkFaint}
-            accessibilityLabel="Your comment"
+            accessibilityLabel={t('partner.comment_input_a11y')}
             textAlignVertical="top"
             style={styles.commentInput}
           />
           <View style={styles.commentActions}>
             <Text style={styles.commentCounter}>
-              {COMMENT_MAX_CHARS - draft.length} left
+              {COMMENT_MAX_CHARS - draft.length} {t('partner.chars_left')}
             </Text>
             <View style={styles.commentBtnRow}>
               <Pressable
@@ -260,16 +271,18 @@ function EntryCard({
                 }}
                 disabled={busy}
                 accessibilityRole="button"
-                accessibilityLabel="Cancel"
+                accessibilityLabel={t('partner.cancel_a11y')}
                 style={({ pressed }) => [styles.commentSecondary, pressed && styles.pressed]}
               >
-                <Text style={styles.commentSecondaryLabel}>cancel</Text>
+                <Text style={styles.commentSecondaryLabel}>{t('partner.cancel')}</Text>
               </Pressable>
               <Pressable
                 onPress={() => void sendComment()}
                 disabled={busy || draft.trim().length === 0}
                 accessibilityRole="button"
-                accessibilityLabel={existingMyComment ? 'Update comment' : 'Send comment'}
+                accessibilityLabel={
+                  existingMyComment ? t('partner.send_update_a11y') : t('partner.send_a11y')
+                }
                 style={({ pressed }) => [
                   styles.commentPrimary,
                   (busy || draft.trim().length === 0) && styles.commentPrimaryDim,
@@ -277,7 +290,7 @@ function EntryCard({
                 ]}
               >
                 <Text style={styles.commentPrimaryLabel}>
-                  {busy ? '…' : existingMyComment ? 'update' : 'send'}
+                  {busy ? '…' : existingMyComment ? t('partner.update') : t('partner.send')}
                 </Text>
               </Pressable>
             </View>
@@ -300,7 +313,7 @@ function EntryCard({
 function messageFor(err: unknown): string {
   if (err instanceof ApiError) return err.message;
   if (err instanceof Error) return err.message;
-  return 'Something went wrong.';
+  return t('partner.generic_error');
 }
 
 const styles = StyleSheet.create({
