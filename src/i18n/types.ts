@@ -305,6 +305,30 @@ export type StringsShape = {
     update: string;
     generic_error: string;
   };
+  report: {
+    received_eyebrow: string;
+    received_title: string;
+    received_intro: string;
+    next_title: string;
+    next_body: string;
+    back_to_safety: string;
+    find_support: string;
+    back: string;
+    back_a11y: string;
+    eyebrow: string;
+    title: string;
+    intro: string;
+    urgent_a11y: string;
+    urgent_hint: string;
+    urgent_label: string;
+    section_category: string;
+    section_details: string;
+    placeholder: string;
+    input_a11y: string;
+    sending: string;
+    send: string;
+    error_send: string;
+  };
 };
 
 export type LanguageCode = 'en' | 'hi' | 'ta' | 'bn' | 'mr';
