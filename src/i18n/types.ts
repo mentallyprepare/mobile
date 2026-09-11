@@ -367,6 +367,35 @@ export type StringsShape = {
     error_rate_limit: string;
     generic_error: string;
   };
+  forgot_password: {
+    back: string;
+    back_a11y: string;
+    eyebrow: string;
+    title_complete: string;
+    title_default: string;
+    intro_request: string;
+    intro_reset: string;
+    intro_complete: string;
+    email_label: string;
+    email_a11y: string;
+    send_busy: string;
+    send: string;
+    code_label: string;
+    code_a11y: string;
+    new_label: string;
+    new_placeholder: string;
+    new_a11y: string;
+    confirm_label: string;
+    confirm_placeholder: string;
+    confirm_a11y: string;
+    save_busy: string;
+    save: string;
+    request_another: string;
+    return_signin: string;
+    error_request: string;
+    error_reset: string;
+    note: string;
+  };
 };
 
 export type LanguageCode = 'en' | 'hi' | 'ta' | 'bn' | 'mr';
