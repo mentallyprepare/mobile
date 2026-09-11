@@ -22,6 +22,8 @@ import {
 } from '../src/api/tonights';
 import { ApiError } from '../src/api';
 import { brand, radius, space, type } from '../src/design';
+import { t } from '../src/i18n';
+import { useLanguage } from '../src/i18n/react';
 
 const MOODS = ['🌓', '🌘', '🌑', '🌒', '🌕', '☁️', '⚡'] as const;
 
@@ -39,6 +41,7 @@ const MOODS = ['🌓', '🌘', '🌑', '🌒', '🌕', '☁️', '⚡'] as const
  */
 export default function TonightsQuestionScreen() {
   const router = useRouter();
+  useLanguage(); // re-render when the language changes
 
   const [feed, setFeed] = useState<TonightsFeed | null>(null);
   const [loading, setLoading] = useState(true);
@@ -87,7 +90,7 @@ export default function TonightsQuestionScreen() {
     setPiiPrompt(null);
     try {
       const result = await submitTonightsQuestion(content, mood, piiConfirmed);
-      setFlash('saved for tonight.');
+      setFlash(t('tonights.flash_saved'));
       if (result.safety.crisis) {
         // Entry was still saved; route to the helplines screen.
         router.push('/support' as Href);
@@ -109,7 +112,7 @@ export default function TonightsQuestionScreen() {
 
   return (
     <View style={styles.root}>
-      <Stack.Screen options={{ title: "Tonight's Question" }} />
+      <Stack.Screen options={{ title: t('tonights.screen_title') }} />
       <SafeAreaView style={styles.safe} edges={['top']}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -119,18 +122,16 @@ export default function TonightsQuestionScreen() {
             <Pressable
               onPress={() => router.back()}
               accessibilityRole="button"
-              accessibilityLabel="Back"
+              accessibilityLabel={t('tonights.back_a11y')}
               hitSlop={12}
               style={({ pressed }) => [styles.back, pressed && styles.pressed]}
             >
-              <Text style={styles.backLabel}>← back</Text>
+              <Text style={styles.backLabel}>{t('tonights.back')}</Text>
             </Pressable>
             <Text style={styles.title} accessibilityRole="header">
-              Tonight&apos;s Question
+              {t('tonights.title')}
             </Text>
-            <Text style={styles.subtitle}>
-              For anyone still waiting to be paired.
-            </Text>
+            <Text style={styles.subtitle}>{t('tonights.subtitle')}</Text>
           </View>
 
           <ScrollView
@@ -150,19 +151,19 @@ export default function TonightsQuestionScreen() {
                   accessibilityRole="button"
                   style={({ pressed }) => [styles.retry, pressed && styles.pressed]}
                 >
-                  <Text style={styles.retryLabel}>Try again</Text>
+                  <Text style={styles.retryLabel}>{t('tonights.retry')}</Text>
                 </Pressable>
               </View>
             ) : feed ? (
               <>
                 <View style={styles.promptCard}>
-                  <Text style={styles.kicker}>TONIGHT</Text>
+                  <Text style={styles.kicker}>{t('tonights.kicker')}</Text>
                   <Text style={styles.prompt}>{feed.prompt}</Text>
                 </View>
 
                 <View style={styles.compose}>
                   <View style={styles.moodRow}>
-                    <Text style={styles.moodLabel}>mood</Text>
+                    <Text style={styles.moodLabel}>{t('tonights.mood_label')}</Text>
                     <View style={styles.moodOptions}>
                       {MOODS.map((m) => {
                         const active = mood === m;
@@ -172,7 +173,7 @@ export default function TonightsQuestionScreen() {
                             onPress={() => setMood(m)}
                             accessibilityRole="radio"
                             accessibilityState={{ selected: active }}
-                            accessibilityLabel={`Mood ${m}`}
+                            accessibilityLabel={`${t('tonights.mood_a11y_prefix')}${m}`}
                             hitSlop={6}
                             style={({ pressed }) => [
                               styles.moodChip,
@@ -195,9 +196,9 @@ export default function TonightsQuestionScreen() {
                       if (piiPrompt) setPiiPrompt(null);
                     }}
                     multiline
-                    placeholder="write for tonight."
+                    placeholder={t('tonights.placeholder')}
                     placeholderTextColor={brand.inkFaint}
-                    accessibilityLabel="Your entry"
+                    accessibilityLabel={t('tonights.input_a11y')}
                     textAlignVertical="top"
                     style={styles.input}
                   />
@@ -209,14 +210,16 @@ export default function TonightsQuestionScreen() {
                         remaining < 0 && styles.counterOver,
                       ]}
                     >
-                      {remaining} left
+                      {remaining} {t('tonights.chars_left')}
                     </Text>
                     <Pressable
                       onPress={() => void submit(false)}
                       disabled={!canSubmit}
                       accessibilityRole="button"
                       accessibilityLabel={
-                        feed.myEntry ? 'Update tonight&apos;s entry' : 'Save tonight&apos;s entry'
+                        feed.myEntry
+                          ? t('tonights.submit_update_a11y')
+                          : t('tonights.submit_save_a11y')
                       }
                       accessibilityState={{ disabled: !canSubmit }}
                       style={({ pressed }) => [
@@ -226,21 +229,24 @@ export default function TonightsQuestionScreen() {
                       ]}
                     >
                       <Text style={styles.submitLabel}>
-                        {submitting ? 'saving…' : feed.myEntry ? 'update' : 'save'}
+                        {submitting
+                          ? t('tonights.saving')
+                          : feed.myEntry
+                            ? t('tonights.update')
+                            : t('tonights.save')}
                       </Text>
                     </Pressable>
                   </View>
 
                   {piiPrompt ? (
                     <View style={styles.piiPanel}>
-                      <Text style={styles.piiTitle}>
-                        This may reveal who you are.
-                      </Text>
+                      <Text style={styles.piiTitle}>{t('tonights.pii_title')}</Text>
                       <Text style={styles.piiBody}>
-                        We noticed{' '}
-                        {piiPrompt.length > 0 ? piiPrompt.join(', ') : 'personal details'}
-                        . This space is anonymous — remove them, or keep them
-                        knowing they will be visible to others waiting tonight.
+                        {t('tonights.pii_body_prefix')}
+                        {piiPrompt.length > 0
+                          ? piiPrompt.join(', ')
+                          : t('tonights.pii_body_fallback')}
+                        {t('tonights.pii_body_suffix')}
                       </Text>
                       <View style={styles.piiActions}>
                         <Pressable
@@ -251,7 +257,7 @@ export default function TonightsQuestionScreen() {
                             pressed && styles.pressed,
                           ]}
                         >
-                          <Text style={styles.piiSecondaryLabel}>edit</Text>
+                          <Text style={styles.piiSecondaryLabel}>{t('tonights.pii_edit')}</Text>
                         </Pressable>
                         <Pressable
                           onPress={() => void submit(true)}
@@ -261,7 +267,7 @@ export default function TonightsQuestionScreen() {
                             pressed && styles.pressed,
                           ]}
                         >
-                          <Text style={styles.piiPrimaryLabel}>save anyway</Text>
+                          <Text style={styles.piiPrimaryLabel}>{t('tonights.pii_save_anyway')}</Text>
                         </Pressable>
                       </View>
                     </View>
@@ -281,16 +287,16 @@ export default function TonightsQuestionScreen() {
 
                 <Text style={styles.presence}>
                   {feed.writerCount === 1
-                    ? '1 person wrote to this tonight.'
-                    : `${feed.writerCount} people wrote to this tonight.`}
+                    ? `1 ${t('tonights.writer_one')}`
+                    : `${feed.writerCount} ${t('tonights.writer_many')}`}
                   {feed.nightsWritten > 0
-                    ? ` · You've written ${feed.nightsWritten} night${feed.nightsWritten === 1 ? '' : 's'}.`
+                    ? ` · ${t('tonights.nights_written')} ${feed.nightsWritten} ${feed.nightsWritten === 1 ? t('tonights.night_one') : t('tonights.night_many')}`
                     : ''}
                 </Text>
 
                 {feed.whispers.length > 0 ? (
                   <View style={styles.whispers}>
-                    <Text style={styles.whispersTitle}>whispers from tonight</Text>
+                    <Text style={styles.whispersTitle}>{t('tonights.whispers_title')}</Text>
                     {feed.whispers.map((w, i) => (
                       <WhisperCard key={i} whisper={w} />
                     ))}
@@ -302,11 +308,11 @@ export default function TonightsQuestionScreen() {
             <Pressable
               onPress={() => router.push('/support' as Href)}
               accessibilityRole="link"
-              accessibilityLabel="Find crisis support"
+              accessibilityLabel={t('tonights.support_a11y')}
               hitSlop={12}
               style={({ pressed }) => [styles.supportLink, pressed && styles.pressed]}
             >
-              <Text style={styles.supportLabel}>if tonight is heavy, find support</Text>
+              <Text style={styles.supportLabel}>{t('tonights.support_link')}</Text>
             </Pressable>
           </ScrollView>
         </KeyboardAvoidingView>
@@ -332,7 +338,7 @@ function messageFor(err: unknown): string {
     }
     return err.message;
   }
-  return 'Something went wrong. Try again in a moment.';
+  return t('tonights.generic_error');
 }
 
 const styles = StyleSheet.create({

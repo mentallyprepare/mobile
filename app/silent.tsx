@@ -22,6 +22,8 @@ import {
 } from '../src/api/silent';
 import { ApiError } from '../src/api';
 import { brand, radius, space, type } from '../src/design';
+import { t } from '../src/i18n';
+import { useLanguage } from '../src/i18n/react';
 
 /**
  * The Silent Room. One line, no replies, no reactions except a quiet
@@ -35,6 +37,7 @@ import { brand, radius, space, type } from '../src/design';
  */
 export default function SilentRoomScreen() {
   const router = useRouter();
+  useLanguage(); // re-render when the language changes
 
   const [presence, setPresence] = useState<number | null>(null);
   const [feed, setFeed] = useState<SilentLine[] | null>(null);
@@ -90,8 +93,8 @@ export default function SilentRoomScreen() {
       setDraft('');
       setFlash(
         result.status === 'approved'
-          ? 'shared with the room.'
-          : 'held for a quick review before it appears.',
+          ? t('silent.flash_shared')
+          : t('silent.flash_held'),
       );
       await load();
     } catch (err) {
@@ -162,7 +165,7 @@ export default function SilentRoomScreen() {
 
   return (
     <View style={styles.root}>
-      <Stack.Screen options={{ title: 'Silent Room' }} />
+      <Stack.Screen options={{ title: t('silent.screen_title') }} />
       <SafeAreaView style={styles.safe} edges={['top']}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -172,18 +175,16 @@ export default function SilentRoomScreen() {
             <Pressable
               onPress={() => router.back()}
               accessibilityRole="button"
-              accessibilityLabel="Back"
+              accessibilityLabel={t('silent.back_a11y')}
               hitSlop={12}
               style={({ pressed }) => [styles.back, pressed && styles.pressed]}
             >
-              <Text style={styles.backLabel}>← back</Text>
+              <Text style={styles.backLabel}>{t('silent.back')}</Text>
             </Pressable>
             <Text style={styles.title} accessibilityRole="header">
-              Silent Room
+              {t('silent.title')}
             </Text>
-            <Text style={styles.subtitle}>
-              one line · no replies · gone in seven days
-            </Text>
+            <Text style={styles.subtitle}>{t('silent.subtitle')}</Text>
           </View>
 
           <ScrollView
@@ -199,9 +200,9 @@ export default function SilentRoomScreen() {
                   if (submitError) setSubmitError(null);
                 }}
                 multiline
-                placeholder="one line only"
+                placeholder={t('silent.placeholder')}
                 placeholderTextColor={brand.inkFaint}
-                accessibilityLabel="Your line"
+                accessibilityLabel={t('silent.input_a11y')}
                 textAlignVertical="top"
                 style={styles.input}
               />
@@ -213,13 +214,13 @@ export default function SilentRoomScreen() {
                     remaining < 0 && styles.counterOver,
                   ]}
                 >
-                  {remaining} left
+                  {remaining} {t('silent.chars_left')}
                 </Text>
                 <Pressable
                   onPress={() => void submit()}
                   disabled={!canSubmit}
                   accessibilityRole="button"
-                  accessibilityLabel="Share your line"
+                  accessibilityLabel={t('silent.submit_a11y')}
                   accessibilityState={{ disabled: !canSubmit }}
                   style={({ pressed }) => [
                     styles.submit,
@@ -228,7 +229,7 @@ export default function SilentRoomScreen() {
                   ]}
                 >
                   <Text style={styles.submitLabel}>
-                    {submitting ? 'sharing…' : 'share'}
+                    {submitting ? t('silent.sharing') : t('silent.share')}
                   </Text>
                 </Pressable>
               </View>
@@ -247,8 +248,8 @@ export default function SilentRoomScreen() {
             {presence !== null ? (
               <Text style={styles.presence}>
                 {presence === 1
-                  ? '1 person wrote here today.'
-                  : `${presence} people wrote here today.`}
+                  ? `1 ${t('silent.person_wrote')}`
+                  : `${presence} ${t('silent.people_wrote')}`}
               </Text>
             ) : null}
 
@@ -264,13 +265,11 @@ export default function SilentRoomScreen() {
                   accessibilityRole="button"
                   style={({ pressed }) => [styles.retry, pressed && styles.pressed]}
                 >
-                  <Text style={styles.retryLabel}>Try again</Text>
+                  <Text style={styles.retryLabel}>{t('silent.retry')}</Text>
                 </Pressable>
               </View>
             ) : feed && feed.length === 0 ? (
-              <Text style={styles.empty}>
-                The room is quiet right now. Yours could be the first line tonight.
-              </Text>
+              <Text style={styles.empty}>{t('silent.empty')}</Text>
             ) : (
               <View style={styles.feed}>
                 {feed?.map((line) => (
@@ -282,7 +281,7 @@ export default function SilentRoomScreen() {
                     accessibilityRole="button"
                     style={({ pressed }) => [styles.more, pressed && styles.pressed]}
                   >
-                    <Text style={styles.moreLabel}>load more</Text>
+                    <Text style={styles.moreLabel}>{t('silent.load_more')}</Text>
                   </Pressable>
                 ) : null}
               </View>
@@ -291,11 +290,11 @@ export default function SilentRoomScreen() {
             <Pressable
               onPress={() => router.push('/support' as Href)}
               accessibilityRole="link"
-              accessibilityLabel="Find crisis support"
+              accessibilityLabel={t('silent.support_a11y')}
               hitSlop={12}
               style={({ pressed }) => [styles.supportLink, pressed && styles.pressed]}
             >
-              <Text style={styles.supportLabel}>if tonight is heavy, find support</Text>
+              <Text style={styles.supportLabel}>{t('silent.support_link')}</Text>
             </Pressable>
           </ScrollView>
         </KeyboardAvoidingView>
@@ -313,7 +312,7 @@ function LineCard({ line, onResonate }: { line: SilentLine; onResonate: () => vo
           onPress={onResonate}
           accessibilityRole="button"
           accessibilityLabel={
-            line.resonated ? 'Un-resonate with this line' : 'Resonate with this line'
+            line.resonated ? t('silent.resonate_off_a11y') : t('silent.resonate_on_a11y')
           }
           accessibilityState={{ selected: line.resonated }}
           hitSlop={12}
@@ -329,7 +328,7 @@ function LineCard({ line, onResonate }: { line: SilentLine; onResonate: () => vo
               line.resonated && styles.resonateLabelOn,
             ]}
           >
-            {line.resonated ? '● resonated' : '○ resonate'}
+            {line.resonated ? t('silent.resonated') : t('silent.resonate')}
             {line.resonance_count > 0 ? ` · ${line.resonance_count}` : ''}
           </Text>
         </Pressable>
@@ -347,7 +346,7 @@ function messageFor(err: unknown): string {
     }
     return err.message;
   }
-  return 'Something went wrong. Try again in a moment.';
+  return t('silent.generic_error');
 }
 
 const styles = StyleSheet.create({
