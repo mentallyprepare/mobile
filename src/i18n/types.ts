@@ -62,7 +62,10 @@ export type StringsShape = {
     // closing — kept private
     kept_title: string;
     kept_body: string;
-    // milestone intros (nights 3 / 7 / 14 / 21)
+    // milestone intros (nights 1 / 3 / 7 / 14 / 20 / 21)
+    m1_kicker: string;
+    m1_title: string;
+    m1_body: string;
     m3_kicker: string;
     m3_title: string;
     m3_body: string;
@@ -72,6 +75,9 @@ export type StringsShape = {
     m14_kicker: string;
     m14_title: string;
     m14_body: string;
+    m20_kicker: string;
+    m20_title: string;
+    m20_body: string;
     m21_kicker: string;
     m21_title: string;
     m21_body: string;

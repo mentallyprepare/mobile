@@ -174,7 +174,19 @@ export default function SmallWinsStory({ visible, night, win, onClose }: Props) 
 
 function milestoneFor(night: number): Milestone | null {
   const key =
-    night === 3 ? 'm3' : night === 7 ? 'm7' : night === 14 ? 'm14' : night === 21 ? 'm21' : null;
+    night === 1
+      ? 'm1'
+      : night === 3
+        ? 'm3'
+        : night === 7
+          ? 'm7'
+          : night === 14
+            ? 'm14'
+            : night === 20
+              ? 'm20'
+              : night === 21
+                ? 'm21'
+                : null;
   if (!key) return null;
   return {
     kicker: t(`small_wins.${key}_kicker`),
