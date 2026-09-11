@@ -10,6 +10,7 @@ import {
 import { useRouter, type Href } from 'expo-router';
 import CosmicScreen from '../../src/components/app/CosmicScreen';
 import LivingNightScene from '../../src/components/ritual/LivingNightScene';
+import SmallWinsStory from '../../src/components/ritual/SmallWinsStory';
 import {
   LoadFailure,
   LoadPlaceholder,
@@ -59,6 +60,10 @@ export default function Night() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [justSealed, setJustSealed] = useState(false);
+  // The Small Wins Story plays once, right after a successful seal. It holds
+  // its own copy of the win so it survives the draft being cleared on seal.
+  const [showStory, setShowStory] = useState(false);
+  const [storyWin, setStoryWin] = useState('');
   const [restoredScope, setRestoredScope] = useState<string | null>(null);
   const [mood, setMood] = useState<string>('🌓');
   const scrollRef = useRef<ScrollView | null>(null);
@@ -202,13 +207,17 @@ export default function Night() {
     setBusy(true);
     setError(null);
     setJustSealed(false);
+    const winText = draft.trim();
     try {
-      await sealEntry({ text: draft.trim(), mood, selectedPrompt: prompt });
+      await sealEntry({ text: winText, mood, selectedPrompt: prompt });
       // Sealed is the one moment the local copy is no longer needed.
       await drafts.discard(scope);
       setDraft('');
       await reload();
       setJustSealed(true);
+      // Play the Small Wins Story over the freshly sealed night.
+      setStoryWin(winText);
+      setShowStory(true);
     } catch (err) {
       setError(
         err instanceof ApiError
@@ -221,6 +230,7 @@ export default function Night() {
   }
 
   return (
+    <>
     <CosmicScreen
       contentStyle={styles.immersiveContent}
       avoidKeyboard={!sealedTonight}
@@ -388,6 +398,13 @@ export default function Night() {
         )}
       </View>
     </CosmicScreen>
+    <SmallWinsStory
+      visible={showStory}
+      night={night}
+      win={storyWin}
+      onClose={() => setShowStory(false)}
+    />
+    </>
   );
 }
 
