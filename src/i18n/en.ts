@@ -350,4 +350,24 @@ export const en: StringsShape = {
     send: 'send report',
     error_send: 'The report could not be sent. Your draft remains on this screen.',
   },
+  delete_account: {
+    back: '← back',
+    back_a11y: 'Back',
+    eyebrow: 'DELETE ACCOUNT',
+    title: 'this cannot be undone.',
+    intro:
+      'Your account, profile, writing, match history, comments, reveal choices, notification devices, and associated data will be permanently removed.',
+    warning_title: 'export first if you need a copy.',
+    warning_body:
+      'Return to Safety & Privacy and choose “export my data” before continuing. Deletion cannot be reversed by support.',
+    password_label: 'PASSWORD',
+    password_a11y: 'Current password',
+    password_placeholder: 'current password',
+    confirm_label: 'TYPE DELETE TO CONFIRM',
+    confirm_a11y: 'Type DELETE to confirm',
+    error_failed: 'The account was not deleted.',
+    deleting: 'deleting permanently…',
+    delete: 'permanently delete account',
+    keep: 'keep my account',
+  },
 };

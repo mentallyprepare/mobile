@@ -329,6 +329,24 @@ export type StringsShape = {
     send: string;
     error_send: string;
   };
+  delete_account: {
+    back: string;
+    back_a11y: string;
+    eyebrow: string;
+    title: string;
+    intro: string;
+    warning_title: string;
+    warning_body: string;
+    password_label: string;
+    password_a11y: string;
+    password_placeholder: string;
+    confirm_label: string;
+    confirm_a11y: string;
+    error_failed: string;
+    deleting: string;
+    delete: string;
+    keep: string;
+  };
 };
 
 export type LanguageCode = 'en' | 'hi' | 'ta' | 'bn' | 'mr';
