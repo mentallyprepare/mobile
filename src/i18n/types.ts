@@ -242,6 +242,35 @@ export type StringsShape = {
     support_link: string;
     generic_error: string;
   };
+  waiting: {
+    screen_title: string;
+    back: string;
+    back_a11y: string;
+    title: string;
+    subtitle: string;
+    kicker: string;
+    mood_label: string;
+    mood_a11y_prefix: string;
+    placeholder: string;
+    input_a11y: string;
+    chars_left: string;
+    submit_a11y: string;
+    saving: string;
+    update: string;
+    save: string;
+    pii_title: string;
+    pii_body_prefix: string;
+    pii_body_fallback: string;
+    pii_body_suffix: string;
+    pii_edit: string;
+    pii_save_anyway: string;
+    flash_saved: string;
+    note: string;
+    empty: string;
+    support_a11y: string;
+    support_link: string;
+    generic_error: string;
+  };
 };
 
 export type LanguageCode = 'en' | 'hi' | 'ta' | 'bn' | 'mr';
