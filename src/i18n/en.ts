@@ -323,4 +323,31 @@ export const en: StringsShape = {
     update: 'update',
     generic_error: 'Something went wrong.',
   },
+  report: {
+    received_eyebrow: 'REPORT RECEIVED',
+    received_title: 'thank you for telling us.',
+    received_intro:
+      'The other person is not notified. You can still block or close the connection from Safety & Privacy.',
+    next_title: 'what happens next.',
+    next_body:
+      'The report is saved for review. Mentally is not an emergency service and this screen does not promise an immediate response.',
+    back_to_safety: 'back to safety controls',
+    find_support: 'find support',
+    back: '← back',
+    back_a11y: 'Back',
+    eyebrow: 'PRIVATE REPORT',
+    title: 'tell us what happened.',
+    intro:
+      'The other person is not told that you reported them. Share only what the safety team needs to understand the problem.',
+    urgent_a11y: 'Find crisis support',
+    urgent_hint: 'Helplines by region — this screen is not an emergency service',
+    urgent_label: 'if you need urgent help, find a crisis helpline →',
+    section_category: 'WHAT BEST FITS?',
+    section_details: 'WHAT SHOULD THE TEAM KNOW?',
+    placeholder: 'Describe what happened and when.',
+    input_a11y: 'Report details',
+    sending: 'sending privately…',
+    send: 'send report',
+    error_send: 'The report could not be sent. Your draft remains on this screen.',
+  },
 };
