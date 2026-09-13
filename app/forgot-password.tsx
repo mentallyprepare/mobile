@@ -23,11 +23,14 @@ import {
   passwordResetValidation,
 } from '../src/auth/password-reset';
 import { brand, layout, radius, space, type } from '../src/design';
+import { t } from '../src/i18n';
+import { useLanguage } from '../src/i18n/react';
 
 type Step = 'request' | 'reset' | 'complete';
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
+  useLanguage(); // re-render when the language changes
   const [step, setStep] = useState<Step>('request');
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
@@ -44,7 +47,7 @@ export default function ForgotPasswordScreen() {
       await requestPasswordReset(email);
       setStep('reset');
     } catch {
-      setError('We could not request a code right now. Try again shortly.');
+      setError(t('forgot_password.error_request'));
     } finally {
       setBusy(false);
     }
@@ -64,7 +67,7 @@ export default function ForgotPasswordScreen() {
       setConfirmation('');
       setStep('complete');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'The password could not be reset.');
+      setError(err instanceof Error ? err.message : t('forgot_password.error_reset'));
     } finally {
       setBusy(false);
     }
@@ -87,10 +90,10 @@ export default function ForgotPasswordScreen() {
               <Pressable
                 onPress={() => router.back()}
                 accessibilityRole="button"
-                accessibilityLabel="Back"
+                accessibilityLabel={t('forgot_password.back_a11y')}
                 style={styles.back}
               >
-                <Text style={styles.backLabel}>← back</Text>
+                <Text style={styles.backLabel}>{t('forgot_password.back')}</Text>
               </Pressable>
 
               <View style={styles.topline}>
@@ -98,22 +101,24 @@ export default function ForgotPasswordScreen() {
                 <OrbitArtifact size={62} />
               </View>
 
-              <Text style={styles.eyebrow}>ACCOUNT ACCESS</Text>
+              <Text style={styles.eyebrow}>{t('forgot_password.eyebrow')}</Text>
               <Text style={styles.title}>
-                {step === 'complete' ? 'your password is ready.' : 'find your way back.'}
+                {step === 'complete'
+                  ? t('forgot_password.title_complete')
+                  : t('forgot_password.title_default')}
               </Text>
               <Text style={styles.intro}>
                 {step === 'request'
-                  ? 'Enter the email connected to your account. We will send a short-lived reset code.'
+                  ? t('forgot_password.intro_request')
                   : step === 'reset'
-                    ? 'If that account exists, a six-character code is on its way. It expires after 15 minutes.'
-                    : 'You can return to sign in with your new password.'}
+                    ? t('forgot_password.intro_reset')
+                    : t('forgot_password.intro_complete')}
               </Text>
 
               <DaylightCard style={styles.card}>
                 {step === 'request' ? (
                   <>
-                    <Text style={styles.label}>EMAIL</Text>
+                    <Text style={styles.label}>{t('forgot_password.email_label')}</Text>
                     <TextInput
                       value={email}
                       onChangeText={setEmail}
@@ -124,12 +129,12 @@ export default function ForgotPasswordScreen() {
                       textContentType="emailAddress"
                       placeholder="you@college.edu"
                       placeholderTextColor={brand.inkLow}
-                      accessibilityLabel="Account email"
+                      accessibilityLabel={t('forgot_password.email_a11y')}
                       style={styles.input}
                     />
                     <View style={styles.actions}>
                       <AuthPrimaryButton
-                        label={busy ? 'requesting code…' : 'send reset code'}
+                        label={busy ? t('forgot_password.send_busy') : t('forgot_password.send')}
                         onPress={() => void sendCode()}
                         disabled={!canRequestPasswordReset(email) || busy}
                       />
@@ -137,7 +142,7 @@ export default function ForgotPasswordScreen() {
                   </>
                 ) : step === 'reset' ? (
                   <>
-                    <Text style={styles.label}>RESET CODE</Text>
+                    <Text style={styles.label}>{t('forgot_password.code_label')}</Text>
                     <TextInput
                       value={code}
                       onChangeText={(value) => setCode(value.slice(0, 8))}
@@ -146,44 +151,48 @@ export default function ForgotPasswordScreen() {
                       autoCorrect={false}
                       placeholder="ABC123"
                       placeholderTextColor={brand.inkLow}
-                      accessibilityLabel="Six-character reset code"
+                      accessibilityLabel={t('forgot_password.code_a11y')}
                       style={[styles.input, styles.code]}
                     />
 
-                    <Text style={[styles.label, styles.labelSpaced]}>NEW PASSWORD</Text>
+                    <Text style={[styles.label, styles.labelSpaced]}>
+                      {t('forgot_password.new_label')}
+                    </Text>
                     <TextInput
                       value={password}
                       onChangeText={setPassword}
                       editable={!busy}
                       secureTextEntry
                       textContentType="newPassword"
-                      placeholder="at least 8 characters"
+                      placeholder={t('forgot_password.new_placeholder')}
                       placeholderTextColor={brand.inkLow}
-                      accessibilityLabel="New password"
+                      accessibilityLabel={t('forgot_password.new_a11y')}
                       style={styles.input}
                     />
 
-                    <Text style={[styles.label, styles.labelSpaced]}>CONFIRM PASSWORD</Text>
+                    <Text style={[styles.label, styles.labelSpaced]}>
+                      {t('forgot_password.confirm_label')}
+                    </Text>
                     <TextInput
                       value={confirmation}
                       onChangeText={setConfirmation}
                       editable={!busy}
                       secureTextEntry
                       textContentType="newPassword"
-                      placeholder="repeat new password"
+                      placeholder={t('forgot_password.confirm_placeholder')}
                       placeholderTextColor={brand.inkLow}
-                      accessibilityLabel="Confirm new password"
+                      accessibilityLabel={t('forgot_password.confirm_a11y')}
                       style={styles.input}
                     />
 
                     <View style={styles.actions}>
                       <AuthPrimaryButton
-                        label={busy ? 'saving password…' : 'save new password'}
+                        label={busy ? t('forgot_password.save_busy') : t('forgot_password.save')}
                         onPress={() => void savePassword()}
                         disabled={busy}
                       />
                       <DaylightButton
-                        label="request another code"
+                        label={t('forgot_password.request_another')}
                         variant="ghost"
                         onPress={() => {
                           setStep('request');
@@ -197,7 +206,7 @@ export default function ForgotPasswordScreen() {
                 ) : (
                   <View style={styles.actions}>
                     <AuthPrimaryButton
-                      label="return to sign in"
+                      label={t('forgot_password.return_signin')}
                       onPress={() => router.replace('/sign-in')}
                     />
                   </View>
@@ -211,10 +220,7 @@ export default function ForgotPasswordScreen() {
               </DaylightCard>
 
               {step !== 'complete' ? (
-                <Text style={styles.note}>
-                  For privacy, this screen gives the same response whether or not
-                  an account exists.
-                </Text>
+                <Text style={styles.note}>{t('forgot_password.note')}</Text>
               ) : null}
             </View>
           </ScrollView>

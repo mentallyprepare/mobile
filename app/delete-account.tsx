@@ -8,9 +8,12 @@ import { deleteMyAccount } from '../src/api/safety';
 import { canConfirmAccountDeletion } from '../src/safety/contracts';
 import { useSession } from '../src/session';
 import { daylight, radius, space, type } from '../src/design';
+import { t } from '../src/i18n';
+import { useLanguage } from '../src/i18n/react';
 
 export default function DeleteAccountScreen() {
   const router = useRouter();
+  useLanguage(); // re-render when the language changes
   const { signOut } = useSession();
   const [password, setPassword] = useState('');
   const [confirmation, setConfirmation] = useState('');
@@ -27,7 +30,7 @@ export default function DeleteAccountScreen() {
       await deleteMyAccount(password);
       await signOut();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'The account was not deleted.');
+      setError(err instanceof Error ? err.message : t('delete_account.error_failed'));
       setBusy(false);
     }
   }
@@ -37,47 +40,41 @@ export default function DeleteAccountScreen() {
       <Pressable
         onPress={() => router.back()}
         accessibilityRole="button"
-        accessibilityLabel="Back"
+        accessibilityLabel={t('delete_account.back_a11y')}
         style={styles.back}
       >
-        <Text style={styles.backLabel}>← back</Text>
+        <Text style={styles.backLabel}>{t('delete_account.back')}</Text>
       </Pressable>
 
-      <Text style={styles.eyebrow}>DELETE ACCOUNT</Text>
-      <Text style={styles.title}>this cannot be undone.</Text>
-      <Text style={styles.intro}>
-        Your account, profile, writing, match history, comments, reveal choices,
-        notification devices, and associated data will be permanently removed.
-      </Text>
+      <Text style={styles.eyebrow}>{t('delete_account.eyebrow')}</Text>
+      <Text style={styles.title}>{t('delete_account.title')}</Text>
+      <Text style={styles.intro}>{t('delete_account.intro')}</Text>
 
       <DaylightCard style={styles.warning} accent="rose">
-        <Text style={styles.warningTitle}>export first if you need a copy.</Text>
-        <Text style={styles.warningBody}>
-          Return to Safety & Privacy and choose “export my data” before
-          continuing. Deletion cannot be reversed by support.
-        </Text>
+        <Text style={styles.warningTitle}>{t('delete_account.warning_title')}</Text>
+        <Text style={styles.warningBody}>{t('delete_account.warning_body')}</Text>
       </DaylightCard>
 
-      <Text style={styles.label}>PASSWORD</Text>
+      <Text style={styles.label}>{t('delete_account.password_label')}</Text>
       <TextInput
         value={password}
         onChangeText={setPassword}
         secureTextEntry
         textContentType="password"
         autoCapitalize="none"
-        accessibilityLabel="Current password"
-        placeholder="current password"
+        accessibilityLabel={t('delete_account.password_a11y')}
+        placeholder={t('delete_account.password_placeholder')}
         placeholderTextColor={daylight.inkLow}
         style={styles.input}
       />
 
-      <Text style={styles.label}>TYPE DELETE TO CONFIRM</Text>
+      <Text style={styles.label}>{t('delete_account.confirm_label')}</Text>
       <TextInput
         value={confirmation}
         onChangeText={setConfirmation}
         autoCapitalize="characters"
         autoCorrect={false}
-        accessibilityLabel="Type DELETE to confirm"
+        accessibilityLabel={t('delete_account.confirm_a11y')}
         placeholder="DELETE"
         placeholderTextColor={daylight.inkLow}
         style={styles.input}
@@ -102,11 +99,11 @@ export default function DeleteAccountScreen() {
           ]}
         >
           <Text style={styles.deleteLabel}>
-            {busy ? 'deleting permanently…' : 'permanently delete account'}
+            {busy ? t('delete_account.deleting') : t('delete_account.delete')}
           </Text>
         </Pressable>
         <DaylightButton
-          label="keep my account"
+          label={t('delete_account.keep')}
           variant="ghost"
           onPress={() => router.back()}
           disabled={busy}
