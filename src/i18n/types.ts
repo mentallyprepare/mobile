@@ -431,6 +431,15 @@ export type StringsShape = {
     setup_project_not_configured: string;
     setup_registration_failed: string;
   };
+  language: {
+    screen_title: string;
+    back: string;
+    back_a11y: string;
+    title: string;
+    subtitle: string;
+    partial_suffix: string;
+    note: string;
+  };
 };
 
 export type LanguageCode = 'en' | 'hi' | 'ta' | 'bn' | 'mr';

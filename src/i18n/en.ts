@@ -462,4 +462,14 @@ export const en: StringsShape = {
       'The installed beta is not connected to its notification service yet.',
     setup_registration_failed: 'Could not finish setting up notifications. Try again in a moment.',
   },
+  language: {
+    screen_title: 'Language',
+    back: '← back',
+    back_a11y: 'Back',
+    title: 'Language',
+    subtitle:
+      'Choose the language the app should try to speak. Untranslated surfaces still show in English.',
+    partial_suffix: ' · translations coming',
+    note: 'The safety helpline numbers themselves are the same regardless of language.',
+  },
 };

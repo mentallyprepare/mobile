@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useRouter } from 'expo-router';
-import { LANGUAGE_NAMES, SUPPORTED_LANGUAGES, type LanguageCode } from '../src/i18n';
+import { LANGUAGE_NAMES, SUPPORTED_LANGUAGES, t, type LanguageCode } from '../src/i18n';
 import { useLanguage } from '../src/i18n/react';
 import { chooseLanguage } from '../src/i18n/persistence';
 import { brand, radius, space, type } from '../src/design';
@@ -32,25 +32,22 @@ export default function LanguagePickerScreen() {
 
   return (
     <View style={styles.root}>
-      <Stack.Screen options={{ title: 'Language' }} />
+      <Stack.Screen options={{ title: t('language.screen_title') }} />
       <SafeAreaView style={styles.safe} edges={['top']}>
         <View style={styles.header}>
           <Pressable
             onPress={() => router.back()}
             accessibilityRole="button"
-            accessibilityLabel="Back"
+            accessibilityLabel={t('language.back_a11y')}
             hitSlop={12}
             style={({ pressed }) => [styles.back, pressed && styles.pressed]}
           >
-            <Text style={styles.backLabel}>← back</Text>
+            <Text style={styles.backLabel}>{t('language.back')}</Text>
           </Pressable>
           <Text style={styles.title} accessibilityRole="header">
-            Language
+            {t('language.title')}
           </Text>
-          <Text style={styles.subtitle}>
-            Choose the language the app should try to speak. Untranslated
-            surfaces still show in English.
-          </Text>
+          <Text style={styles.subtitle}>{t('language.subtitle')}</Text>
         </View>
 
         <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
@@ -80,7 +77,7 @@ export default function LanguagePickerScreen() {
                     <Text style={styles.rowTitle}>{LANGUAGE_NAMES[code]}</Text>
                     <Text style={styles.rowDetail}>
                       {code.toUpperCase()}
-                      {isPartial ? ' · translations coming' : ''}
+                      {isPartial ? t('language.partial_suffix') : ''}
                     </Text>
                   </View>
                   {isBusy ? <ActivityIndicator color={brand.rose} size="small" /> : null}
@@ -89,10 +86,7 @@ export default function LanguagePickerScreen() {
             })}
           </View>
 
-          <Text style={styles.note}>
-            The safety helpline numbers themselves are the same regardless
-            of language.
-          </Text>
+          <Text style={styles.note}>{t('language.note')}</Text>
         </ScrollView>
       </SafeAreaView>
     </View>
