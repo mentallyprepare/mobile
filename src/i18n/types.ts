@@ -604,6 +604,51 @@ export type StringsShape = {
     m21_title: string;
     m21_body: string;
   };
+  discover: {
+    loading: string;
+    kicker: string;
+    title: string;
+    body: string;
+    open: string;
+    tonights_a11y: string;
+    tonights_hint: string;
+    tonights_kicker: string;
+    tonights_title: string;
+    tonights_body: string;
+    silent_a11y: string;
+    silent_hint: string;
+    silent_kicker: string;
+    silent_title: string;
+    silent_body: string;
+    boundary_title: string;
+    boundary_body: string;
+    safety_a11y: string;
+    safety: string;
+  };
+  create: {
+    screen_label: string;
+    title: string;
+    subtitle: string;
+    loading: string;
+    of_five: string;
+    private_label: string;
+    note: string;
+  };
+  entry: {
+    night_prefix: string;
+    invalid_title: string;
+    back: string;
+    back_a11y: string;
+    subtitle_entry: string;
+    subtitle_empty: string;
+    night_upper: string;
+    footer_prefix: string;
+    footer_suffix: string;
+    sealed_fallback: string;
+    empty_title: string;
+    empty_valid_suffix: string;
+    empty_invalid: string;
+  };
 };
 
 export type LanguageCode = 'en' | 'hi' | 'ta' | 'bn' | 'mr';

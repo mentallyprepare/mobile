@@ -11,8 +11,11 @@ import { brand, space, type } from '../../src/design';
 import { useShelf } from '../../src/api/shelf-provider';
 import { describeLoad } from '../../src/api/load-state';
 import { SHELF_KINDS } from '../../src/api/shelf';
+import { t } from '../../src/i18n';
+import { useLanguage } from '../../src/i18n/react';
 
 export default function Shelf() {
+  useLanguage(); // re-render when the language changes
   const { byKind, loading, error, hasLoaded, reload } = useShelf();
   const router = useRouter();
   const filledCount = Object.values(byKind).filter(Boolean).length;
@@ -20,14 +23,12 @@ export default function Shelf() {
 
   return (
     <CosmicScreen>
-      <Text style={styles.screenLabel}>INNER SHELF</Text>
-      <Text style={styles.title}>Things that carry you</Text>
-      <Text style={styles.subtitle}>
-        Keep a private record of the music and memories that matter to you.
-      </Text>
+      <Text style={styles.screenLabel}>{t('create.screen_label')}</Text>
+      <Text style={styles.title}>{t('create.title')}</Text>
+      <Text style={styles.subtitle}>{t('create.subtitle')}</Text>
 
       {view === 'first-load' ? (
-        <LoadPlaceholder label="Loading your shelf" />
+        <LoadPlaceholder label={t('create.loading')} />
       ) : view === 'failed' ? (
         <LoadFailure error={error} onRetry={() => void reload()} busy={loading} />
       ) : (
@@ -38,8 +39,8 @@ export default function Shelf() {
 
           <View style={styles.progressBlock}>
             <View style={styles.progressHeader}>
-              <Text style={styles.progressCount}>{filledCount} of 5 chosen</Text>
-              <Text style={styles.progressLabel}>private to your account</Text>
+              <Text style={styles.progressCount}>{filledCount}{t('create.of_five')}</Text>
+              <Text style={styles.progressLabel}>{t('create.private_label')}</Text>
             </View>
             <View style={styles.progressTrack}>
               <View
@@ -71,9 +72,7 @@ export default function Shelf() {
             })}
           </View>
 
-          <Text style={styles.note}>
-            Add a title manually. Catalogue search and public activity are not required.
-          </Text>
+          <Text style={styles.note}>{t('create.note')}</Text>
         </>
       )}
     </CosmicScreen>

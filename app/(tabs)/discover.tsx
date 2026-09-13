@@ -6,22 +6,25 @@ import { LoadFailure, LoadPlaceholder, StaleNotice } from '../../src/components/
 import { useMeShared } from '../../src/api/me-provider';
 import { describeLoad } from '../../src/api/load-state';
 import { brand, radius, space, type } from '../../src/design';
+import { t } from '../../src/i18n';
+import { useLanguage } from '../../src/i18n/react';
 
 export default function Community() {
   const router = useRouter();
+  useLanguage(); // re-render when the language changes
   const { data, loading, error, hasLoaded, reload } = useMeShared();
   const view = describeLoad({ loading, error, hasLoaded });
 
-  if (view === 'first-load') return <CosmicScreen><LoadPlaceholder label="Opening community" /></CosmicScreen>;
+  if (view === 'first-load') return <CosmicScreen><LoadPlaceholder label={t('discover.loading')} /></CosmicScreen>;
   if (view === 'failed') return <CosmicScreen><LoadFailure error={error} onRetry={() => void reload()} busy={loading} /></CosmicScreen>;
 
   const hasMatch = !!data?.match;
   const partnerPresent = data?.partnerStatus?.partnerHasWrittenToday ?? false;
   return (
     <CosmicScreen refreshing={loading} onRefresh={() => void reload()}>
-      <Text style={styles.kicker}>COMMUNITY</Text>
-      <Text style={styles.title}>Connection without a public feed.</Text>
-      <Text style={styles.body}>This space shows consented presence and shared-room actions. It never exposes private notes, popularity counts, or inferred compatibility.</Text>
+      <Text style={styles.kicker}>{t('discover.kicker')}</Text>
+      <Text style={styles.title}>{t('discover.title')}</Text>
+      <Text style={styles.body}>{t('discover.body')}</Text>
       {view === 'stale' ? <StaleNotice error={error} onRetry={() => void reload()} busy={loading} /> : null}
       <CommunityCard hasMatch={hasMatch} partnerPresent={partnerPresent} onPress={() => router.push(hasMatch ? '/rooms' : '/scan')} />
 
@@ -29,36 +32,32 @@ export default function Community() {
         <Pressable
           onPress={() => router.push('/tonights' as Href)}
           accessibilityRole="button"
-          accessibilityLabel="Open Tonight's Question"
-          accessibilityHint="A community writing prompt for anyone still waiting to be paired"
+          accessibilityLabel={t('discover.tonights_a11y')}
+          accessibilityHint={t('discover.tonights_hint')}
           style={({ pressed }) => [styles.tonights, pressed && styles.pressed]}
         >
-          <Text style={styles.tonightsKicker}>TONIGHT&apos;S QUESTION</Text>
-          <Text style={styles.tonightsTitle}>write while you wait.</Text>
-          <Text style={styles.tonightsBody}>
-            One prompt tonight, shared with others still waiting to be paired.
-          </Text>
-          <Text style={styles.tonightsArrow}>open →</Text>
+          <Text style={styles.tonightsKicker}>{t('discover.tonights_kicker')}</Text>
+          <Text style={styles.tonightsTitle}>{t('discover.tonights_title')}</Text>
+          <Text style={styles.tonightsBody}>{t('discover.tonights_body')}</Text>
+          <Text style={styles.tonightsArrow}>{t('discover.open')}</Text>
         </Pressable>
       ) : null}
 
       <Pressable
         onPress={() => router.push('/silent' as Href)}
         accessibilityRole="button"
-        accessibilityLabel="Open the Silent Room"
-        accessibilityHint="One line, no replies, gone in seven days"
+        accessibilityLabel={t('discover.silent_a11y')}
+        accessibilityHint={t('discover.silent_hint')}
         style={({ pressed }) => [styles.silent, pressed && styles.pressed]}
       >
-        <Text style={styles.silentKicker}>SILENT ROOM</Text>
-        <Text style={styles.silentTitle}>one line, no replies.</Text>
-        <Text style={styles.silentBody}>
-          Share what won&apos;t fit anywhere else. It disappears in seven days.
-        </Text>
-        <Text style={styles.silentArrow}>open →</Text>
+        <Text style={styles.silentKicker}>{t('discover.silent_kicker')}</Text>
+        <Text style={styles.silentTitle}>{t('discover.silent_title')}</Text>
+        <Text style={styles.silentBody}>{t('discover.silent_body')}</Text>
+        <Text style={styles.silentArrow}>{t('discover.open')}</Text>
       </Pressable>
 
-      <View style={styles.boundary}><Text style={styles.boundaryTitle}>The boundary</Text><Text style={styles.boundaryBody}>No stranger browsing, public profiles, or activity leaderboard exists in this beta.</Text></View>
-      <Pressable onPress={() => router.push('/safety-privacy' as Href)} accessibilityRole="button" accessibilityLabel="Open community safety and privacy" style={({ pressed }) => [styles.action, pressed && styles.pressed]}><Text style={styles.actionText}>Safety & privacy</Text></Pressable>
+      <View style={styles.boundary}><Text style={styles.boundaryTitle}>{t('discover.boundary_title')}</Text><Text style={styles.boundaryBody}>{t('discover.boundary_body')}</Text></View>
+      <Pressable onPress={() => router.push('/safety-privacy' as Href)} accessibilityRole="button" accessibilityLabel={t('discover.safety_a11y')} style={({ pressed }) => [styles.action, pressed && styles.pressed]}><Text style={styles.actionText}>{t('discover.safety')}</Text></Pressable>
     </CosmicScreen>
   );
 }
