@@ -36,8 +36,8 @@ assert.doesNotMatch(
 );
 assert.match(
   profile,
-  /Safety & privacy[\s\S]*Notification rhythm[\s\S]*Sign out/,
-  'account control actions must remain present after the visual rewrite',
+  /you\.safety_title[\s\S]*you\.notif_title[\s\S]*you\.sign_out/,
+  'account control actions must remain present after the i18n migration',
 );
 
 console.log('ok   - Inner Universe uses real identity data and preserves account controls');

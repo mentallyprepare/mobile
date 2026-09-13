@@ -15,8 +15,11 @@ import { canRenderContent, describeLoad } from '../../src/api/load-state';
 import { SHELF_KINDS } from '../../src/api/shelf';
 import { useSession } from '../../src/session';
 import { PREVIEW_TOOLS_ENABLED } from '../../src/preview-tools';
+import { t } from '../../src/i18n';
+import { useLanguage } from '../../src/i18n/react';
 
 export default function Profile() {
+  useLanguage(); // re-render when the language changes
   const {
     data,
     loading: meLoading,
@@ -46,7 +49,7 @@ export default function Profile() {
   if (view === 'first-load') {
     return (
       <CosmicScreen>
-        <LoadPlaceholder label="Loading your profile" />
+        <LoadPlaceholder label={t('you.loading_profile')} />
       </CosmicScreen>
     );
   }
@@ -60,8 +63,9 @@ export default function Profile() {
   }
 
   const archetype = data?.user?.archetype ?? null;
-  const name = data?.user?.name?.trim() || 'Your profile';
-  const initial = name === 'Your profile' ? 'M' : name.charAt(0).toUpperCase();
+  const realName = data?.user?.name?.trim();
+  const name = realName || t('you.profile_fallback');
+  const initial = realName ? realName.charAt(0).toUpperCase() : 'M';
   const streak = data?.streak ?? 0;
   const entries = data?.entries ?? [];
   const match = data?.match ?? null;
@@ -80,34 +84,34 @@ export default function Profile() {
       />
 
       <View style={styles.sheet}>
-        <Text style={styles.sheetLabel}>YOUR PRIVATE RECORD</Text>
+        <Text style={styles.sheetLabel}>{t('you.record_label')}</Text>
 
         {view === 'stale' ? (
           <StaleNotice error={meError} onRetry={() => void reloadMe()} busy={meLoading} />
         ) : null}
         <View style={styles.stats}>
-          <Stat value={String(entries.length)} label="sealed nights" />
+          <Stat value={String(entries.length)} label={t('you.stat_sealed')} />
           <View style={styles.statRule} />
           <Stat
             value={shelfKnown ? `${filledKinds.length}/5` : '—'}
-            label="shelf objects"
+            label={t('you.stat_shelf')}
           />
           <View style={styles.statRule} />
-          <Stat value={String(streak)} label="night streak" />
+          <Stat value={String(streak)} label={t('you.stat_streak')} />
         </View>
 
         {!archetype ? (
           <ActionRow
-            eyebrow="PROFILE FOUNDATION"
-            title="Explore your connection pattern"
-            detail="Eleven reflective, non-diagnostic questions"
+            eyebrow={t('you.foundation_eyebrow')}
+            title={t('you.foundation_title')}
+            detail={t('you.foundation_detail')}
             onPress={() => router.push('/scan')}
             highlighted
           />
         ) : null}
 
         {shelfKnown ? (
-          <ShelfStrip byKind={byKind} title="Objects in your orbit" />
+          <ShelfStrip byKind={byKind} title={t('you.shelf_title')} />
         ) : shelfView === 'failed' ? (
           <LoadFailure
             error={shelf.error}
@@ -115,55 +119,55 @@ export default function Profile() {
             busy={shelf.loading}
           />
         ) : (
-          <LoadPlaceholder label="Loading your taste objects" />
+          <LoadPlaceholder label={t('you.loading_shelf')} />
         )}
 
         {match ? (
           <>
-            <SectionHeader title="Your current room" />
+            <SectionHeader title={t('you.section_room')} />
             <ActionRow
-              eyebrow={`NIGHT ${String(match.day).padStart(2, '0')} OF 21`}
-              title="Continue tonight’s ritual"
-              detail="Your writing stays private to your account"
+              eyebrow={`${t('you.room_eyebrow_prefix')}${String(match.day).padStart(2, '0')}${t('you.room_eyebrow_suffix')}`}
+              title={t('you.room_title')}
+              detail={t('you.room_detail')}
               onPress={() => router.push('/rooms')}
             />
           </>
         ) : null}
 
-        <SectionHeader title="Control your account" />
+        <SectionHeader title={t('you.section_account')} />
         {data?.user && !data.user.emailVerified ? (
           <ActionRow
-            eyebrow="AWAITING CONFIRMATION"
-            title="Verify your email"
-            detail="Helps with password resets and recovery. One tap resends the link."
+            eyebrow={t('you.verify_eyebrow')}
+            title={t('you.verify_title')}
+            detail={t('you.verify_detail')}
             onPress={() => router.push('/verify-email' as Href)}
             highlighted
           />
         ) : null}
         <ActionRow
-          eyebrow="SAFETY"
-          title="Safety & privacy"
-          detail="Connections, reports, export, and deletion"
+          eyebrow={t('you.safety_eyebrow')}
+          title={t('you.safety_title')}
+          detail={t('you.safety_detail')}
           onPress={() => router.push('/safety-privacy' as Href)}
         />
         <ActionRow
-          eyebrow="ATTENTION"
-          title="Notification rhythm"
-          detail="Choose which reminders may reach you"
+          eyebrow={t('you.notif_eyebrow')}
+          title={t('you.notif_title')}
+          detail={t('you.notif_detail')}
           onPress={() => router.push('/notification-settings' as Href)}
         />
         <ActionRow
-          eyebrow="LANGUAGE"
-          title="App language"
-          detail="English or one of four Indian languages"
+          eyebrow={t('you.lang_eyebrow')}
+          title={t('you.lang_title')}
+          detail={t('you.lang_detail')}
           onPress={() => router.push('/language' as Href)}
         />
 
         {PREVIEW_TOOLS_ENABLED ? (
           <ActionRow
-            eyebrow="INTERNAL BUILD ONLY"
-            title="Interaction preview"
-            detail="A fully populated night, using sample data, for judging layout"
+            eyebrow={t('you.preview_eyebrow')}
+            title={t('you.preview_title')}
+            detail={t('you.preview_detail')}
             onPress={() => router.push('/daily-preview' as Href)}
           />
         ) : null}
@@ -171,10 +175,10 @@ export default function Profile() {
         <Pressable
           onPress={signOut}
           accessibilityRole="button"
-          accessibilityLabel="Sign out"
+          accessibilityLabel={t('you.sign_out')}
           style={({ pressed }) => [styles.signOut, pressed && styles.pressed]}
         >
-          <Text style={styles.signOutText}>Sign out</Text>
+          <Text style={styles.signOutText}>{t('you.sign_out')}</Text>
         </Pressable>
       </View>
     </CosmicScreen>
