@@ -13,11 +13,14 @@ import { useMeShared } from '../src/api/me-provider';
 import { prepareAndShareDataExport } from '../src/privacy/export';
 import { describeRematchAvailability } from '../src/safety/rematch';
 import { daylight, radius, space, type } from '../src/design';
+import { t } from '../src/i18n';
+import { useLanguage } from '../src/i18n/react';
 
 type Confirmation = 'block' | 'rematch' | 'switch' | null;
 
 export default function SafetyPrivacyScreen() {
   const router = useRouter();
+  useLanguage(); // re-render when the language changes
   const { data, reload } = useMeShared();
   const [confirmation, setConfirmation] = useState<Confirmation>(null);
   const [busy, setBusy] = useState(false);
@@ -35,22 +38,22 @@ export default function SafetyPrivacyScreen() {
     try {
       if (confirmation === 'block') {
         await blockCurrentPartner('Blocked from mobile safety controls');
-        setMessage('The connection is closed and this person is blocked.');
+        setMessage(t('safety_privacy.msg_blocked'));
       } else if (confirmation === 'rematch') {
         await requestRematch('Requested from mobile safety controls');
-        setMessage('Your request was saved for review.');
+        setMessage(t('safety_privacy.msg_rematch_saved'));
       } else {
         const result = await switchPartner();
         setMessage(
           result.matched
-            ? 'A new connection is ready.'
-            : 'The old connection is closed. Matching is continuing quietly.',
+            ? t('safety_privacy.msg_switch_matched')
+            : t('safety_privacy.msg_switch_unmatched'),
         );
       }
       await reload();
       setConfirmation(null);
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'That action could not be completed.');
+      setMessage(error instanceof Error ? error.message : t('safety_privacy.msg_action_error'));
     } finally {
       setBusy(false);
     }
@@ -63,11 +66,11 @@ export default function SafetyPrivacyScreen() {
       const result = await prepareAndShareDataExport();
       setMessage(
         result === 'shared'
-          ? 'Your export is ready in the device share sheet.'
-          : 'File sharing is not available on this device.',
+          ? t('safety_privacy.msg_export_shared')
+          : t('safety_privacy.msg_export_unavailable'),
       );
     } catch {
-      setMessage('Your data could not be prepared. Nothing was changed.');
+      setMessage(t('safety_privacy.msg_export_error'));
     } finally {
       setExporting(false);
     }
@@ -76,25 +79,22 @@ export default function SafetyPrivacyScreen() {
   const confirmationCopy =
     confirmation === 'block'
       ? {
-          title: 'block this person?',
-          body:
-            'This immediately closes the connection and blocks future contact. The current server also removes the shared match history, including writing attached to it, for both people. Use this when distance is the safer choice.',
-          label: 'block and close',
+          title: t('safety_privacy.confirm_block_title'),
+          body: t('safety_privacy.confirm_block_body'),
+          label: t('safety_privacy.confirm_block_label'),
           destructive: true,
         }
       : confirmation === 'switch'
         ? {
-            title: 'find someone new?',
-            body:
-              'This closes the current connection and removes its attached exchange. The other person is not told why. Matching may take time, and you can keep writing privately while it continues.',
-            label: 'close and continue',
+            title: t('safety_privacy.confirm_switch_title'),
+            body: t('safety_privacy.confirm_switch_body'),
+            label: t('safety_privacy.confirm_switch_label'),
             destructive: true,
           }
         : {
-            title: 'request a new match?',
-            body:
-              'This sends a private request for review. It does not notify the other person or close the connection immediately.',
-            label: 'send request',
+            title: t('safety_privacy.confirm_rematch_title'),
+            body: t('safety_privacy.confirm_rematch_body'),
+            label: t('safety_privacy.confirm_rematch_label'),
             destructive: false,
           };
 
@@ -103,82 +103,76 @@ export default function SafetyPrivacyScreen() {
       <Pressable
         onPress={() => router.back()}
         accessibilityRole="button"
-        accessibilityLabel="Back"
+        accessibilityLabel={t('safety_privacy.back_a11y')}
         style={styles.back}
       >
-        <Text style={styles.backLabel}>← back</Text>
+        <Text style={styles.backLabel}>{t('safety_privacy.back')}</Text>
       </Pressable>
 
-      <Text style={styles.eyebrow}>SAFETY & PRIVACY</Text>
-      <Text style={styles.title}>control stays with you.</Text>
-      <Text style={styles.intro}>
-        Reporting is private. Blocking is immediate. You never have to remain
-        in a connection to protect a streak or another person&apos;s feelings.
-      </Text>
+      <Text style={styles.eyebrow}>{t('safety_privacy.eyebrow')}</Text>
+      <Text style={styles.title}>{t('safety_privacy.title')}</Text>
+      <Text style={styles.intro}>{t('safety_privacy.intro')}</Text>
 
       <View style={styles.group}>
         <ActionRow
-          title="find support"
-          body="Crisis helplines by region. Mentally is not an emergency service."
+          title={t('safety_privacy.support_title')}
+          body={t('safety_privacy.support_body')}
           onPress={() => router.push('/support' as Href)}
         />
       </View>
 
-      <Text style={styles.section}>CONNECTION</Text>
+      <Text style={styles.section}>{t('safety_privacy.section_connection')}</Text>
       <View style={styles.group}>
         <ActionRow
-          title="report something"
-          body="Tell the safety team what happened. The other person is not notified."
+          title={t('safety_privacy.report_title')}
+          body={t('safety_privacy.report_body')}
           onPress={() => router.push('/report' as Href)}
         />
         <ActionRow
-          title="request a new match"
-          body="Ask for a private review without confronting the other person."
+          title={t('safety_privacy.rematch_title')}
+          body={t('safety_privacy.rematch_body')}
           disabled={!hasMatch}
           onPress={() => setConfirmation('rematch')}
         />
         <ActionRow
-          title="find someone new"
+          title={t('safety_privacy.switch_title')}
           body={rematch.long}
           disabled={!hasMatch || !canSwitch}
           onPress={() => setConfirmation('switch')}
         />
         <ActionRow
-          title="block and close"
-          body="Immediately stop this connection and future contact."
+          title={t('safety_privacy.block_title')}
+          body={t('safety_privacy.block_body')}
           danger
           disabled={!hasMatch}
           onPress={() => setConfirmation('block')}
         />
       </View>
 
-      <Text style={styles.section}>YOUR DATA</Text>
+      <Text style={styles.section}>{t('safety_privacy.section_data')}</Text>
       <View style={styles.group}>
         <ActionRow
-          title={exporting ? 'preparing your export…' : 'export my data'}
-          body="Save a JSON copy of the personal data connected to your account."
+          title={exporting ? t('safety_privacy.export_busy') : t('safety_privacy.export_title')}
+          body={t('safety_privacy.export_body')}
           disabled={exporting}
           onPress={() => void exportData()}
         />
         <ActionRow
-          title="notification privacy"
-          body="Choose what may appear on your lock screen."
+          title={t('safety_privacy.notif_title')}
+          body={t('safety_privacy.notif_body')}
           onPress={() => router.push('/notification-settings' as Href)}
         />
         <ActionRow
-          title="delete my account"
-          body="Permanently delete your account and associated data."
+          title={t('safety_privacy.delete_title')}
+          body={t('safety_privacy.delete_body')}
           danger
           onPress={() => router.push('/delete-account' as Href)}
         />
       </View>
 
       <DaylightCard style={styles.promise}>
-        <Text style={styles.promiseTitle}>what stays private.</Text>
-        <Text style={styles.promiseBody}>
-          Reports are not shared with the other person. Your export stays on
-          your device until you choose where to save or share it.
-        </Text>
+        <Text style={styles.promiseTitle}>{t('safety_privacy.promise_title')}</Text>
+        <Text style={styles.promiseBody}>{t('safety_privacy.promise_body')}</Text>
       </DaylightCard>
 
       {message ? (

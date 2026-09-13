@@ -26,8 +26,11 @@ import { useShelf } from '../../src/api/shelf-provider';
 import { canRenderContent, describeLoad } from '../../src/api/load-state';
 import { FEELINGS, reflectionFor, type Feeling } from '../../src/daily-edition';
 import { MORE_TAGS, PRIMARY_TAGS, RECOMMENDATIONS, phaseForNight, selectedDayLabel } from '../../src/stardust-feed';
+import { t } from '../../src/i18n';
+import { useLanguage } from '../../src/i18n/react';
 
 export default function Home() {
+  useLanguage(); // re-render when the language changes
   const { data, loading, error, hasLoaded, reload } = useMeShared();
   const shelf = useShelf();
   const router = useRouter();
@@ -82,7 +85,7 @@ export default function Home() {
   const view = describeLoad({ loading, error, hasLoaded });
   const shelfView = describeLoad({ loading: shelf.loading, error: shelf.error, hasLoaded: shelf.hasLoaded });
   const shelfKnown = canRenderContent(shelfView);
-  if (view === 'first-load') return <CosmicScreen><LoadPlaceholder label="Loading today’s edition" /></CosmicScreen>;
+  if (view === 'first-load') return <CosmicScreen><LoadPlaceholder label={t('home.loading_edition')} /></CosmicScreen>;
   if (view === 'failed') return <CosmicScreen><LoadFailure error={error} onRetry={() => void reload()} busy={loading} /></CosmicScreen>;
 
   const fullName = data?.user?.name?.trim() || null;
@@ -93,27 +96,27 @@ export default function Home() {
   const insight = primaryFeelings.length > 0
     ? reflectionFor(primaryFeelings)
     : selectedTags.length > 0
-      ? 'More than one feeling can be present without becoming a verdict.'
+      ? t('home.insight_multi')
       : reflectionFor([]);
-  const forecastPrompt = match?.currentPrompt ?? 'What kind of connection would feel honest to enter?';
+  const forecastPrompt = match?.currentPrompt ?? t('home.forecast_prompt_fallback');
   const selectedEntry = data?.entries?.find((entry) => entry.day === activeNight);
   const isCurrentSelection = activeNight === currentNight;
   const visiblePrompt = isCurrentSelection
     ? forecastPrompt
     : selectedEntry
-      ? `Night ${activeNight} is sealed in your private archive.`
-      : `Night ${activeNight} has no sealed entry.`;
-  const status = match ? (sealedTonight ? 'SEALED' : phase.label) : 'PREPARING';
+      ? `${t('home.night_word')}${activeNight}${t('home.prompt_archive_suffix')}`
+      : `${t('home.night_word')}${activeNight}${t('home.prompt_noentry_suffix')}`;
+  const status = match ? (sealedTonight ? t('home.status_sealed') : phase.label) : t('home.status_preparing');
   const partnerPresent = data?.partnerStatus?.partnerHasWrittenToday ?? false;
   const streak = data?.streak ?? 0;
 
   return (
     <CosmicScreen scrollRef={scrollRef} refreshing={loading || shelf.loading} onRefresh={() => void refreshFeed()}>
-      <FeedHeader name={name} initial={initial} onNotifications={() => router.push('/notification-settings')} />
+      <FeedHeader name={name} initial={initial} onNotifications={() => router.push('/notification-settings')} greeting={t('home.greeting')} notificationsLabel={t('home.notifications_a11y')} />
       {view === 'stale' ? <StaleNotice error={error} onRetry={() => void reload()} busy={loading} /> : null}
 
       <View style={styles.dateSection}>
-        <Text style={styles.dateEyebrow}>CHOOSE A DAY</Text>
+        <Text style={styles.dateEyebrow}>{t('home.choose_day')}</Text>
         <DateStrip
           selectedNight={activeNight}
           currentNight={currentNight}
@@ -128,27 +131,27 @@ export default function Home() {
             scrollTo(forecastY.current);
           }}
         />
-        {lockedNight ? <Text accessibilityLiveRegion="polite" style={styles.locked}>Night {lockedNight} opens when it arrives.</Text> : null}
+        {lockedNight ? <Text accessibilityLiveRegion="polite" style={styles.locked}>{t('home.night_word')}{lockedNight}{t('home.locked_suffix')}</Text> : null}
       </View>
 
       <CompletionBanner night={currentNight} visible={completionVisible} onFinished={() => setCompletionVisible(false)} />
 
       <View style={styles.dayStatus}>
-        <View><Text style={styles.dayLabel}>{selectedDayLabel(activeNight, currentNight).toUpperCase()}</Text><Text style={styles.dayTitle}>{match ? `Night ${String(activeNight).padStart(2, '0')}` : 'Before night one'}</Text></View>
-        <View style={styles.phasePill}><Text style={styles.phaseText}>{isCurrentSelection ? status : selectedEntry ? 'SEALED' : 'PAST'}</Text></View>
+        <View><Text style={styles.dayLabel}>{selectedDayLabel(activeNight, currentNight).toUpperCase()}</Text><Text style={styles.dayTitle}>{match ? `${t('home.night_word')}${String(activeNight).padStart(2, '0')}` : t('home.before_night_one')}</Text></View>
+        <View style={styles.phasePill}><Text style={styles.phaseText}>{isCurrentSelection ? status : selectedEntry ? t('home.status_sealed') : t('home.status_past')}</Text></View>
       </View>
 
       <View onLayout={(event) => { forecastY.current = event.nativeEvent.layout.y; }}>
-        <ForecastCard night={activeNight} prompt={visiblePrompt} status={isCurrentSelection ? status : selectedEntry ? 'SEALED' : 'ARCHIVE'} actionLabel={isCurrentSelection ? 'Open daily detail' : 'View day details'} onPress={() => isCurrentSelection ? handleAction('write') : scrollTo(recapY.current)} />
+        <ForecastCard night={activeNight} prompt={visiblePrompt} status={isCurrentSelection ? status : selectedEntry ? t('home.status_sealed') : t('home.status_archive')} actionLabel={isCurrentSelection ? t('home.forecast_action_current') : t('home.forecast_action_past')} onPress={() => isCurrentSelection ? handleAction('write') : scrollTo(recapY.current)} />
       </View>
 
-      <DailyFeedSection eyebrow="FOR YOUR EVENING" title="Two ways in">
+      <DailyFeedSection eyebrow={t('home.sec_evening_eyebrow')} title={t('home.sec_evening_title')}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.cardRow}>
           {RECOMMENDATIONS.slice(0, 2).map((item) => <RecommendationCard key={item.id} item={item} onPress={() => handleAction(item.action)} />)}
         </ScrollView>
       </DailyFeedSection>
 
-      <DailyFeedSection eyebrow="CONNECTION" title="The social weather">
+      <DailyFeedSection eyebrow={t('home.sec_connection_eyebrow')} title={t('home.sec_connection_title')}>
         <SocialForecastCard
           hasMatch={!!match}
           partnerPresent={partnerPresent}
@@ -158,44 +161,44 @@ export default function Home() {
       </DailyFeedSection>
 
       <View onLayout={(event) => { checkInY.current = event.nativeEvent.layout.y; }}>
-        <DailyFeedSection eyebrow="YOU’RE FEELING" title="What is present?" actionLabel="Clear" onAction={() => setSelectedTags([])}>
+        <DailyFeedSection eyebrow={t('home.sec_feeling_eyebrow')} title={t('home.sec_feeling_title')} actionLabel={t('home.clear')} onAction={() => setSelectedTags([])}>
           <TagGrid tags={PRIMARY_TAGS} selected={selectedTags} onToggle={toggleTag} onAddMore={() => setMoreOpen(true)} />
           {selectedTags.length > 0 ? <Text accessibilityLiveRegion="polite" style={styles.selectedCopy}>{selectedTags.join(' · ')}</Text> : null}
         </DailyFeedSection>
       </View>
 
       <View onLayout={(event) => { journeyY.current = event.nativeEvent.layout.y; }}>
-        <DailyFeedSection eyebrow="YOUR PHASE" title="The shape of the 21 nights">
+        <DailyFeedSection eyebrow={t('home.sec_phase_eyebrow')} title={t('home.sec_phase_title')}>
           <PhaseVisualization night={match ? currentNight : 0} completed={completedNights.length} onPress={() => router.push('/journey')} />
         </DailyFeedSection>
       </View>
 
-      <DailyFeedSection eyebrow="REFLECTION" title="A small editorial note" actionLabel="Save" onAction={() => setActionsOpen(true)}>
+      <DailyFeedSection eyebrow={t('home.sec_reflection_eyebrow')} title={t('home.sec_reflection_title')} actionLabel={t('home.save')} onAction={() => setActionsOpen(true)}>
         <InsightCard text={insight} active={selectedTags.length > 0} onPress={() => handleAction('reflection')} />
       </DailyFeedSection>
 
-      <DailyFeedSection eyebrow="PERSONAL METRICS" title="Your ritual rhythm">
+      <DailyFeedSection eyebrow={t('home.sec_metrics_eyebrow')} title={t('home.sec_metrics_title')}>
         <PersonalMetricsCard sealed={completedNights.length} streak={streak} night={match ? currentNight : 0} />
       </DailyFeedSection>
 
-      <DailyFeedSection eyebrow="FRIENDS" title="Your community">
+      <DailyFeedSection eyebrow={t('home.sec_friends_eyebrow')} title={t('home.sec_friends_title')}>
         <CommunityCard hasMatch={!!match} partnerPresent={partnerPresent} onPress={() => router.push(match ? '/rooms' : '/safety-privacy')} />
       </DailyFeedSection>
 
-      <DailyFeedSection eyebrow="COSMIC & EDUCATION" title="A wider view">
+      <DailyFeedSection eyebrow={t('home.sec_cosmic_eyebrow')} title={t('home.sec_cosmic_title')}>
         <CosmicSection onPress={() => setActionsOpen(true)} />
         <EducationCard onPress={() => router.push('/safety-privacy')} />
       </DailyFeedSection>
 
       <View onLayout={(event) => { recapY.current = event.nativeEvent.layout.y; }}>
-        <DailyFeedSection eyebrow="RECAP" title="What has accumulated">
+        <DailyFeedSection eyebrow={t('home.sec_recap_eyebrow')} title={t('home.sec_recap_title')}>
           <RecapCard completed={completedNights.length} streak={streak} onPress={() => router.push('/journey')} />
         </DailyFeedSection>
       </View>
 
-      {shelfKnown ? <ShelfStrip byKind={shelf.byKind} title="Your cultural shelf" /> : shelfView === 'failed' ? <LoadFailure error={shelf.error} onRetry={() => void shelf.reload()} busy={shelf.loading} /> : <LoadPlaceholder label="Loading your shelf" />}
+      {shelfKnown ? <ShelfStrip byKind={shelf.byKind} title={t('home.shelf_title')} /> : shelfView === 'failed' ? <LoadFailure error={shelf.error} onRetry={() => void shelf.reload()} busy={shelf.loading} /> : <LoadPlaceholder label={t('home.loading_shelf')} />}
 
-      <View style={styles.end}><Text style={styles.endEyebrow}>END OF TODAY’S EDITION</Text><Text style={styles.endCopy}>{match ? `Night ${currentNight + (currentNight < 21 ? 1 : 0)} arrives in its own time.` : 'Your first night begins with a real connection.'}</Text></View>
+      <View style={styles.end}><Text style={styles.endEyebrow}>{t('home.end_eyebrow')}</Text><Text style={styles.endCopy}>{match ? `${t('home.night_word')}${currentNight + (currentNight < 21 ? 1 : 0)}${t('home.end_suffix')}` : t('home.end_before')}</Text></View>
 
       <AddMoreSheet visible={moreOpen} tags={MORE_TAGS} selected={selectedTags} onToggle={toggleTag} onClose={() => setMoreOpen(false)} />
       <QuickActionSheet visible={actionsOpen} onClose={() => setActionsOpen(false)} onAction={handleAction} />
@@ -203,9 +206,9 @@ export default function Home() {
   );
 }
 
-function FeedHeader({ name, initial, onNotifications }: { name: string | null; initial: string; onNotifications: () => void }) {
+function FeedHeader({ name, initial, onNotifications, greeting, notificationsLabel }: { name: string | null; initial: string; onNotifications: () => void; greeting: string; notificationsLabel: string }) {
   const currentDate = new Date().toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' });
-  return <View style={styles.header}><View style={styles.identity}><View style={styles.avatar}><Text style={styles.avatarText}>{initial}</Text></View><View><Text style={styles.greeting}>{currentDate}</Text><Text style={styles.headerTitle}>Good evening{name ? `, ${name}` : ''}</Text></View></View><Pressable onPress={onNotifications} accessibilityRole="button" accessibilityLabel="Notifications and settings" style={({ pressed }) => [styles.settingsButton, pressed && styles.pressed]}><Text style={styles.settingsIcon}>◌</Text></Pressable></View>;
+  return <View style={styles.header}><View style={styles.identity}><View style={styles.avatar}><Text style={styles.avatarText}>{initial}</Text></View><View><Text style={styles.greeting}>{currentDate}</Text><Text style={styles.headerTitle}>{greeting}{name ? `, ${name}` : ''}</Text></View></View><Pressable onPress={onNotifications} accessibilityRole="button" accessibilityLabel={notificationsLabel} style={({ pressed }) => [styles.settingsButton, pressed && styles.pressed]}><Text style={styles.settingsIcon}>◌</Text></Pressable></View>;
 }
 
 const styles = StyleSheet.create({
