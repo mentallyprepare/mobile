@@ -10,15 +10,15 @@ import { daylight, layout, radius, space, type } from '../src/design';
 import {
   ARCHETYPES,
   QUESTIONS,
-  SCALE_LABELS,
   SCALE_MAX,
   SCALE_MIN,
   scoreQuiz,
   type ArchetypeKey,
 } from '../src/quiz';
 import { submitScan } from '../src/api/scan';
-import { ApiError } from '../src/api';
 import { useMeShared } from '../src/api/me-provider';
+import { t } from '../src/i18n';
+import { useLanguage } from '../src/i18n/react';
 
 type Stage =
   | { kind: 'intro' }
@@ -32,6 +32,7 @@ type Stage =
  * (see src/quiz.ts, ported verbatim from public/app.js). Server re-validates.
  */
 export default function ScanScreen() {
+  useLanguage();
   const router = useRouter();
   const { reload } = useMeShared();
   const [answers, setAnswers] = useState<(number | null)[]>(
@@ -54,14 +55,8 @@ export default function ScanScreen() {
       await submitScan({ scores, archetype, answers: answers as number[] });
       await reload();
       setStage({ kind: 'result', archetype });
-    } catch (err) {
-      const message =
-        err instanceof ApiError
-          ? err.message
-          : err instanceof Error
-            ? err.message
-            : 'could not save your scan. try again in a moment.';
-      setStage({ kind: 'error', message });
+    } catch {
+      setStage({ kind: 'error', message: t('scan.save_error') });
     }
   }
 
@@ -121,25 +116,22 @@ function IntroBody({ onStart, onSkip }: { onStart: () => void; onSkip: () => voi
     >
       <View style={styles.column}>
         <CosmicWelcome />
-        <Text style={styles.title}>a small scan.</Text>
-        <Text style={styles.sub}>
-          eleven questions about how you handle closeness, so we can name a
-          pattern that fits you and match you thoughtfully.
-        </Text>
+        <Text style={styles.title}>{t('scan.intro_title')}</Text>
+        <Text style={styles.sub}>{t('scan.intro_body')}</Text>
         <DaylightCard style={styles.notesCard} accent="violet">
-          <Text style={styles.noteRow}>· takes about two minutes.</Text>
-          <Text style={styles.noteRow}>· you can go back and change answers.</Text>
-          <Text style={styles.noteRow}>· only you and your match see the result.</Text>
+          <Text style={styles.noteRow}>{t('scan.note_time')}</Text>
+          <Text style={styles.noteRow}>{t('scan.note_back')}</Text>
+          <Text style={styles.noteRow}>{t('scan.note_private')}</Text>
         </DaylightCard>
         <View style={styles.introActions}>
-          <DaylightButton label="begin" onPress={onStart} block />
+          <DaylightButton label={t('scan.begin')} onPress={onStart} block />
           <Pressable
             onPress={onSkip}
             accessibilityRole="button"
-            accessibilityLabel="Not now"
+            accessibilityLabel={t('scan.not_now_a11y')}
             style={styles.skipBtn}
           >
-            <Text style={styles.skipLabel}>not now</Text>
+            <Text style={styles.skipLabel}>{t('scan.not_now')}</Text>
           </Pressable>
         </View>
       </View>
@@ -175,10 +167,10 @@ function QuestionBody({
         <Pressable
           onPress={onBack}
           accessibilityRole="button"
-          accessibilityLabel="Back"
+          accessibilityLabel={t('scan.back_a11y')}
           style={styles.backBtn}
         >
-          <Text style={styles.backLabel}>← back</Text>
+          <Text style={styles.backLabel}>{t('scan.back')}</Text>
         </Pressable>
 
         <View style={styles.progressRow}>
@@ -191,15 +183,15 @@ function QuestionBody({
             />
           </View>
           <Text style={styles.progressLabel}>
-            {answered} of {QUESTIONS.length} answered
+            {answered} / {QUESTIONS.length}{t('scan.answered_suffix')}
           </Text>
         </View>
 
-        <Text style={styles.eyebrow}>{q.category.toUpperCase()}</Text>
-        <Text style={styles.question}>{q.text}</Text>
+        <Text style={styles.eyebrow}>{t(`scan.q${q.id}_category`).toUpperCase()}</Text>
+        <Text style={styles.question}>{t(`scan.q${q.id}_text`)}</Text>
 
         <View style={styles.scale}>
-          <Text style={styles.scaleEnd}>Not at all like me</Text>
+          <Text style={styles.scaleEnd}>{t('scan.scale_low')}</Text>
           <View style={styles.dots}>
             {Array.from({ length: SCALE_MAX }, (_, i) => i + SCALE_MIN).map((v) => {
               const active = answer === v;
@@ -209,7 +201,7 @@ function QuestionBody({
                   onPress={() => onPick(v)}
                   accessibilityRole="radio"
                   accessibilityState={{ selected: active }}
-                  accessibilityLabel={SCALE_LABELS[v]}
+                  accessibilityLabel={t(`scan.scale_${v}`)}
                   hitSlop={8}
                   style={({ pressed }) => [
                     styles.dot,
@@ -220,16 +212,16 @@ function QuestionBody({
               );
             })}
           </View>
-          <Text style={styles.scaleEnd}>Very much like me</Text>
+          <Text style={styles.scaleEnd}>{t('scan.scale_high')}</Text>
         </View>
 
         <Text style={styles.currentAnswer}>
-          {answer !== null ? SCALE_LABELS[answer] : 'tap a circle to answer'}
+          {answer !== null ? t(`scan.scale_${answer}`) : t('scan.tap_answer')}
         </Text>
 
         <View style={styles.qActions}>
           <DaylightButton
-            label={isLast ? '✦ see my archetype' : 'continue'}
+            label={isLast ? t('scan.see_archetype') : t('scan.continue')}
             onPress={onNext}
             disabled={!canAdvance}
             block
@@ -244,7 +236,7 @@ function SubmittingBody() {
   return (
     <View style={styles.centered}>
       <Illustration slot="home-hero" size={80} />
-      <Text style={styles.title}>reading the pattern…</Text>
+      <Text style={styles.title}>{t('scan.reading')}</Text>
     </View>
   );
 }
@@ -261,25 +253,25 @@ function ResultBody({
     <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
       <View style={styles.column}>
         <Text style={styles.moon}>{a.moon}</Text>
-        <Text style={styles.archName}>{a.name}</Text>
-        <Text style={styles.quote}>{a.quote}</Text>
+        <Text style={styles.archName}>{t(`scan.${archetype}_name`)}</Text>
+        <Text style={styles.quote}>{t(`scan.${archetype}_quote`)}</Text>
 
         <DaylightCard style={styles.notesCard}>
-          <Text style={styles.archBody}>{a.description}</Text>
+          <Text style={styles.archBody}>{t(`scan.${archetype}_description`)}</Text>
         </DaylightCard>
 
-        <Text style={styles.section}>STRENGTHS</Text>
-        {a.strengths.map((s) => (
-          <Text key={s} style={styles.bullet}>· {s}</Text>
+        <Text style={styles.section}>{t('scan.strengths')}</Text>
+        {a.strengths.map((_, index) => (
+          <Text key={index} style={styles.bullet}>· {t(`scan.${archetype}_strength_${index + 1}`)}</Text>
         ))}
 
-        <Text style={styles.section}>GROWTH</Text>
-        {a.growth.map((s) => (
-          <Text key={s} style={styles.bullet}>· {s}</Text>
+        <Text style={styles.section}>{t('scan.growth')}</Text>
+        {a.growth.map((_, index) => (
+          <Text key={index} style={styles.bullet}>· {t(`scan.${archetype}_growth_${index + 1}`)}</Text>
         ))}
 
         <View style={styles.qActions}>
-          <DaylightButton label="continue" onPress={onDone} block />
+          <DaylightButton label={t('scan.continue')} onPress={onDone} block />
         </View>
       </View>
     </ScrollView>
@@ -297,12 +289,12 @@ function ErrorBody({
 }) {
   return (
     <View style={styles.centered}>
-      <Text style={styles.title}>could not save.</Text>
+      <Text style={styles.title}>{t('scan.save_failed')}</Text>
       <Text style={styles.errorText}>{message}</Text>
       <View style={styles.qActions}>
-        <DaylightButton label="try again" onPress={onRetry} block />
+        <DaylightButton label={t('scan.try_again')} onPress={onRetry} block />
         <Pressable onPress={onBack} style={styles.skipBtn} accessibilityRole="button">
-          <Text style={styles.skipLabel}>back to the last question</Text>
+          <Text style={styles.skipLabel}>{t('scan.last_question')}</Text>
         </Pressable>
       </View>
     </View>

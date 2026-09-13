@@ -4,6 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useMeShared } from '../../src/api/me-provider';
 import { brand, radius, space, type } from '../../src/design';
+import { t } from '../../src/i18n';
+import { useLanguage } from '../../src/i18n/react';
 
 /**
  * Your own sealed entry for a single night. Reads from data.entries — never
@@ -22,6 +24,7 @@ import { brand, radius, space, type } from '../../src/design';
  */
 export default function EntryReaderScreen() {
   const router = useRouter();
+  useLanguage(); // re-render when the language changes
   const { day: dayParam } = useLocalSearchParams<{ day: string }>();
   const day = Number.parseInt(String(dayParam ?? ''), 10);
   const { data } = useMeShared();
@@ -33,25 +36,25 @@ export default function EntryReaderScreen() {
 
   return (
     <View style={styles.root}>
-      <Stack.Screen options={{ title: `Night ${String(day).padStart(2, '0')}` }} />
+      <Stack.Screen options={{ title: `${t('entry.night_prefix')}${String(day).padStart(2, '0')}` }} />
       <SafeAreaView style={styles.safe} edges={['top']}>
         <View style={styles.header}>
           <Pressable
             onPress={() => router.back()}
             accessibilityRole="button"
-            accessibilityLabel="Back"
+            accessibilityLabel={t('entry.back_a11y')}
             hitSlop={12}
             style={({ pressed }) => [styles.back, pressed && styles.pressed]}
           >
-            <Text style={styles.backLabel}>← back</Text>
+            <Text style={styles.backLabel}>{t('entry.back')}</Text>
           </Pressable>
           <Text style={styles.title} accessibilityRole="header">
             {Number.isFinite(day) && day >= 1 && day <= 21
-              ? `Night ${String(day).padStart(2, '0')}`
-              : 'That night is not here'}
+              ? `${t('entry.night_prefix')}${String(day).padStart(2, '0')}`
+              : t('entry.invalid_title')}
           </Text>
           <Text style={styles.subtitle}>
-            {entry ? 'Your own sealed writing.' : 'Read-only, from your account.'}
+            {entry ? t('entry.subtitle_entry') : t('entry.subtitle_empty')}
           </Text>
         </View>
 
@@ -59,22 +62,21 @@ export default function EntryReaderScreen() {
           {entry ? (
             <View style={styles.card}>
               <View style={styles.metaRow}>
-                <Text style={styles.night}>NIGHT {String(entry.day).padStart(2, '0')}</Text>
+                <Text style={styles.night}>{t('entry.night_upper')}{String(entry.day).padStart(2, '0')}</Text>
                 {entry.mood ? <Text style={styles.mood}>{entry.mood}</Text> : null}
               </View>
               <Text style={styles.text}>{entry.text}</Text>
               <Text style={styles.footer}>
-                Sealed {formatSealed(entry.created_at)}. This stays private to your
-                account.
+                {t('entry.footer_prefix')}{formatSealed(entry.created_at)}{t('entry.footer_suffix')}
               </Text>
             </View>
           ) : (
             <View style={styles.empty}>
-              <Text style={styles.emptyTitle}>Nothing here yet.</Text>
+              <Text style={styles.emptyTitle}>{t('entry.empty_title')}</Text>
               <Text style={styles.emptyBody}>
                 {Number.isFinite(day) && day >= 1 && day <= 21
-                  ? `Night ${day} either has not been sealed on this account, or the room ended before it happened.`
-                  : 'This link is not a valid night. Nights run from 1 to 21.'}
+                  ? `${t('entry.night_prefix')}${day}${t('entry.empty_valid_suffix')}`
+                  : t('entry.empty_invalid')}
               </Text>
             </View>
           )}
@@ -86,7 +88,7 @@ export default function EntryReaderScreen() {
 
 function formatSealed(iso: string): string {
   const d = new Date(iso);
-  if (Number.isNaN(d.getTime())) return 'earlier';
+  if (Number.isNaN(d.getTime())) return t('entry.sealed_fallback');
   // The user's device timezone is honest. Doesn't invent a distant "IST
   // says…"; the ritual boundaries stay server-side, this is just when the
   // writer's own device recorded the seal.

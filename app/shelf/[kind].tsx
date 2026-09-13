@@ -24,8 +24,11 @@ import {
   type ShelfKind,
 } from '../../src/api/shelf';
 import { useShelf } from '../../src/api/shelf-provider';
+import { t } from '../../src/i18n';
+import { useLanguage } from '../../src/i18n/react';
 
 export default function ShelfKindScreen() {
+  useLanguage();
   const router = useRouter();
   const params = useLocalSearchParams<{ kind: string }>();
   const { byKind, reload } = useShelf();
@@ -46,7 +49,7 @@ export default function ShelfKindScreen() {
       <View style={styles.root}>
         <AppBackdrop />
         <SafeAreaView style={styles.safe}>
-          <Text style={styles.title}>This shelf slot was not found.</Text>
+          <Text style={styles.title}>{t('shelf_editor.not_found')}</Text>
         </SafeAreaView>
       </View>
     );
@@ -77,9 +80,9 @@ export default function ShelfKindScreen() {
     } catch (err) {
       if (err instanceof ApiError && (err.body as { code?: string })?.code === 'pii_detected') {
         setPiiWarned(true);
-        setError(err.message);
+        setError(t('shelf_editor.pii_warning'));
       } else {
-        setError(err instanceof ApiError ? err.message : 'Could not save this. Try again.');
+        setError(t('shelf_editor.save_error'));
       }
     } finally {
       setBusy(false);
@@ -95,7 +98,7 @@ export default function ShelfKindScreen() {
       await reload();
       router.back();
     } catch {
-      setError('Could not clear this slot.');
+      setError(t('shelf_editor.clear_error'));
     } finally {
       setBusy(false);
     }
@@ -118,17 +121,15 @@ export default function ShelfKindScreen() {
               <Pressable
                 onPress={() => router.back()}
                 accessibilityRole="button"
-                accessibilityLabel="Back"
+                accessibilityLabel={t('shelf_editor.back_a11y')}
                 style={({ pressed }) => [styles.backBtn, pressed && styles.pressed]}
               >
-                <Text style={styles.backLabel}>← Shelf</Text>
+                <Text style={styles.backLabel}>{t('shelf_editor.back')}</Text>
               </Pressable>
 
-              <Text style={styles.eyebrow}>{meta.label.toUpperCase()}</Text>
-              <Text style={styles.title}>{existing ? 'Keep the meaning true' : 'Choose one that stays'}</Text>
-              <Text style={styles.subtitle}>
-                This object is part of your private inner shelf, not a public profile.
-              </Text>
+              <Text style={styles.eyebrow}>{t(`shelf_editor.${kind}_label`).toUpperCase()}</Text>
+              <Text style={styles.title}>{existing ? t('shelf_editor.edit_title') : t('shelf_editor.add_title')}</Text>
+              <Text style={styles.subtitle}>{t('shelf_editor.subtitle')}</Text>
 
               <View pointerEvents="none" style={styles.preview}>
                 <ShelfCover
@@ -143,36 +144,36 @@ export default function ShelfKindScreen() {
               </View>
 
               <View style={styles.panel}>
-                <Text style={styles.label}>TITLE</Text>
+                <Text style={styles.label}>{t('shelf_editor.title_label')}</Text>
                 <TextInput
                   style={[styles.input, kind === 'memory' && styles.inputMemory]}
                   value={title}
                   onChangeText={setTitle}
-                  placeholder={meta.titlePlaceholder}
+                  placeholder={t(`shelf_editor.${kind}_title`)}
                   placeholderTextColor={brand.inkLow}
                   editable={!busy}
                   maxLength={meta.maxTitle}
                   autoFocus={!existing}
                   multiline={kind === 'memory'}
                   numberOfLines={kind === 'memory' ? 3 : 1}
-                  accessibilityLabel="Title"
+                  accessibilityLabel={t('shelf_editor.title_a11y')}
                 />
-                <Text style={styles.count}>{remaining} characters left</Text>
+                <Text style={styles.count}>{remaining}{t('shelf_editor.characters_left')}</Text>
 
                 {meta.detailLabel ? (
                   <>
                     <Text style={[styles.label, styles.labelSpaced]}>
-                      {meta.detailLabel.toUpperCase()}
+                      {t(`shelf_editor.${kind}_detail`).toUpperCase()}
                     </Text>
                     <TextInput
                       style={styles.input}
                       value={detail}
                       onChangeText={setDetail}
-                      placeholder={meta.detailPlaceholder ?? ''}
+                      placeholder={t(`shelf_editor.${kind}_detail_placeholder`)}
                       placeholderTextColor={brand.inkLow}
                       editable={!busy}
                       maxLength={meta.maxDetail}
-                      accessibilityLabel={meta.detailLabel}
+                      accessibilityLabel={t(`shelf_editor.${kind}_detail`)}
                     />
                   </>
                 ) : null}
@@ -183,7 +184,7 @@ export default function ShelfKindScreen() {
                   onPress={() => onSave(piiWarned)}
                   disabled={!canSave}
                   accessibilityRole="button"
-                  accessibilityLabel={existing ? 'Save shelf item' : 'Add to shelf'}
+                  accessibilityLabel={existing ? t('shelf_editor.save_item_a11y') : t('shelf_editor.add_item_a11y')}
                   style={({ pressed }) => [
                     styles.save,
                     !canSave && styles.saveDisabled,
@@ -192,12 +193,12 @@ export default function ShelfKindScreen() {
                 >
                   <Text style={styles.saveLabel}>
                     {busy
-                      ? 'Saving…'
+                      ? t('shelf_editor.saving')
                       : piiWarned
-                        ? 'Save anyway'
+                        ? t('shelf_editor.save_anyway')
                         : existing
-                          ? 'Save changes'
-                          : 'Add to my shelf'}
+                          ? t('shelf_editor.save_changes')
+                          : t('shelf_editor.add_to_shelf')}
                   </Text>
                   <Text style={styles.saveArrow}>→</Text>
                 </Pressable>
@@ -206,17 +207,17 @@ export default function ShelfKindScreen() {
                   <Pressable
                     onPress={onClear}
                     accessibilityRole="button"
-                    accessibilityLabel="Clear this slot"
+                    accessibilityLabel={t('shelf_editor.clear_a11y')}
                     style={({ pressed }) => [styles.clearBtn, pressed && styles.pressed]}
                   >
-                    <Text style={styles.clearLabel}>Remove from shelf</Text>
+                    <Text style={styles.clearLabel}>{t('shelf_editor.remove')}</Text>
                   </Pressable>
                 ) : null}
               </View>
 
               {kind === 'memory' ? (
                 <Text style={styles.footnote}>
-                  Memories remain private to you and the day-21 reveal. Never visible in discovery.
+                  {t('shelf_editor.memory_note')}
                 </Text>
               ) : null}
             </View>
