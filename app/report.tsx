@@ -18,9 +18,12 @@ import {
   type ReportCategory,
 } from '../src/safety/contracts';
 import { daylight, radius, space, type } from '../src/design';
+import { t } from '../src/i18n';
+import { useLanguage } from '../src/i18n/react';
 
 export default function ReportScreen() {
   const router = useRouter();
+  useLanguage(); // re-render when the language changes
   const [category, setCategory] = useState<ReportCategory | null>(null);
   const [reason, setReason] = useState('');
   const [busy, setBusy] = useState(false);
@@ -37,7 +40,7 @@ export default function ReportScreen() {
       await submitReport({ category, reason: reason.trim() });
       setSent(true);
     } catch {
-      setError('The report could not be sent. Your draft remains on this screen.');
+      setError(t('report.error_send'));
     } finally {
       setBusy(false);
     }
@@ -46,27 +49,21 @@ export default function ReportScreen() {
   if (sent) {
     return (
       <DaylightScreen>
-        <Text style={styles.eyebrow}>REPORT RECEIVED</Text>
-        <Text style={styles.title}>thank you for telling us.</Text>
-        <Text style={styles.intro}>
-          The other person is not notified. You can still block or close the
-          connection from Safety & Privacy.
-        </Text>
+        <Text style={styles.eyebrow}>{t('report.received_eyebrow')}</Text>
+        <Text style={styles.title}>{t('report.received_title')}</Text>
+        <Text style={styles.intro}>{t('report.received_intro')}</Text>
         <DaylightCard style={styles.info}>
-          <Text style={styles.infoTitle}>what happens next.</Text>
-          <Text style={styles.infoBody}>
-            The report is saved for review. Mentally is not an emergency
-            service and this screen does not promise an immediate response.
-          </Text>
+          <Text style={styles.infoTitle}>{t('report.next_title')}</Text>
+          <Text style={styles.infoBody}>{t('report.next_body')}</Text>
         </DaylightCard>
         <View style={styles.actions}>
           <DaylightButton
-            label="back to safety controls"
+            label={t('report.back_to_safety')}
             onPress={() => router.replace('/safety-privacy' as Href)}
             block
           />
           <DaylightButton
-            label="find support"
+            label={t('report.find_support')}
             variant="ghost"
             onPress={() => router.push('/support' as Href)}
             block
@@ -81,33 +78,28 @@ export default function ReportScreen() {
       <Pressable
         onPress={() => router.back()}
         accessibilityRole="button"
-        accessibilityLabel="Back"
+        accessibilityLabel={t('report.back_a11y')}
         style={styles.back}
       >
-        <Text style={styles.backLabel}>← back</Text>
+        <Text style={styles.backLabel}>{t('report.back')}</Text>
       </Pressable>
 
-      <Text style={styles.eyebrow}>PRIVATE REPORT</Text>
-      <Text style={styles.title}>tell us what happened.</Text>
-      <Text style={styles.intro}>
-        The other person is not told that you reported them. Share only what
-        the safety team needs to understand the problem.
-      </Text>
+      <Text style={styles.eyebrow}>{t('report.eyebrow')}</Text>
+      <Text style={styles.title}>{t('report.title')}</Text>
+      <Text style={styles.intro}>{t('report.intro')}</Text>
 
       <Pressable
         onPress={() => router.push('/support' as Href)}
         accessibilityRole="link"
-        accessibilityLabel="Find crisis support"
-        accessibilityHint="Helplines by region — this screen is not an emergency service"
+        accessibilityLabel={t('report.urgent_a11y')}
+        accessibilityHint={t('report.urgent_hint')}
         hitSlop={12}
         style={({ pressed }) => [styles.urgentLink, pressed && styles.pressed]}
       >
-        <Text style={styles.urgentLabel}>
-          if you need urgent help, find a crisis helpline →
-        </Text>
+        <Text style={styles.urgentLabel}>{t('report.urgent_label')}</Text>
       </Pressable>
 
-      <Text style={styles.section}>WHAT BEST FITS?</Text>
+      <Text style={styles.section}>{t('report.section_category')}</Text>
       <View style={styles.categories}>
         {REPORT_CATEGORIES.map((item) => {
           const selected = category === item.value;
@@ -130,15 +122,15 @@ export default function ReportScreen() {
         })}
       </View>
 
-      <Text style={styles.section}>WHAT SHOULD THE TEAM KNOW?</Text>
+      <Text style={styles.section}>{t('report.section_details')}</Text>
       <TextInput
         value={reason}
         onChangeText={(value) => setReason(value.slice(0, 500))}
         multiline
         textAlignVertical="top"
-        placeholder="Describe what happened and when."
+        placeholder={t('report.placeholder')}
         placeholderTextColor={daylight.inkLow}
-        accessibilityLabel="Report details"
+        accessibilityLabel={t('report.input_a11y')}
         style={styles.input}
       />
       <Text style={styles.counter}>{reason.length}/500</Text>
@@ -151,7 +143,7 @@ export default function ReportScreen() {
 
       <View style={styles.actions}>
         <DaylightButton
-          label={busy ? 'sending privately…' : 'send report'}
+          label={busy ? t('report.sending') : t('report.send')}
           onPress={() => void submit()}
           disabled={!canSubmit}
           block

@@ -28,13 +28,22 @@ import {
   type NotificationSetupFailure,
 } from '../src/notifications/registration';
 import { daylight, layout, radius, space, type } from '../src/design';
+import { t } from '../src/i18n';
+import { useLanguage } from '../src/i18n/react';
 
-const SETUP_MESSAGES: Record<NotificationSetupFailure, string> = {
-  not_a_device: 'Notifications can be enabled from the installed Android or iOS beta.',
-  permission_denied: 'Notifications are blocked in your device settings. Mentally will stay quiet.',
-  project_not_configured: 'The installed beta is not connected to its notification service yet.',
-  registration_failed: 'Could not finish setting up notifications. Try again in a moment.',
-};
+// Localized at call time so a language switch re-resolves the copy.
+function setupMessage(reason: NotificationSetupFailure): string {
+  switch (reason) {
+    case 'not_a_device':
+      return t('notification_settings.setup_not_a_device');
+    case 'permission_denied':
+      return t('notification_settings.setup_permission_denied');
+    case 'project_not_configured':
+      return t('notification_settings.setup_project_not_configured');
+    case 'registration_failed':
+      return t('notification_settings.setup_registration_failed');
+  }
+}
 
 type PreferenceKey =
   | 'morningReminder'
@@ -42,31 +51,18 @@ type PreferenceKey =
   | 'dailyReflection'
   | 'streakReminder';
 
-const ROWS: { key: PreferenceKey; title: string; body: string }[] = [
-  {
-    key: 'dailyReflection',
-    title: 'Tonight is open',
-    body: 'One reminder when a nightly reflection becomes available.',
-  },
-  {
-    key: 'eveningReminder',
-    title: 'Room activity',
-    body: 'A neutral cue when something real changes in your active Room.',
-  },
-  {
-    key: 'streakReminder',
-    title: 'Gentle return',
-    body: 'A quiet reminder after time away. No streak-loss pressure.',
-  },
-  {
-    key: 'morningReminder',
-    title: 'Morning pause',
-    body: 'An optional morning reset. Off by default.',
-  },
+// Title/body live in i18n keyed by `slug`; only the preference wiring is
+// structural, so it stays a module constant.
+const ROWS: { key: PreferenceKey; slug: string }[] = [
+  { key: 'dailyReflection', slug: 'tonight_open' },
+  { key: 'eveningReminder', slug: 'room_activity' },
+  { key: 'streakReminder', slug: 'gentle_return' },
+  { key: 'morningReminder', slug: 'morning_pause' },
 ];
 
 export default function NotificationSettingsScreen() {
   const router = useRouter();
+  useLanguage(); // re-render when the language changes
   const [preferences, setPreferences] = useState<NotificationPreferences>(
     DEFAULT_NOTIFICATION_PREFERENCES,
   );
@@ -84,7 +80,7 @@ export default function NotificationSettingsScreen() {
         setSubscribed(settings.subscribed && permission === 'granted');
       })
       .catch(() => {
-        if (active) setMessage('Could not load notification settings.');
+        if (active) setMessage(t('notification_settings.error_load'));
       })
       .finally(() => {
         if (active) setLoading(false);
@@ -99,7 +95,7 @@ export default function NotificationSettingsScreen() {
     setMessage(null);
     const result = await enableNativeNotifications();
     if (!result.ok) {
-      setMessage(SETUP_MESSAGES[result.reason]);
+      setMessage(setupMessage(result.reason));
       setBusy(false);
       return;
     }
@@ -107,9 +103,9 @@ export default function NotificationSettingsScreen() {
       const saved = await saveNotificationSettings({ ...preferences, enabled: true });
       setPreferences(saved);
       setSubscribed(true);
-      setMessage('Notifications are on. Private writing never appears in a notification.');
+      setMessage(t('notification_settings.flash_on'));
     } catch {
-      setMessage('Notifications were allowed, but the preference could not be saved.');
+      setMessage(t('notification_settings.error_on_save_fail'));
     } finally {
       setBusy(false);
     }
@@ -134,7 +130,7 @@ export default function NotificationSettingsScreen() {
     setPreferences(next);
     setSubscribed(false);
     setBusy(false);
-    setMessage('Notifications are off.');
+    setMessage(t('notification_settings.flash_off'));
   }
 
   async function toggle(key: PreferenceKey, value: boolean) {
@@ -146,7 +142,7 @@ export default function NotificationSettingsScreen() {
       setPreferences(await saveNotificationSettings(next));
     } catch {
       setPreferences(previous);
-      setMessage('Could not save that change.');
+      setMessage(t('notification_settings.error_toggle_fail'));
     }
   }
 
@@ -165,33 +161,38 @@ export default function NotificationSettingsScreen() {
       <Pressable
         onPress={() => router.back()}
         accessibilityRole="button"
-        accessibilityLabel="Back"
+        accessibilityLabel={t('notification_settings.back_a11y')}
         style={styles.back}
       >
-        <Text style={styles.backLabel}>← back</Text>
+        <Text style={styles.backLabel}>{t('notification_settings.back')}</Text>
       </Pressable>
 
-      <Text style={styles.eyebrow}>NOTIFICATIONS</Text>
-      <Text style={styles.title}>quiet, useful, yours.</Text>
-      <Text style={styles.intro}>
-        Mentally only sends reviewed, neutral reminders. Journal text, prompt
-        answers, and another person&apos;s identity stay off the lock screen.
-      </Text>
+      <Text style={styles.eyebrow}>{t('notification_settings.eyebrow')}</Text>
+      <Text style={styles.title}>{t('notification_settings.title')}</Text>
+      <Text style={styles.intro}>{t('notification_settings.intro')}</Text>
 
       <DaylightCard style={styles.statusCard} accent={subscribed ? 'moss' : 'violet'}>
         <Text style={styles.statusTitle}>
-          {subscribed ? 'notifications are on.' : 'notifications are off.'}
+          {subscribed
+            ? t('notification_settings.status_on')
+            : t('notification_settings.status_off')}
         </Text>
         <Text style={styles.statusBody}>
           {Platform.OS === 'web'
-            ? 'Use the installed Android or iOS beta to receive native notifications.'
+            ? t('notification_settings.status_body_web')
             : subscribed
-              ? 'You can change each category below at any time.'
-              : 'Nothing will be requested until you choose to turn them on.'}
+              ? t('notification_settings.status_body_on')
+              : t('notification_settings.status_body_off')}
         </Text>
         <View style={styles.statusAction}>
           <DaylightButton
-            label={busy ? 'one moment…' : subscribed ? 'turn off' : 'turn on notifications'}
+            label={
+              busy
+                ? t('notification_settings.busy')
+                : subscribed
+                  ? t('notification_settings.turn_off')
+                  : t('notification_settings.turn_on')
+            }
             onPress={subscribed ? turnOff : turnOn}
             disabled={busy || Platform.OS === 'web'}
             variant={subscribed ? 'ghost' : 'primary'}
@@ -200,33 +201,34 @@ export default function NotificationSettingsScreen() {
         </View>
       </DaylightCard>
 
-      <Text style={styles.section}>WHAT MAY REACH YOU</Text>
+      <Text style={styles.section}>{t('notification_settings.section')}</Text>
       <View style={styles.list}>
-        {ROWS.map((row) => (
-          <View key={row.key} style={styles.row}>
-            <View style={styles.rowCopy}>
-              <Text style={styles.rowTitle}>{row.title}</Text>
-              <Text style={styles.rowBody}>{row.body}</Text>
+        {ROWS.map((row) => {
+          const rowTitle = t(`notification_settings.${row.slug}_title`);
+          return (
+            <View key={row.key} style={styles.row}>
+              <View style={styles.rowCopy}>
+                <Text style={styles.rowTitle}>{rowTitle}</Text>
+                <Text style={styles.rowBody}>
+                  {t(`notification_settings.${row.slug}_body`)}
+                </Text>
+              </View>
+              <Switch
+                value={preferences[row.key]}
+                onValueChange={(value) => void toggle(row.key, value)}
+                disabled={!subscribed || busy}
+                accessibilityLabel={rowTitle}
+                trackColor={{ false: daylight.inkLow, true: daylight.accentMoss }}
+                thumbColor={preferences[row.key] ? daylight.ink : daylight.bg}
+              />
             </View>
-            <Switch
-              value={preferences[row.key]}
-              onValueChange={(value) => void toggle(row.key, value)}
-              disabled={!subscribed || busy}
-              accessibilityLabel={row.title}
-              trackColor={{ false: daylight.inkLow, true: daylight.accentMoss }}
-              thumbColor={preferences[row.key] ? daylight.ink : daylight.bg}
-            />
-          </View>
-        ))}
+          );
+        })}
       </View>
 
       <DaylightCard style={styles.promise}>
-        <Text style={styles.promiseTitle}>the promise.</Text>
-        <Text style={styles.promiseBody}>
-          No private writing. No fake urgency. No “they are waiting for you.”
-          No more than one routine evening reminder. Sensitive account and
-          safety notices remain direct and calm.
-        </Text>
+        <Text style={styles.promiseTitle}>{t('notification_settings.promise_title')}</Text>
+        <Text style={styles.promiseBody}>{t('notification_settings.promise_body')}</Text>
       </DaylightCard>
 
       {message ? (

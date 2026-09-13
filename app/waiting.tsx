@@ -19,6 +19,8 @@ import {
 } from '../src/api/waiting';
 import { ApiError } from '../src/api';
 import { brand, radius, space, type } from '../src/design';
+import { t } from '../src/i18n';
+import { useLanguage } from '../src/i18n/react';
 
 const MOODS = ['🌓', '🌘', '🌑', '🌒', '🌕', '☁️', '⚡'] as const;
 
@@ -34,6 +36,7 @@ const MOODS = ['🌓', '🌘', '🌑', '🌒', '🌕', '☁️', '⚡'] as const
  */
 export default function WaitingEntryScreen() {
   const router = useRouter();
+  useLanguage(); // re-render when the language changes
   const { data, reload } = useMeShared();
 
   const waiting = data?.waitingInfo ?? null;
@@ -63,7 +66,7 @@ export default function WaitingEntryScreen() {
     try {
       const prompt = waiting?.day1Prompt ?? '';
       const result = await saveWaitingEntry(content, mood, prompt, piiConfirmed);
-      setFlash('saved. this is your Day 1 when you match.');
+      setFlash(t('waiting.flash_saved'));
       if (result.safety.crisis) {
         router.push('/support' as Href);
       }
@@ -90,7 +93,7 @@ export default function WaitingEntryScreen() {
 
   return (
     <View style={styles.root}>
-      <Stack.Screen options={{ title: 'Your Day 1' }} />
+      <Stack.Screen options={{ title: t('waiting.screen_title') }} />
       <SafeAreaView style={styles.safe} edges={['top']}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -100,18 +103,16 @@ export default function WaitingEntryScreen() {
             <Pressable
               onPress={() => router.back()}
               accessibilityRole="button"
-              accessibilityLabel="Back"
+              accessibilityLabel={t('waiting.back_a11y')}
               hitSlop={12}
               style={({ pressed }) => [styles.back, pressed && styles.pressed]}
             >
-              <Text style={styles.backLabel}>← back</Text>
+              <Text style={styles.backLabel}>{t('waiting.back')}</Text>
             </Pressable>
             <Text style={styles.title} accessibilityRole="header">
-              Your Day 1
+              {t('waiting.title')}
             </Text>
-            <Text style={styles.subtitle}>
-              Write it now. When you match, this becomes the first thing they read.
-            </Text>
+            <Text style={styles.subtitle}>{t('waiting.subtitle')}</Text>
           </View>
 
           <ScrollView
@@ -122,13 +123,13 @@ export default function WaitingEntryScreen() {
             {waiting ? (
               <>
                 <View style={styles.promptCard}>
-                  <Text style={styles.kicker}>NIGHT 1 PROMPT</Text>
+                  <Text style={styles.kicker}>{t('waiting.kicker')}</Text>
                   <Text style={styles.prompt}>{waiting.day1Prompt}</Text>
                 </View>
 
                 <View style={styles.compose}>
                   <View style={styles.moodRow}>
-                    <Text style={styles.moodLabel}>mood</Text>
+                    <Text style={styles.moodLabel}>{t('waiting.mood_label')}</Text>
                     <View style={styles.moodOptions}>
                       {MOODS.map((m) => {
                         const active = mood === m;
@@ -138,7 +139,7 @@ export default function WaitingEntryScreen() {
                             onPress={() => setMood(m)}
                             accessibilityRole="radio"
                             accessibilityState={{ selected: active }}
-                            accessibilityLabel={`Mood ${m}`}
+                            accessibilityLabel={`${t('waiting.mood_a11y_prefix')}${m}`}
                             hitSlop={6}
                             style={({ pressed }) => [
                               styles.moodChip,
@@ -161,9 +162,9 @@ export default function WaitingEntryScreen() {
                       if (piiPrompt) setPiiPrompt(null);
                     }}
                     multiline
-                    placeholder="what is true tonight?"
+                    placeholder={t('waiting.placeholder')}
                     placeholderTextColor={brand.inkFaint}
-                    accessibilityLabel="Your Day 1 draft"
+                    accessibilityLabel={t('waiting.input_a11y')}
                     textAlignVertical="top"
                     style={styles.input}
                   />
@@ -175,13 +176,13 @@ export default function WaitingEntryScreen() {
                         remaining < 0 && styles.counterOver,
                       ]}
                     >
-                      {remaining} left
+                      {remaining} {t('waiting.chars_left')}
                     </Text>
                     <Pressable
                       onPress={() => void save(false)}
                       disabled={!canSave}
                       accessibilityRole="button"
-                      accessibilityLabel="Save Day 1 draft"
+                      accessibilityLabel={t('waiting.submit_a11y')}
                       accessibilityState={{ disabled: !canSave }}
                       style={({ pressed }) => [
                         styles.submit,
@@ -190,19 +191,24 @@ export default function WaitingEntryScreen() {
                       ]}
                     >
                       <Text style={styles.submitLabel}>
-                        {saving ? 'saving…' : waiting.savedEntry ? 'update' : 'save'}
+                        {saving
+                          ? t('waiting.saving')
+                          : waiting.savedEntry
+                            ? t('waiting.update')
+                            : t('waiting.save')}
                       </Text>
                     </Pressable>
                   </View>
 
                   {piiPrompt ? (
                     <View style={styles.piiPanel}>
-                      <Text style={styles.piiTitle}>This may reveal who you are.</Text>
+                      <Text style={styles.piiTitle}>{t('waiting.pii_title')}</Text>
                       <Text style={styles.piiBody}>
-                        We noticed{' '}
-                        {piiPrompt.length > 0 ? piiPrompt.join(', ') : 'personal details'}
-                        . This becomes what your first partner reads — remove them, or
-                        keep them knowing they will be visible.
+                        {t('waiting.pii_body_prefix')}
+                        {piiPrompt.length > 0
+                          ? piiPrompt.join(', ')
+                          : t('waiting.pii_body_fallback')}
+                        {t('waiting.pii_body_suffix')}
                       </Text>
                       <View style={styles.piiActions}>
                         <Pressable
@@ -213,7 +219,7 @@ export default function WaitingEntryScreen() {
                             pressed && styles.pressed,
                           ]}
                         >
-                          <Text style={styles.piiSecondaryLabel}>edit</Text>
+                          <Text style={styles.piiSecondaryLabel}>{t('waiting.pii_edit')}</Text>
                         </Pressable>
                         <Pressable
                           onPress={() => void save(true)}
@@ -223,7 +229,7 @@ export default function WaitingEntryScreen() {
                             pressed && styles.pressed,
                           ]}
                         >
-                          <Text style={styles.piiPrimaryLabel}>save anyway</Text>
+                          <Text style={styles.piiPrimaryLabel}>{t('waiting.pii_save_anyway')}</Text>
                         </Pressable>
                       </View>
                     </View>
@@ -241,23 +247,20 @@ export default function WaitingEntryScreen() {
                   ) : null}
                 </View>
 
-                <Text style={styles.note}>
-                  This is saved on your account, not on this device alone. If you sign
-                  in from a different phone, it will still be here.
-                </Text>
+                <Text style={styles.note}>{t('waiting.note')}</Text>
               </>
             ) : (
-              <Text style={styles.empty}>Loading your Day 1…</Text>
+              <Text style={styles.empty}>{t('waiting.empty')}</Text>
             )}
 
             <Pressable
               onPress={() => router.push('/support' as Href)}
               accessibilityRole="link"
-              accessibilityLabel="Find crisis support"
+              accessibilityLabel={t('waiting.support_a11y')}
               hitSlop={12}
               style={({ pressed }) => [styles.supportLink, pressed && styles.pressed]}
             >
-              <Text style={styles.supportLabel}>if tonight is heavy, find support</Text>
+              <Text style={styles.supportLabel}>{t('waiting.support_link')}</Text>
             </Pressable>
           </ScrollView>
         </KeyboardAvoidingView>
@@ -274,7 +277,7 @@ function messageFor(err: unknown): string {
     }
     return err.message;
   }
-  return 'Something went wrong. Try again in a moment.';
+  return t('waiting.generic_error');
 }
 
 const styles = StyleSheet.create({
