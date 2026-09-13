@@ -37,6 +37,27 @@ test('switching to Hindi returns the Hindi string', () => {
   assert.strictEqual(t('support.india'), 'भारत');
 });
 
+test('the ECP-11 display copy switches language without changing its contract keys', () => {
+  setLanguage('hi');
+  assert.strictEqual(
+    t('scan.q1_text'),
+    'दूसरों के साथ अपनी असली भावनाएँ साझा करना मेरे लिए आसान है।',
+  );
+  assert.strictEqual(t('scan.scale_7'), 'पूरी तरह सहमत');
+  setLanguage('en');
+  assert.strictEqual(
+    t('scan.q1_text'),
+    "I find it easy to share what I'm really feeling with others.",
+  );
+});
+
+test('the shelf editor localizes labels and privacy copy', () => {
+  setLanguage('hi');
+  assert.strictEqual(t('shelf_editor.song_a_label'), 'एक गीत');
+  assert.match(t('shelf_editor.memory_note'), /निजी/);
+  setLanguage('en');
+});
+
 test('a language with no dictionary yet falls back to English', () => {
   setLanguage('ta');
   assert.strictEqual(t('support.heading'), 'SUPPORT');
