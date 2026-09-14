@@ -81,8 +81,10 @@ assert.match(insightCard, /Read more/);
 
 const tabLayout = fs.readFileSync(path.resolve(__dirname, '..', 'app', '(tabs)', '_layout.tsx'), 'utf8');
 assert.match(tabLayout, /StardustBottomNav/);
-assert.match(tabLayout, /title: 'Journey'/);
-assert.match(tabLayout, /title: 'Community'/);
+// Tab titles are now sourced through the i18n runtime (round 6), so the
+// intent survives via the key rather than the literal English string.
+assert.match(tabLayout, /title: t\('tabs\.journey'\)/);
+assert.match(tabLayout, /title: t\('tabs\.community'\)/);
 // Note: the tab-hiding assertion for "create" was removed once the Create
 // tab was surfaced as "Shelf" in the current five-tab shell. The rooms
 // tab is still hidden (reached only by push from Journey / Home CTAs).

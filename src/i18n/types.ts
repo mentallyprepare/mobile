@@ -727,6 +727,60 @@ export type StringsShape = {
     book_label: string; book_title: string; book_detail: string; book_detail_placeholder: string;
     memory_label: string; memory_title: string;
   };
+  // Bottom tab bar labels — the highest-frequency strings in the app, since
+  // every screen renders them. Keep short; the label style clamps at ~8.5pt.
+  tabs: {
+    home: string;
+    journey: string;
+    shelf: string;
+    community: string;
+    you: string;
+  };
+  // The Journey tab: the map of nights the person has carried. The locked
+  // notice is composed as prefix + night number + suffix because t() has no
+  // interpolation helper (see the reveal group for the same pattern).
+  journey: {
+    kicker: string;
+    title: string;
+    body: string;
+    locked_prefix: string; // "Night "
+    locked_suffix: string; // " opens when it arrives."
+    loading: string;       // LoadPlaceholder label
+  };
+  // The not-found route. Same quiet register as ErrorBoundary and LoadFailure
+  // — says one true thing, offers the one useful move.
+  not_found: {
+    screen_title: string; // Stack.Screen options.title
+    headline: string;
+    detail: string;
+    cta: string;          // "Go home" — visible label and a11y label reuse this
+  };
+  // LoadFailure + LoadPlaceholder + StaleNotice — the shared loading and
+  // retry chrome that every data-loading screen renders. Untranslated here,
+  // every "Try again" button leaks English into a Hindi surface.
+  load_state: {
+    loading_default: string;   // LoadPlaceholder default label
+    retry: string;             // "Try again" (button label + a11y)
+    retry_busy: string;        // "trying again…"
+    stale_retry: string;       // "Retry"
+    stale_retry_busy: string;  // "…"
+    stale_retry_a11y: string;  // "Try refreshing again"
+  };
+  // Copy for a failed load, keyed by FailureKind (see src/api/failures.ts).
+  // Two rules govern every string: never say or imply data was lost, and
+  // never blame the user — a failed refresh is a fact about the connection.
+  failures: {
+    timeout_headline: string; timeout_detail: string;
+    offline_headline: string; offline_detail: string;
+    auth_headline: string;    auth_detail: string;
+    server_headline: string;  server_detail: string;
+    request_headline: string; request_detail: string;
+    schema_headline: string;  schema_detail: string;
+    unknown_headline: string; unknown_detail: string;
+    // Single-line variant for a banner over data still on screen.
+    stale_offline: string;
+    stale_default: string;
+  };
 };
 
 export type LanguageCode = 'en' | 'hi' | 'ta' | 'bn' | 'mr';

@@ -1,6 +1,8 @@
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { brand, radius, space, type } from '../../design';
 import { failureDetail, failureHeadline, staleNotice } from '../../api/failures';
+import { t } from '../../i18n';
+import { useLanguage } from '../../i18n/react';
 
 /**
  * What a screen shows when its data could not be fetched.
@@ -19,6 +21,8 @@ export function LoadFailure({
   onRetry: () => void;
   busy?: boolean;
 }) {
+  useLanguage(); // re-render when the language changes
+  const retryLabel = t('load_state.retry');
   return (
     <View
       style={styles.panel}
@@ -33,7 +37,7 @@ export function LoadFailure({
         onPress={onRetry}
         disabled={busy}
         accessibilityRole="button"
-        accessibilityLabel="Try again"
+        accessibilityLabel={retryLabel}
         accessibilityState={{ disabled: busy }}
         style={({ pressed }) => [
           styles.retry,
@@ -41,7 +45,7 @@ export function LoadFailure({
           pressed && styles.pressed,
         ]}
       >
-        <Text style={styles.retryLabel}>{busy ? 'trying again…' : 'Try again'}</Text>
+        <Text style={styles.retryLabel}>{busy ? t('load_state.retry_busy') : retryLabel}</Text>
         {busy ? <ActivityIndicator color={brand.void} size="small" /> : null}
       </Pressable>
     </View>
@@ -61,6 +65,7 @@ export function StaleNotice({
   onRetry: () => void;
   busy?: boolean;
 }) {
+  useLanguage(); // re-render when the language changes
   return (
     <View style={styles.notice} accessibilityLiveRegion="polite">
       <View style={styles.noticeDot} />
@@ -69,24 +74,27 @@ export function StaleNotice({
         onPress={onRetry}
         disabled={busy}
         accessibilityRole="button"
-        accessibilityLabel="Try refreshing again"
+        accessibilityLabel={t('load_state.stale_retry_a11y')}
         accessibilityState={{ disabled: busy }}
         hitSlop={12}
         style={({ pressed }) => [styles.noticeRetry, pressed && styles.pressed]}
       >
-        <Text style={styles.noticeRetryLabel}>{busy ? '…' : 'Retry'}</Text>
+        <Text style={styles.noticeRetryLabel}>
+          {busy ? t('load_state.stale_retry_busy') : t('load_state.stale_retry')}
+        </Text>
       </Pressable>
     </View>
   );
 }
 
 /** First load, nothing to show yet and nothing wrong. */
-export function LoadPlaceholder({ label = 'Loading' }: { label?: string }) {
+export function LoadPlaceholder({ label }: { label?: string }) {
+  useLanguage(); // re-render when the language changes
   return (
     <View style={styles.placeholder}>
       <ActivityIndicator
         color={brand.rose}
-        accessibilityLabel={label}
+        accessibilityLabel={label ?? t('load_state.loading_default')}
         accessibilityRole="progressbar"
       />
     </View>
