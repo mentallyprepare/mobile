@@ -118,6 +118,95 @@ test('failure copy translates and keeps the "nothing removed" promise in Hindi',
   setLanguage('en');
 });
 
+// Round 7 — home-surface chrome
+test('quick actions sheet translates its four action titles', () => {
+  setLanguage('en');
+  assert.strictEqual(t('quick_actions.write_title'), 'Write tonight');
+  assert.strictEqual(t('quick_actions.journey_title'), 'View your journey');
+  setLanguage('hi');
+  assert.match(t('quick_actions.write_title'), /लिखो/);
+  assert.match(t('quick_actions.journey_title'), /यात्रा/);
+  setLanguage('en');
+});
+
+test('completion banner kicker composes NIGHT NN COMPLETE and keeps "words remain private" reassurance', () => {
+  setLanguage('en');
+  assert.strictEqual(
+    `${t('completion_banner.kicker_prefix')}03${t('completion_banner.kicker_suffix')}`,
+    'NIGHT 03 COMPLETE',
+  );
+  assert.match(t('completion_banner.detail'), /words remain private/);
+  setLanguage('hi');
+  assert.strictEqual(
+    `${t('completion_banner.kicker_prefix')}03${t('completion_banner.kicker_suffix')}`,
+    'रात 03 पूरी',
+  );
+  assert.match(t('completion_banner.detail'), /निजी/);
+  setLanguage('en');
+});
+
+test('recap + community + cosmic + education cards translate', () => {
+  setLanguage('hi');
+  assert.strictEqual(t('recap_card.kicker'), 'तुम्हारा रीकैप');
+  assert.strictEqual(t('community_card.title_no_match'), 'जुड़ाव सहमति से शुरू होता है।');
+  assert.match(t('cosmic_section.title'), /रात/);
+  assert.match(t('education_card.title'), /सीमा/);
+  setLanguage('en');
+});
+
+test('insight card action switches by expanded state and translates', () => {
+  setLanguage('en');
+  assert.strictEqual(t('insight_card.action_read_more'), 'Read more →');
+  assert.strictEqual(t('insight_card.action_show_less'), 'Show less →');
+  setLanguage('hi');
+  assert.match(t('insight_card.action_read_more'), /पढ़ो/);
+  setLanguage('en');
+});
+
+test('night progress a11y label composes prefix + N + middle + M + suffix in both languages', () => {
+  setLanguage('en');
+  assert.strictEqual(
+    `${t('night_progress.a11y_prefix')}5${t('night_progress.a11y_middle')}3${t('night_progress.a11y_suffix')}`,
+    'Night 5 of 21. 3 nights sealed.',
+  );
+  setLanguage('hi');
+  assert.strictEqual(
+    `${t('night_progress.a11y_prefix')}5${t('night_progress.a11y_middle')}3${t('night_progress.a11y_suffix')}`,
+    'रात 5 कुल 21 में से। 3 रातें सील।',
+  );
+  setLanguage('en');
+});
+
+test('personal metrics a11y composes prefix + sealed + middle + streak + suffix', () => {
+  setLanguage('en');
+  assert.strictEqual(
+    `${t('personal_metrics.a11y_prefix')}7${t('personal_metrics.a11y_middle')}4${t('personal_metrics.a11y_suffix')}`,
+    'Personal ritual metrics. 7 nights sealed, 4 night streak.',
+  );
+  setLanguage('hi');
+  assert.match(t('personal_metrics.title'), /निगरानी/);
+  setLanguage('en');
+});
+
+test('social forecast card switches title, body and both button labels by match state', () => {
+  setLanguage('en');
+  assert.strictEqual(t('social_forecast.primary_open'), 'Open room');
+  assert.strictEqual(t('social_forecast.primary_setup'), 'Continue setup');
+  assert.strictEqual(t('social_forecast.secondary_safety'), 'View safety');
+  assert.strictEqual(t('social_forecast.secondary_how'), 'How it works');
+  setLanguage('hi');
+  assert.match(t('social_forecast.primary_open'), /कमरा/);
+  setLanguage('en');
+});
+
+test('stardust nav pill and add-more sheet translate', () => {
+  setLanguage('hi');
+  assert.strictEqual(t('stardust_nav.add'), 'जोड़ो');
+  assert.strictEqual(t('add_more.done'), 'हो गया');
+  assert.match(t('add_more.body'), /चुनो/);
+  setLanguage('en');
+});
+
 test('a language with no dictionary yet falls back to English', () => {
   setLanguage('ta');
   assert.strictEqual(t('support.heading'), 'SUPPORT');

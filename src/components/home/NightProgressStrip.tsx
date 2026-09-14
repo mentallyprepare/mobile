@@ -1,5 +1,7 @@
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { brand, radius, space, type } from '../../design';
+import { t } from '../../i18n';
+import { useLanguage } from '../../i18n/react';
 
 export default function NightProgressStrip({
   currentNight,
@@ -12,15 +14,16 @@ export default function NightProgressStrip({
   onSelectNight?: (night: number) => void;
   onLockedPress?: (night: number) => void;
 }) {
+  useLanguage();
   const completed = new Set(completedNights);
   return (
     <View
       style={styles.wrap}
       accessible
-      accessibilityLabel={`Night ${currentNight} of 21. ${completed.size} nights sealed.`}
+      accessibilityLabel={`${t('night_progress.a11y_prefix')}${currentNight}${t('night_progress.a11y_middle')}${completed.size}${t('night_progress.a11y_suffix')}`}
     >
       <View style={styles.headingRow}>
-        <Text style={styles.heading}>YOUR 21 NIGHTS</Text>
+        <Text style={styles.heading}>{t('night_progress.heading')}</Text>
         <Text style={styles.count}>{String(currentNight).padStart(2, '0')} / 21</Text>
       </View>
       <ScrollView
@@ -32,6 +35,11 @@ export default function NightProgressStrip({
           const night = index + 1;
           const isCurrent = night === currentNight;
           const isComplete = completed.has(night);
+          const stateSuffix = isComplete
+            ? t('night_progress.marker_a11y_completed_suffix')
+            : isCurrent
+              ? t('night_progress.marker_a11y_current_suffix')
+              : t('night_progress.marker_a11y_locked_suffix');
           return (
             <Pressable
               key={night}
@@ -42,11 +50,11 @@ export default function NightProgressStrip({
               }
               style={[styles.marker, isComplete && styles.complete, isCurrent && styles.current]}
               accessibilityRole="button"
-              accessibilityLabel={`Night ${night}, ${isComplete ? 'completed' : isCurrent ? 'current' : 'locked'}`}
+              accessibilityLabel={`${t('night_progress.marker_a11y_prefix')}${night}${stateSuffix}`}
               accessibilityHint={
                 isComplete || isCurrent
-                  ? 'Moves to this night in today’s edition'
-                  : 'Future nights open when they arrive'
+                  ? t('night_progress.marker_hint_open')
+                  : t('night_progress.marker_hint_locked')
               }
             >
               <Text style={[styles.markerText, isComplete && styles.completeText]}>

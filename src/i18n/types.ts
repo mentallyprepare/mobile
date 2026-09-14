@@ -781,6 +781,123 @@ export type StringsShape = {
     stale_offline: string;
     stale_default: string;
   };
+  // ============ Round 7 · Home-surface chrome ============
+  // The bottom-of-screen quick-actions modal.
+  quick_actions: {
+    dismiss_all_a11y: string;
+    dismiss_a11y: string;
+    dismiss: string;
+    kicker: string;
+    title: string;
+    write_title: string;      write_detail: string;
+    checkin_title: string;    checkin_detail: string;
+    reflection_title: string; reflection_detail: string;
+    journey_title: string;    journey_detail: string;
+  };
+  add_more: {
+    dismiss_a11y: string;
+    done_a11y: string;
+    kicker: string;
+    title: string;
+    body: string;
+    done: string;
+  };
+  // Kicker composed as prefix + NN + suffix (t() has no interpolation helper).
+  completion_banner: {
+    kicker_prefix: string; // "NIGHT "
+    kicker_suffix: string; // " COMPLETE"
+    title: string;
+    detail: string;
+  };
+  recap_card: {
+    open_a11y: string;
+    kicker: string;
+    title: string;
+    sealed: string;
+    streak: string;
+    ahead: string;
+    action: string;
+  };
+  // Title + body switch on match state (no match / matched present / matched quiet).
+  community_card: {
+    open_a11y: string;
+    kicker: string;
+    title_no_match: string;
+    title_present: string;
+    title_quiet: string;
+    body_no_match: string;
+    body_matched: string;
+    action: string;
+  };
+  cosmic_section: {
+    open_a11y: string;
+    kicker: string;
+    title: string;
+    body: string;
+  };
+  education_card: {
+    open_a11y: string;
+    kicker: string;
+    title: string;
+    body: string;
+    action: string;
+  };
+  // The floating "+" pill above the tab bar.
+  stardust_nav: {
+    add_a11y: string;
+    add: string;
+  };
+  // Reflection card. Copy switches on active state and expandability.
+  insight_card: {
+    eyebrow_active: string;
+    eyebrow_idle: string;
+    note: string;
+    action_read_more: string;
+    action_show_less: string;
+    action_open: string;
+    a11y_read_more: string;
+    a11y_show_less: string;
+    a11y_open: string;
+  };
+  // 21-night dot strip; a11y label composed as prefix + N + middle + M + suffix.
+  night_progress: {
+    a11y_prefix: string;
+    a11y_middle: string;
+    a11y_suffix: string;
+    heading: string;
+    marker_a11y_prefix: string;
+    marker_a11y_completed_suffix: string;
+    marker_a11y_current_suffix: string;
+    marker_a11y_locked_suffix: string;
+    marker_hint_open: string;
+    marker_hint_locked: string;
+  };
+  personal_metrics: {
+    a11y_prefix: string;
+    a11y_middle: string;
+    a11y_suffix: string;
+    kicker: string;
+    action_close: string;
+    action_open: string;
+    title: string;
+    sealed: string;
+    streak: string;
+    ahead: string;
+    detail_suffix: string;
+  };
+  social_forecast: {
+    kicker_shared: string;
+    kicker_connection: string;
+    title_no_match: string;
+    title_present: string;
+    title_quiet: string;
+    body_matched: string;
+    body_no_match: string;
+    primary_open: string;
+    primary_setup: string;
+    secondary_safety: string;
+    secondary_how: string;
+  };
 };
 
 export type LanguageCode = 'en' | 'hi' | 'ta' | 'bn' | 'mr';

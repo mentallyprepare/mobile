@@ -1,16 +1,21 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { brand, radius, space, type } from '../../design';
 import { compactCopy, CONTENT_LIMITS } from '../../stardust-feed';
+import { t } from '../../i18n';
+import { useLanguage } from '../../i18n/react';
 
 export default function SocialForecastCard({ hasMatch, partnerPresent, onPrimary, onSecondary }: { hasMatch: boolean; partnerPresent: boolean; onPrimary: () => void; onSecondary: () => void }) {
-  const title = hasMatch ? (partnerPresent ? 'Another presence is here tonight.' : 'The room is quiet tonight.') : 'Your private world comes first.';
-  const body = hasMatch ? 'Their words stay private. Presence is the only signal shown here.' : 'Complete your pattern and shelf before a real connection can appear.';
-  const primaryLabel = hasMatch ? 'Open room' : 'Continue setup';
-  const secondaryLabel = hasMatch ? 'View safety' : 'How it works';
+  useLanguage();
+  const title = hasMatch
+    ? (partnerPresent ? t('social_forecast.title_present') : t('social_forecast.title_quiet'))
+    : t('social_forecast.title_no_match');
+  const body = hasMatch ? t('social_forecast.body_matched') : t('social_forecast.body_no_match');
+  const primaryLabel = hasMatch ? t('social_forecast.primary_open') : t('social_forecast.primary_setup');
+  const secondaryLabel = hasMatch ? t('social_forecast.secondary_safety') : t('social_forecast.secondary_how');
   return (
     <View style={styles.card}>
       <View style={styles.orb}><View style={[styles.dot, partnerPresent && styles.dotActive]} /></View>
-      <Text style={styles.kicker}>{hasMatch ? 'SHARED ROOM' : 'CONNECTION'}</Text>
+      <Text style={styles.kicker}>{hasMatch ? t('social_forecast.kicker_shared') : t('social_forecast.kicker_connection')}</Text>
       <Text style={styles.title}>{title}</Text>
       <Text style={styles.body}>{compactCopy(body, CONTENT_LIMITS.socialMessage)}</Text>
       <View style={styles.actions}>

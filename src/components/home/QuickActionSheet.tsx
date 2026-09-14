@@ -10,6 +10,8 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { brand, radius, space, type } from '../../design';
+import { t } from '../../i18n';
+import { useLanguage } from '../../i18n/react';
 
 export type QuickAction = 'write' | 'check-in' | 'reflection' | 'journey';
 
@@ -22,6 +24,7 @@ export default function QuickActionSheet({
   onClose: () => void;
   onAction: (action: QuickAction) => void;
 }) {
+  useLanguage(); // re-render when the language changes
   const insets = useSafeAreaInsets();
   const [translateY] = useState(() => new Animated.Value(420));
   const [reduceMotion, setReduceMotion] = useState(false);
@@ -49,10 +52,10 @@ export default function QuickActionSheet({
   }, [reduceMotion, translateY, visible]);
 
   const actions: { id: QuickAction; title: string; detail: string }[] = [
-    { id: 'write', title: 'Write tonight', detail: 'Open the private ritual' },
-    { id: 'check-in', title: 'Check in', detail: 'Choose what feels nearest' },
-    { id: 'reflection', title: 'Add a reflection', detail: 'Return to tonight’s prompt' },
-    { id: 'journey', title: 'View your journey', detail: 'See the 21-night path' },
+    { id: 'write',      title: t('quick_actions.write_title'),      detail: t('quick_actions.write_detail') },
+    { id: 'check-in',   title: t('quick_actions.checkin_title'),    detail: t('quick_actions.checkin_detail') },
+    { id: 'reflection', title: t('quick_actions.reflection_title'), detail: t('quick_actions.reflection_detail') },
+    { id: 'journey',    title: t('quick_actions.journey_title'),    detail: t('quick_actions.journey_detail') },
   ];
 
   return (
@@ -62,15 +65,15 @@ export default function QuickActionSheet({
           style={styles.backdrop}
           onPress={onClose}
           accessibilityRole="button"
-          accessibilityLabel="Dismiss quick actions"
+          accessibilityLabel={t('quick_actions.dismiss_all_a11y')}
         />
         <Animated.View
           accessibilityViewIsModal
           style={[styles.sheet, { paddingBottom: Math.max(insets.bottom, space.lg), transform: [{ translateY }] }]}
         >
           <View style={styles.handle} />
-          <Text style={styles.kicker}>QUICK ACTIONS</Text>
-          <Text style={styles.title}>Stay with tonight.</Text>
+          <Text style={styles.kicker}>{t('quick_actions.kicker')}</Text>
+          <Text style={styles.title}>{t('quick_actions.title')}</Text>
           {actions.map((action) => (
             <Pressable
               key={action.id}
@@ -90,10 +93,10 @@ export default function QuickActionSheet({
           <Pressable
             onPress={onClose}
             accessibilityRole="button"
-            accessibilityLabel="Dismiss"
+            accessibilityLabel={t('quick_actions.dismiss_a11y')}
             style={({ pressed }) => [styles.dismiss, pressed && styles.pressed]}
           >
-            <Text style={styles.dismissText}>Dismiss</Text>
+            <Text style={styles.dismissText}>{t('quick_actions.dismiss')}</Text>
           </Pressable>
         </Animated.View>
       </View>

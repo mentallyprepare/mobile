@@ -1,14 +1,21 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { brand, radius, space, type } from '../../design';
+import { t } from '../../i18n';
+import { useLanguage } from '../../i18n/react';
 
 export default function CommunityCard({ hasMatch, partnerPresent, onPress }: { hasMatch: boolean; partnerPresent: boolean; onPress: () => void }) {
+  useLanguage();
+  const title = hasMatch
+    ? (partnerPresent ? t('community_card.title_present') : t('community_card.title_quiet'))
+    : t('community_card.title_no_match');
+  const body = hasMatch ? t('community_card.body_matched') : t('community_card.body_no_match');
   return (
-    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel="Open community" style={({ pressed }) => [styles.card, pressed && styles.pressed]}>
+    <Pressable onPress={onPress} accessibilityRole="button" accessibilityLabel={t('community_card.open_a11y')} style={({ pressed }) => [styles.card, pressed && styles.pressed]}>
       <View style={styles.people}><View style={styles.person} /><View style={[styles.person, styles.personTwo]} /><View style={[styles.person, styles.personThree]} /></View>
-      <Text style={styles.kicker}>COMMUNITY</Text>
-      <Text style={styles.title}>{hasMatch ? (partnerPresent ? 'Someone is present in your circle.' : 'Your circle is quiet right now.') : 'Connection begins with consent.'}</Text>
-      <Text style={styles.body}>{hasMatch ? 'See presence and shared-room actions without exposing anyone’s private writing.' : 'Learn how a real connection appears after your private setup is complete.'}</Text>
-      <Text style={styles.action}>Open community →</Text>
+      <Text style={styles.kicker}>{t('community_card.kicker')}</Text>
+      <Text style={styles.title}>{title}</Text>
+      <Text style={styles.body}>{body}</Text>
+      <Text style={styles.action}>{t('community_card.action')}</Text>
     </Pressable>
   );
 }
