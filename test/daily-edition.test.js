@@ -34,13 +34,15 @@ assert.strictEqual(CONTENT_LIMITS.insight, 130);
 const quickSheet = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'components', 'home', 'QuickActionSheet.tsx'), 'utf8');
 assert.match(quickSheet, /accessibilityViewIsModal/);
 assert.match(quickSheet, /reduceMotionChanged/);
-assert.match(quickSheet, /Write tonight/);
-assert.match(quickSheet, /View your journey/);
+// Round 7: action titles are sourced through i18n; the intent survives via the key.
+assert.match(quickSheet, /t\('quick_actions\.write_title'\)/);
+assert.match(quickSheet, /t\('quick_actions\.journey_title'\)/);
 
 const completionBanner = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'components', 'home', 'CompletionBanner.tsx'), 'utf8');
 assert.match(completionBanner, /accessibilityRole="alert"/);
 assert.match(completionBanner, /reduceMotionChanged/);
-assert.match(completionBanner, /Your words remain private/);
+// Round 7: the "Your words remain private" reassurance now lives in the dictionary.
+assert.match(completionBanner, /t\('completion_banner\.detail'\)/);
 
 const previewRoute = fs.readFileSync(path.resolve(__dirname, '..', 'app', 'daily-preview.tsx'), 'utf8');
 assert.match(previewRoute, /Sample state .* nothing is saved/);
@@ -77,7 +79,8 @@ assert.match(forecastCard, /compactCopy\(prompt, CONTENT_LIMITS\.forecastBody\)/
 
 const insightCard = fs.readFileSync(path.resolve(__dirname, '..', 'src', 'components', 'home', 'InsightCard.tsx'), 'utf8');
 assert.match(insightCard, /accessibilityState=\{canExpand \? \{ expanded \}/);
-assert.match(insightCard, /Read more/);
+// Round 7: expand affordance sourced through i18n.
+assert.match(insightCard, /t\('insight_card\.action_read_more'\)/);
 
 const tabLayout = fs.readFileSync(path.resolve(__dirname, '..', 'app', '(tabs)', '_layout.tsx'), 'utf8');
 assert.match(tabLayout, /StardustBottomNav/);

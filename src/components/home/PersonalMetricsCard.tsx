@@ -1,8 +1,11 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { brand, radius, space, type } from '../../design';
+import { t } from '../../i18n';
+import { useLanguage } from '../../i18n/react';
 
 export default function PersonalMetricsCard({ sealed, streak, night }: { sealed: number; streak: number; night: number }) {
+  useLanguage();
   const [expanded, setExpanded] = useState(false);
   const progress = Math.min(100, Math.round((Math.max(0, night) / 21) * 100));
 
@@ -10,21 +13,21 @@ export default function PersonalMetricsCard({ sealed, streak, night }: { sealed:
     <Pressable
       onPress={() => setExpanded((current) => !current)}
       accessibilityRole="button"
-      accessibilityLabel={`Personal ritual metrics. ${sealed} nights sealed, ${streak} night streak.`}
+      accessibilityLabel={`${t('personal_metrics.a11y_prefix')}${sealed}${t('personal_metrics.a11y_middle')}${streak}${t('personal_metrics.a11y_suffix')}`}
       accessibilityState={{ expanded }}
       style={({ pressed }) => [styles.card, pressed && styles.pressed]}
     >
-      <View style={styles.topline}><Text style={styles.kicker}>YOUR RHYTHM</Text><Text style={styles.action}>{expanded ? 'Close' : 'Details'}</Text></View>
-      <Text style={styles.title}>Presence, without surveillance.</Text>
+      <View style={styles.topline}><Text style={styles.kicker}>{t('personal_metrics.kicker')}</Text><Text style={styles.action}>{expanded ? t('personal_metrics.action_close') : t('personal_metrics.action_open')}</Text></View>
+      <Text style={styles.title}>{t('personal_metrics.title')}</Text>
       <View style={styles.metrics}>
-        <Metric value={sealed} label="SEALED" />
-        <Metric value={streak} label="STREAK" />
-        <Metric value={Math.max(0, 21 - night)} label="AHEAD" />
+        <Metric value={sealed} label={t('personal_metrics.sealed')} />
+        <Metric value={streak} label={t('personal_metrics.streak')} />
+        <Metric value={Math.max(0, 21 - night)} label={t('personal_metrics.ahead')} />
       </View>
       {expanded ? (
         <View style={styles.detail} accessibilityLiveRegion="polite">
           <View style={styles.track}><View style={[styles.fill, { width: `${progress}%` }]} /></View>
-          <Text style={styles.detailCopy}>{progress}% through the 21-night arc. Only completion and timing appear here—never note text, sleep claims, or inferred mood.</Text>
+          <Text style={styles.detailCopy}>{progress}{t('personal_metrics.detail_suffix')}</Text>
         </View>
       ) : null}
     </Pressable>

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { AccessibilityInfo, Animated, StyleSheet, Text, View } from 'react-native';
 import { brand, radius, space, type } from '../../design';
+import { t } from '../../i18n';
+import { useLanguage } from '../../i18n/react';
 
 export default function CompletionBanner({
   night,
@@ -11,6 +13,7 @@ export default function CompletionBanner({
   visible: boolean;
   onFinished: () => void;
 }) {
+  useLanguage(); // re-render when the language changes
   const [opacity] = useState(() => new Animated.Value(0));
   const [translateY] = useState(() => new Animated.Value(8));
   const [reduceMotion, setReduceMotion] = useState(false);
@@ -51,9 +54,9 @@ export default function CompletionBanner({
     >
       <View style={styles.mark}><View style={styles.markCore} /></View>
       <View style={styles.copy}>
-        <Text style={styles.kicker}>NIGHT {String(night).padStart(2, '0')} COMPLETE</Text>
-        <Text style={styles.title}>Tonight is sealed.</Text>
-        <Text style={styles.detail}>Your words remain private. Home has caught up.</Text>
+        <Text style={styles.kicker}>{t('completion_banner.kicker_prefix')}{String(night).padStart(2, '0')}{t('completion_banner.kicker_suffix')}</Text>
+        <Text style={styles.title}>{t('completion_banner.title')}</Text>
+        <Text style={styles.detail}>{t('completion_banner.detail')}</Text>
       </View>
     </Animated.View>
   );
