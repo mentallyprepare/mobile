@@ -58,6 +58,66 @@ test('the shelf editor localizes labels and privacy copy', () => {
   setLanguage('en');
 });
 
+test('tab bar labels translate — the highest-frequency strings in the app', () => {
+  setLanguage('en');
+  assert.strictEqual(t('tabs.home'), 'Home');
+  assert.strictEqual(t('tabs.journey'), 'Journey');
+  assert.strictEqual(t('tabs.shelf'), 'Shelf');
+  setLanguage('hi');
+  assert.strictEqual(t('tabs.journey'), 'यात्रा');
+  assert.strictEqual(t('tabs.you'), 'तुम');
+  setLanguage('en');
+});
+
+test('journey tab copy and locked-night notice compose in both languages', () => {
+  setLanguage('en');
+  assert.strictEqual(t('journey.title'), 'The nights you have carried.');
+  assert.strictEqual(
+    `${t('journey.locked_prefix')}5${t('journey.locked_suffix')}`,
+    'Night 5 opens when it arrives.',
+  );
+  setLanguage('hi');
+  assert.strictEqual(
+    `${t('journey.locked_prefix')}5${t('journey.locked_suffix')}`,
+    'रात 5 जब आएगी, तब खुलेगी।',
+  );
+  setLanguage('en');
+});
+
+test('the not-found route localizes headline, detail, and CTA', () => {
+  setLanguage('hi');
+  assert.match(t('not_found.headline'), /पन्ना/);
+  assert.strictEqual(t('not_found.cta'), 'होम पर जाओ');
+  setLanguage('en');
+  assert.strictEqual(t('not_found.cta'), 'Go home');
+});
+
+test('load-state chrome (retry, stale, placeholder) translates', () => {
+  setLanguage('en');
+  assert.strictEqual(t('load_state.retry'), 'Try again');
+  assert.strictEqual(t('load_state.stale_retry'), 'Retry');
+  setLanguage('hi');
+  assert.strictEqual(t('load_state.retry'), 'फिर से कोशिश करो');
+  assert.match(t('load_state.stale_retry_a11y'), /ताज़ा/);
+  setLanguage('en');
+});
+
+test('failure copy translates and keeps the "nothing removed" promise in Hindi', () => {
+  setLanguage('hi');
+  // Each detail line must still reassure that nothing has been removed —
+  // that's the load-failure contract, not a stylistic choice.
+  for (const kind of ['timeout', 'offline', 'auth', 'server', 'request', 'schema', 'unknown']) {
+    const detail = t(`failures.${kind}_detail`);
+    assert.match(
+      detail,
+      /हट|मौजूदा जानकारी/,
+      `${kind} detail must still say nothing was removed / existing info intact`,
+    );
+  }
+  assert.match(t('failures.stale_offline'), /पिछला सेव/);
+  setLanguage('en');
+});
+
 test('a language with no dictionary yet falls back to English', () => {
   setLanguage('ta');
   assert.strictEqual(t('support.heading'), 'SUPPORT');

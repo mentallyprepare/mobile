@@ -2,6 +2,8 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link, Stack } from 'expo-router';
 import { brand, radius, space, type } from '../src/design';
+import { t } from '../src/i18n';
+import { useLanguage } from '../src/i18n/react';
 
 /**
  * The route expo-router falls back to when nothing matches. Without this the
@@ -12,24 +14,23 @@ import { brand, radius, space, type } from '../src/design';
  * this address does not exist — and offers the one useful move: go home.
  */
 export default function NotFound() {
+  useLanguage(); // re-render when the language changes
+  const cta = t('not_found.cta');
   return (
     <View style={styles.root}>
-      <Stack.Screen options={{ title: 'Not found' }} />
+      <Stack.Screen options={{ title: t('not_found.screen_title') }} />
       <SafeAreaView style={styles.safe} edges={['top']}>
         <View style={styles.panel}>
           <View style={styles.mark} />
-          <Text style={styles.headline}>This page isn’t here.</Text>
-          <Text style={styles.detail}>
-            The link may be old, or the screen may have moved. Everything you wrote
-            is still on the home screen.
-          </Text>
+          <Text style={styles.headline}>{t('not_found.headline')}</Text>
+          <Text style={styles.detail}>{t('not_found.detail')}</Text>
           <Link href="/" replace asChild>
             <Pressable
               accessibilityRole="button"
-              accessibilityLabel="Go home"
+              accessibilityLabel={cta}
               style={({ pressed }) => [styles.cta, pressed && styles.pressed]}
             >
-              <Text style={styles.ctaLabel}>Go home</Text>
+              <Text style={styles.ctaLabel}>{cta}</Text>
             </Pressable>
           </Link>
         </View>

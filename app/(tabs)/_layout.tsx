@@ -7,6 +7,8 @@ import { TAB_BAR_CONTENT_HEIGHT } from '../../src/components/app/tab-bar';
 import { brand, type } from '../../src/design';
 import StardustBottomNav from '../../src/components/home/StardustBottomNav';
 import QuickActionSheet, { type QuickAction } from '../../src/components/home/QuickActionSheet';
+import { t } from '../../src/i18n';
+import { useLanguage } from '../../src/i18n/react';
 
 function Shell() {
   // The bar is absolutely positioned, so without this it sits underneath the
@@ -14,6 +16,7 @@ function Shell() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
   const [actionsOpen, setActionsOpen] = useState(false);
+  useLanguage(); // re-render tab titles when the language changes
 
   function handleAction(action: QuickAction) {
     setActionsOpen(false);
@@ -48,24 +51,24 @@ function Shell() {
     >
       <Tabs.Screen
         name="index"
-        options={{ title: 'Home', tabBarIcon: ({ color }) => <HomeIcon color={color} /> }}
+        options={{ title: t('tabs.home'), tabBarIcon: ({ color }) => <HomeIcon color={color} /> }}
       />
       <Tabs.Screen
         name="journey"
-        options={{ title: 'Journey', tabBarIcon: ({ color }) => <JourneyIcon color={color} /> }}
+        options={{ title: t('tabs.journey'), tabBarIcon: ({ color }) => <JourneyIcon color={color} /> }}
       />
       <Tabs.Screen name="rooms" options={{ href: null }} />
       <Tabs.Screen
         name="create"
-        options={{ title: 'Shelf', tabBarIcon: ({ color }) => <SparkIcon color={color} /> }}
+        options={{ title: t('tabs.shelf'), tabBarIcon: ({ color }) => <SparkIcon color={color} /> }}
       />
       <Tabs.Screen
         name="discover"
-        options={{ title: 'Community', tabBarIcon: ({ color }) => <CommunityIcon color={color} /> }}
+        options={{ title: t('tabs.community'), tabBarIcon: ({ color }) => <CommunityIcon color={color} /> }}
       />
       <Tabs.Screen
         name="you"
-        options={{ title: 'You', tabBarIcon: ({ color }) => <YouIcon color={color} /> }}
+        options={{ title: t('tabs.you'), tabBarIcon: ({ color }) => <YouIcon color={color} /> }}
       />
     </Tabs>
       <StardustBottomNav onPress={() => setActionsOpen(true)} />

@@ -10,9 +10,12 @@ import { LoadFailure, LoadPlaceholder, StaleNotice } from '../../src/components/
 import { useMeShared } from '../../src/api/me-provider';
 import { describeLoad } from '../../src/api/load-state';
 import { brand, space, type } from '../../src/design';
+import { t } from '../../src/i18n';
+import { useLanguage } from '../../src/i18n/react';
 
 export default function Journey() {
   const router = useRouter();
+  useLanguage(); // re-render when the language changes
   const { data, loading, error, hasLoaded, reload } = useMeShared();
   const view = describeLoad({ loading, error, hasLoaded });
   const currentNight = data?.match?.day ?? 1;
@@ -20,17 +23,17 @@ export default function Journey() {
   const [notice, setNotice] = useState<string | null>(null);
   const completed = data?.entries?.map((entry) => entry.day) ?? [];
 
-  if (view === 'first-load') return <CosmicScreen><LoadPlaceholder label="Loading your journey" /></CosmicScreen>;
+  if (view === 'first-load') return <CosmicScreen><LoadPlaceholder label={t('journey.loading')} /></CosmicScreen>;
   if (view === 'failed') return <CosmicScreen><LoadFailure error={error} onRetry={() => void reload()} busy={loading} /></CosmicScreen>;
 
   return (
     <CosmicScreen refreshing={loading} onRefresh={() => void reload()}>
-      <Text style={styles.kicker}>JOURNEY</Text>
-      <Text style={styles.title}>The nights you have carried.</Text>
-      <Text style={styles.body}>Completion and timing form the visible path. Your private words remain outside this view.</Text>
+      <Text style={styles.kicker}>{t('journey.kicker')}</Text>
+      <Text style={styles.title}>{t('journey.title')}</Text>
+      <Text style={styles.body}>{t('journey.body')}</Text>
       {view === 'stale' ? <StaleNotice error={error} onRetry={() => void reload()} busy={loading} /> : null}
       <View style={styles.strip}>
-        <DateStrip selectedNight={selectedNight} currentNight={currentNight} completedNights={completed} onSelect={(night, locked) => { if (locked) return setNotice(`Night ${night} opens when it arrives.`); setNotice(null); setSelectedNight(night); }} />
+        <DateStrip selectedNight={selectedNight} currentNight={currentNight} completedNights={completed} onSelect={(night, locked) => { if (locked) return setNotice(`${t('journey.locked_prefix')}${night}${t('journey.locked_suffix')}`); setNotice(null); setSelectedNight(night); }} />
       </View>
       {notice ? <Text style={styles.notice} accessibilityLiveRegion="polite">{notice}</Text> : null}
       <Constellation
