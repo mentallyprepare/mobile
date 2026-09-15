@@ -2,6 +2,46 @@
 
 Decided by Anushka, 20 July 2026, reviewing draft PRs #1–#3 (`codex/mp-006` → `mp-008`).
 
+> ## Reversed by Anushka, 25 July 2026.
+>
+> The 20 Jul decision is superseded. New target: **Cloudflare Pages** for the
+> web surface (marketing + web export of the app), **Render** for the Express
+> service (moved off Railway), **Supabase** for Postgres + auth. Mobile
+> continues talking to Express; Express is backed by Supabase Postgres
+> instead of `better-sqlite3` and can delegate auth to Supabase Auth.
+>
+> This is a real replatform, not a token swap. The salvage list below is now
+> in-scope, not "for later." The invisible-machine rules and the never-build
+> list (`master-brief-the-quiet-app.md`) are unchanged — the platform
+> changes; the product does not.
+>
+> **What has to happen before any migration touches live data:**
+>
+> 1. A dated data-migration plan for the ~existing users on SQLite → Supabase,
+>    including a full backup and a dry-run against a Supabase project that is
+>    NOT the production one.
+> 2. Bearer-token auth (already shipped in web commit `861d875`, un-deployed)
+>    either stays as the auth path OR is retired in favour of Supabase Auth —
+>    not both at once. Two auth systems on one user pool is exactly what the
+>    original decision was protecting against.
+> 3. The Supabase branches (`codex/mp-006` → `mp-008` and `mp-009`) are
+>    **reference only** until re-reviewed against the salvage list. They were
+>    closed for direction, not quality; some pieces are re-usable, others
+>    were built against the abandoned schema.
+>
+> The prompt to hand Claude Code / Codex for this migration is
+> `docs/prompt-cf-render-supabase-migration.md`. That prompt is the source
+> of truth for how the migration is executed; edit it there, not by
+> ad-hoc instructions.
+>
+> This reversal is Anushka's choice, made explicitly when asked. The 20 Jul
+> reasoning below is preserved verbatim, because it is still the argument
+> the migration has to answer to — not to overturn silently.
+
+---
+
+## Original decision, 20 July 2026 (preserved)
+
 ## The decision
 
 The product has **one backend**: the existing Express/SQLite service in the web
