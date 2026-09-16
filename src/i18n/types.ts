@@ -898,6 +898,54 @@ export type StringsShape = {
     secondary_safety: string;
     secondary_how: string;
   };
+  // ============ Round 8 · Data-module strings ============
+  // Feeling tag labels. Keyed by the tag id from PRIMARY_TAG_STRUCTURE /
+  // MORE_TAG_STRUCTURE in src/stardust-feed.ts. IDs themselves never change —
+  // they're the persistence keys — only the display label is translated.
+  feed_tags: {
+    restless: string; quiet: string; hopeful: string; heavy: string; clear: string;
+    tender: string; guarded: string; curious: string; lonely: string; steady: string; open: string;
+  };
+  // Home-tab recommendation cards. Three curated items keyed by id.
+  recommendations: {
+    one_line_eyebrow: string; one_line_title: string; one_line_detail: string;
+    arrive_eyebrow: string;   arrive_title: string;   arrive_detail: string;
+    look_back_eyebrow: string; look_back_title: string; look_back_detail: string;
+  };
+  // Phase names for the 21-night arc. Five buckets by night index.
+  phase: {
+    before_label: string;   before_title: string;
+    arrival_label: string;  arrival_title: string;
+    deepening_label: string; deepening_title: string;
+    witness_label: string;  witness_title: string;
+    reveal_label: string;   reveal_title: string;
+  };
+  // Text on PhaseVisualization: body composed as prefix + count + middle + suffix.
+  phase_viz: {
+    a11y_prefix: string;    // ". Night "
+    a11y_suffix: string;    // " of 21."
+    body_prefix: string;    // "" (empty; count goes first)
+    body_middle_singular: string;  // " sealed night form the visible path. Private text never enters this view."
+    body_middle_plural: string;    // " sealed nights form the visible path. Private text never enters this view."
+    action: string;
+  };
+  // Label for a specific night in the strip; three states.
+  day_label: {
+    tonight: string;         // "Tonight"
+    past_prefix: string;     // "Night "
+    not_yet: string;         // "Not yet"
+  };
+  // Reflection copy shown after check-in. Keyed by Feeling id, plus the
+  // no-selection and multi-selection variants.
+  reflections: {
+    empty: string;
+    multi_suffix: string;    // " More than one feeling can be true at once."
+    restless: string;
+    quiet: string;
+    hopeful: string;
+    heavy: string;
+    clear: string;
+  };
 };
 
 export type LanguageCode = 'en' | 'hi' | 'ta' | 'bn' | 'mr';

@@ -1,3 +1,16 @@
+// Home-feed data + display helpers.
+//
+// The **structure** is constant (ids, tones, intensities) — those are
+// persistence and layout keys. The **display strings** (tag labels,
+// recommendation eyebrow/title/detail, phase name/title, day label) are
+// resolved at call time through the i18n runtime so a language switch
+// re-renders the same rows in the current language.
+//
+// Consumers should call the getter functions from a component body that
+// also calls `useLanguage()` so React re-renders on language changes.
+
+import { t } from './i18n';
+
 export type FeedTag = {
   id: string;
   label: string;
@@ -22,6 +35,7 @@ export const CONTENT_LIMITS = {
   socialMessage: 90,
 } as const;
 
+/** Whitespace-collapsing, length-capping helper. Free of i18n. */
 export function compactCopy(text: string, maxLength: number) {
   const clean = text.replace(/\s+/g, ' ').trim();
   if (clean.length <= maxLength) return clean;
@@ -30,39 +44,89 @@ export function compactCopy(text: string, maxLength: number) {
   return `${shortened.slice(0, Math.max(lastSpace, 1))}…`;
 }
 
-export const PRIMARY_TAGS: FeedTag[] = [
-  { id: 'restless', label: 'restless', tone: 'rose', intensity: 2 },
-  { id: 'quiet', label: 'quiet', tone: 'purple', intensity: 1 },
-  { id: 'hopeful', label: 'hopeful', tone: 'gold', intensity: 2 },
-  { id: 'heavy', label: 'heavy', tone: 'purple', intensity: 3 },
-  { id: 'clear', label: 'clear', tone: 'gold', intensity: 1 },
+// ---------- Tags: structure is constant; label routes through t() ----------
+
+type FeedTagStructure = Omit<FeedTag, 'label'>;
+
+/**
+ * Primary feeling tags shown on the Home check-in row. IDs are persistence
+ * keys — they must never change without a data migration. Labels come from
+ * the i18n dictionary at `feed_tags.<id>`.
+ */
+export const PRIMARY_TAG_IDS: readonly FeedTagStructure[] = [
+  { id: 'restless', tone: 'rose', intensity: 2 },
+  { id: 'quiet', tone: 'purple', intensity: 1 },
+  { id: 'hopeful', tone: 'gold', intensity: 2 },
+  { id: 'heavy', tone: 'purple', intensity: 3 },
+  { id: 'clear', tone: 'gold', intensity: 1 },
 ];
 
-export const MORE_TAGS: FeedTag[] = [
-  { id: 'tender', label: 'tender', tone: 'rose', intensity: 2 },
-  { id: 'guarded', label: 'guarded', tone: 'purple', intensity: 2 },
-  { id: 'curious', label: 'curious', tone: 'gold', intensity: 1 },
-  { id: 'lonely', label: 'lonely', tone: 'purple', intensity: 3 },
-  { id: 'steady', label: 'steady', tone: 'gold', intensity: 2 },
-  { id: 'open', label: 'open', tone: 'rose', intensity: 1 },
+/** Extra tags revealed by the "add more" sheet. Same rule as PRIMARY_TAG_IDS. */
+export const MORE_TAG_IDS: readonly FeedTagStructure[] = [
+  { id: 'tender', tone: 'rose', intensity: 2 },
+  { id: 'guarded', tone: 'purple', intensity: 2 },
+  { id: 'curious', tone: 'gold', intensity: 1 },
+  { id: 'lonely', tone: 'purple', intensity: 3 },
+  { id: 'steady', tone: 'gold', intensity: 2 },
+  { id: 'open', tone: 'rose', intensity: 1 },
 ];
 
-export const RECOMMENDATIONS: FeedRecommendation[] = [
-  { id: 'one-line', eyebrow: 'FOR TONIGHT', title: 'Start with one unpolished line.', detail: 'A small true sentence is enough to enter the ritual.', action: 'write', tone: 'rose' },
-  { id: 'arrive', eyebrow: 'BEFORE WRITING', title: 'Name the feeling before the story.', detail: 'Choose what feels nearest. Nothing is scored or diagnosed.', action: 'check-in', tone: 'purple' },
-  { id: 'look-back', eyebrow: 'YOUR PATH', title: 'Notice what has already stayed with you.', detail: 'The constellation remembers presence, never private text.', action: 'journey', tone: 'gold' },
-];
-
-export function phaseForNight(night: number) {
-  if (night <= 0) return { label: 'BEFORE NIGHT ONE', title: 'Preparing the room' };
-  if (night <= 5) return { label: 'ARRIVAL', title: 'Learning the rhythm' };
-  if (night <= 12) return { label: 'DEEPENING', title: 'A private rhythm forms' };
-  if (night <= 18) return { label: 'WITNESS', title: 'The pattern becomes visible' };
-  return { label: 'REVEAL', title: 'The final nights approach' };
+export function getPrimaryTags(): FeedTag[] {
+  return PRIMARY_TAG_IDS.map((tag) => ({ ...tag, label: t(`feed_tags.${tag.id}`) }));
 }
 
-export function selectedDayLabel(night: number, currentNight: number) {
-  if (night === currentNight) return 'Tonight';
-  if (night < currentNight) return `Night ${night}`;
-  return 'Not yet';
+export function getMoreTags(): FeedTag[] {
+  return MORE_TAG_IDS.map((tag) => ({ ...tag, label: t(`feed_tags.${tag.id}`) }));
+}
+
+// ---------- Recommendations: structure is constant; display routes through t() ----------
+
+type RecommendationStructure = Omit<FeedRecommendation, 'eyebrow' | 'title' | 'detail'> & {
+  key: 'one_line' | 'arrive' | 'look_back';
+};
+
+/**
+ * Home-feed recommendation cards. Keyed by `key` — the dictionary group
+ * `recommendations` has three trios (<key>_eyebrow / _title / _detail).
+ */
+export const RECOMMENDATION_IDS: readonly RecommendationStructure[] = [
+  { id: 'one-line', key: 'one_line', action: 'write', tone: 'rose' },
+  { id: 'arrive', key: 'arrive', action: 'check-in', tone: 'purple' },
+  { id: 'look-back', key: 'look_back', action: 'journey', tone: 'gold' },
+];
+
+export function getRecommendations(): FeedRecommendation[] {
+  return RECOMMENDATION_IDS.map(({ key, ...rest }) => ({
+    ...rest,
+    eyebrow: t(`recommendations.${key}_eyebrow`),
+    title: t(`recommendations.${key}_title`),
+    detail: t(`recommendations.${key}_detail`),
+  }));
+}
+
+// ---------- Phase + day-label helpers ----------
+
+/**
+ * Which arc phase a given night belongs to. Returns translated `label` and
+ * `title` — safe to call from a component body wrapped in `useLanguage()`.
+ * Phase boundaries themselves are structural (not translated).
+ */
+export function phaseForNight(night: number): { label: string; title: string } {
+  const bucket =
+    night <= 0 ? 'before'
+    : night <= 5 ? 'arrival'
+    : night <= 12 ? 'deepening'
+    : night <= 18 ? 'witness'
+    : 'reveal';
+  return { label: t(`phase.${bucket}_label`), title: t(`phase.${bucket}_title`) };
+}
+
+/**
+ * Label for a specific night relative to the current night. Three states:
+ * the current night, a past night (numbered), a future night.
+ */
+export function selectedDayLabel(night: number, currentNight: number): string {
+  if (night === currentNight) return t('day_label.tonight');
+  if (night < currentNight) return `${t('day_label.past_prefix')}${night}`;
+  return t('day_label.not_yet');
 }

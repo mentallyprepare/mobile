@@ -25,7 +25,7 @@ import { useMeShared } from '../../src/api/me-provider';
 import { useShelf } from '../../src/api/shelf-provider';
 import { canRenderContent, describeLoad } from '../../src/api/load-state';
 import { FEELINGS, reflectionFor, type Feeling } from '../../src/daily-edition';
-import { MORE_TAGS, PRIMARY_TAGS, RECOMMENDATIONS, phaseForNight, selectedDayLabel } from '../../src/stardust-feed';
+import { getMoreTags, getPrimaryTags, getRecommendations, phaseForNight, selectedDayLabel } from '../../src/stardust-feed';
 import { t } from '../../src/i18n';
 import { useLanguage } from '../../src/i18n/react';
 
@@ -147,7 +147,7 @@ export default function Home() {
 
       <DailyFeedSection eyebrow={t('home.sec_evening_eyebrow')} title={t('home.sec_evening_title')}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.cardRow}>
-          {RECOMMENDATIONS.slice(0, 2).map((item) => <RecommendationCard key={item.id} item={item} onPress={() => handleAction(item.action)} />)}
+          {getRecommendations().slice(0, 2).map((item) => <RecommendationCard key={item.id} item={item} onPress={() => handleAction(item.action)} />)}
         </ScrollView>
       </DailyFeedSection>
 
@@ -162,7 +162,7 @@ export default function Home() {
 
       <View onLayout={(event) => { checkInY.current = event.nativeEvent.layout.y; }}>
         <DailyFeedSection eyebrow={t('home.sec_feeling_eyebrow')} title={t('home.sec_feeling_title')} actionLabel={t('home.clear')} onAction={() => setSelectedTags([])}>
-          <TagGrid tags={PRIMARY_TAGS} selected={selectedTags} onToggle={toggleTag} onAddMore={() => setMoreOpen(true)} />
+          <TagGrid tags={getPrimaryTags()} selected={selectedTags} onToggle={toggleTag} onAddMore={() => setMoreOpen(true)} />
           {selectedTags.length > 0 ? <Text accessibilityLiveRegion="polite" style={styles.selectedCopy}>{selectedTags.join(' · ')}</Text> : null}
         </DailyFeedSection>
       </View>
@@ -200,7 +200,7 @@ export default function Home() {
 
       <View style={styles.end}><Text style={styles.endEyebrow}>{t('home.end_eyebrow')}</Text><Text style={styles.endCopy}>{match ? `${t('home.night_word')}${currentNight + (currentNight < 21 ? 1 : 0)}${t('home.end_suffix')}` : t('home.end_before')}</Text></View>
 
-      <AddMoreSheet visible={moreOpen} tags={MORE_TAGS} selected={selectedTags} onToggle={toggleTag} onClose={() => setMoreOpen(false)} />
+      <AddMoreSheet visible={moreOpen} tags={getMoreTags()} selected={selectedTags} onToggle={toggleTag} onClose={() => setMoreOpen(false)} />
       <QuickActionSheet visible={actionsOpen} onClose={() => setActionsOpen(false)} onAction={handleAction} />
     </CosmicScreen>
   );

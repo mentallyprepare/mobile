@@ -207,6 +207,83 @@ test('stardust nav pill and add-more sheet translate', () => {
   setLanguage('en');
 });
 
+// Round 8 — data-module strings sourced through i18n
+test('feeling tag labels translate; ids never change', () => {
+  setLanguage('en');
+  assert.strictEqual(t('feed_tags.restless'), 'restless');
+  assert.strictEqual(t('feed_tags.clear'), 'clear');
+  setLanguage('hi');
+  assert.strictEqual(t('feed_tags.restless'), 'बेचैन');
+  assert.strictEqual(t('feed_tags.clear'), 'साफ़');
+  setLanguage('en');
+});
+
+test('phase names translate for all five buckets', () => {
+  setLanguage('en');
+  for (const bucket of ['before', 'arrival', 'deepening', 'witness', 'reveal']) {
+    assert.ok(t(`phase.${bucket}_label`).length > 0, `${bucket} label present`);
+    assert.ok(t(`phase.${bucket}_title`).length > 0, `${bucket} title present`);
+  }
+  setLanguage('hi');
+  assert.strictEqual(t('phase.arrival_label'), 'आगमन');
+  assert.strictEqual(t('phase.reveal_title'), 'आख़िरी रातें पास हैं');
+  setLanguage('en');
+});
+
+test('phase visualization body composes count + singular/plural middle', () => {
+  setLanguage('en');
+  assert.strictEqual(
+    `1${t('phase_viz.body_middle_singular')}`,
+    '1 sealed night form the visible path. Private text never enters this view.',
+  );
+  assert.strictEqual(
+    `7${t('phase_viz.body_middle_plural')}`,
+    '7 sealed nights form the visible path. Private text never enters this view.',
+  );
+  // The "Private text never enters this view" promise survives translation.
+  setLanguage('hi');
+  assert.match(t('phase_viz.body_middle_plural'), /निजी शब्द/);
+  setLanguage('en');
+});
+
+test('day-label switches between tonight / past-numbered / not-yet in both languages', () => {
+  setLanguage('en');
+  assert.strictEqual(t('day_label.tonight'), 'Tonight');
+  assert.strictEqual(`${t('day_label.past_prefix')}5`, 'Night 5');
+  assert.strictEqual(t('day_label.not_yet'), 'Not yet');
+  setLanguage('hi');
+  assert.strictEqual(t('day_label.tonight'), 'आज रात');
+  assert.strictEqual(`${t('day_label.past_prefix')}5`, 'रात 5');
+  assert.strictEqual(t('day_label.not_yet'), 'अभी नहीं');
+  setLanguage('en');
+});
+
+test('reflection copy translates and keeps the "not diagnostic" contract in Hindi', () => {
+  setLanguage('hi');
+  // Empty check-in still reassures the check-in stays on-device.
+  assert.match(t('reflections.empty'), /डिवाइस/);
+  // Each per-feeling reflection is present and non-empty.
+  for (const feeling of ['restless', 'quiet', 'hopeful', 'heavy', 'clear']) {
+    assert.ok(t(`reflections.${feeling}`).length > 0, `${feeling} reflection present`);
+    // Never uses clinical or algorithmic vocabulary in Hindi.
+    assert.ok(
+      !/(AI|एआई|निदान|मैचिंग)/.test(t(`reflections.${feeling}`)),
+      `${feeling} reflection must not use diagnostic / matching vocabulary`,
+    );
+  }
+  setLanguage('en');
+});
+
+test('recommendation cards translate each of their eyebrow/title/detail trios', () => {
+  setLanguage('en');
+  assert.strictEqual(t('recommendations.one_line_eyebrow'), 'FOR TONIGHT');
+  assert.strictEqual(t('recommendations.look_back_title'), 'Notice what has already stayed with you.');
+  setLanguage('hi');
+  assert.match(t('recommendations.one_line_eyebrow'), /आज रात/);
+  assert.match(t('recommendations.arrive_detail'), /स्कोर/);
+  setLanguage('en');
+});
+
 test('a language with no dictionary yet falls back to English', () => {
   setLanguage('ta');
   assert.strictEqual(t('support.heading'), 'SUPPORT');
