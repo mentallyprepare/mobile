@@ -16,16 +16,40 @@ execFileSync(
 );
 
 const { FEELINGS, reflectionFor } = require(path.join(out, 'daily-edition.js'));
-const { CONTENT_LIMITS, MORE_TAGS, PRIMARY_TAGS, RECOMMENDATIONS, compactCopy, phaseForNight } = require(path.join(out, 'stardust-feed.js'));
+const {
+  CONTENT_LIMITS,
+  MORE_TAG_IDS,
+  PRIMARY_TAG_IDS,
+  RECOMMENDATION_IDS,
+  getMoreTags,
+  getPrimaryTags,
+  getRecommendations,
+  compactCopy,
+  phaseForNight,
+} = require(path.join(out, 'stardust-feed.js'));
 
+// FEELINGS are persistence ids and must not be translated — assert the IDs
+// themselves (never labels) round-trip.
 assert.deepStrictEqual(FEELINGS, ['restless', 'quiet', 'hopeful', 'heavy', 'clear']);
+// reflectionFor now routes through i18n; the English default still returns
+// the same lines, so the promise contracts survive.
 assert.match(reflectionFor([]), /stays on this device/);
 assert.match(reflectionFor(['quiet']), /Quiet counts/);
 assert.match(reflectionFor(['heavy', 'hopeful']), /More than one feeling can be true/);
 assert.ok(!reflectionFor(['clear']).match(/AI|diagnos|compatib/i));
-assert.strictEqual(PRIMARY_TAGS.length, 5);
-assert.ok(MORE_TAGS.length >= 5);
-assert.strictEqual(RECOMMENDATIONS.length, 3);
+// Round 8: tag/recommendation constants replaced with ID structures + getter
+// functions. Shape assertions now target the ids and the getter output.
+assert.strictEqual(PRIMARY_TAG_IDS.length, 5);
+assert.ok(MORE_TAG_IDS.length >= 5);
+assert.strictEqual(RECOMMENDATION_IDS.length, 3);
+assert.strictEqual(getPrimaryTags().length, 5);
+assert.ok(getMoreTags().length >= 5);
+assert.strictEqual(getRecommendations().length, 3);
+// Every emitted tag carries an id + a resolved label.
+for (const tag of getPrimaryTags()) {
+  assert.ok(typeof tag.id === 'string' && tag.id.length > 0, 'tag has id');
+  assert.ok(typeof tag.label === 'string' && tag.label.length > 0, 'tag has label');
+}
 assert.strictEqual(phaseForNight(4).label, 'ARRIVAL');
 assert.strictEqual(compactCopy('  a   short  line  ', 30), 'a short line');
 assert.ok(compactCopy('This generated sentence is intentionally too long for the compact card.', 32).length <= 32);
@@ -60,7 +84,8 @@ assert.match(homeRoute, /CosmicSection/);
 assert.match(homeRoute, /EducationCard/);
 assert.match(homeRoute, /PersonalMetricsCard/);
 assert.match(homeRoute, /CommunityCard/);
-assert.match(homeRoute, /RECOMMENDATIONS\.slice\(0, 2\)/);
+// Round 8: RECOMMENDATIONS array replaced with getRecommendations() getter.
+assert.match(homeRoute, /getRecommendations\(\)\.slice\(0, 2\)/);
 assert.match(homeRoute, /selectedEntry/);
 assert.ok(homeRoute.lastIndexOf('<ForecastCard') < homeRoute.lastIndexOf('<SocialForecastCard'));
 assert.ok(homeRoute.lastIndexOf('<SocialForecastCard') < homeRoute.lastIndexOf('<TagGrid'));

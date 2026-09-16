@@ -19,7 +19,7 @@ import SocialForecastCard from '../src/components/home/SocialForecastCard';
 import StardustBottomNav from '../src/components/home/StardustBottomNav';
 import TagGrid from '../src/components/home/TagGrid';
 import { FEELINGS, reflectionFor, type Feeling } from '../src/daily-edition';
-import { MORE_TAGS, PRIMARY_TAGS, RECOMMENDATIONS } from '../src/stardust-feed';
+import { getMoreTags, getPrimaryTags, getRecommendations } from '../src/stardust-feed';
 import { brand, layout, radius, space, type } from '../src/design';
 import { PREVIEW_TOOLS_ENABLED } from '../src/preview-tools';
 
@@ -96,13 +96,13 @@ export default function DailyPreview() {
 
           <DailyFeedSection eyebrow="FOR YOUR EVENING" title="A few ways in">
             <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.recommendations}>
-              {RECOMMENDATIONS.map((item) => <RecommendationCard key={item.id} item={item} onPress={() => handleAction(item.action)} />)}
+              {getRecommendations().map((item) => <RecommendationCard key={item.id} item={item} onPress={() => handleAction(item.action)} />)}
             </ScrollView>
           </DailyFeedSection>
 
           <View onLayout={(event) => { checkInY.current = event.nativeEvent.layout.y; }}>
             <DailyFeedSection eyebrow="CHECK IN" title="What is present?" actionLabel="Clear" onAction={() => setFeelings([])}>
-              <TagGrid tags={PRIMARY_TAGS} selected={feelings} onToggle={toggleFeeling} onAddMore={() => setMoreOpen(true)} />
+              <TagGrid tags={getPrimaryTags()} selected={feelings} onToggle={toggleFeeling} onAddMore={() => setMoreOpen(true)} />
             </DailyFeedSection>
           </View>
 
@@ -121,7 +121,7 @@ export default function DailyPreview() {
       </SafeAreaView>
 
       <StardustBottomNav onPress={() => setActionsOpen(true)} />
-      <AddMoreSheet visible={moreOpen} tags={MORE_TAGS} selected={feelings} onToggle={toggleFeeling} onClose={() => setMoreOpen(false)} />
+      <AddMoreSheet visible={moreOpen} tags={getMoreTags()} selected={feelings} onToggle={toggleFeeling} onClose={() => setMoreOpen(false)} />
       <QuickActionSheet visible={actionsOpen} onClose={() => setActionsOpen(false)} onAction={handleAction} />
     </View>
   );
