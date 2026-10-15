@@ -416,6 +416,8 @@ export type StringsShape = {
     turn_off: string;
     turn_on: string;
     section: string;
+    email_reminder_title: string;
+    email_reminder_body: string;
     tonight_open_title: string;
     tonight_open_body: string;
     room_activity_title: string;
@@ -502,6 +504,14 @@ export type StringsShape = {
     room_title: string;
     room_detail: string;
     section_account: string;
+    archive_eyebrow: string;
+    archive_title: string;
+    archive_detail: string;
+    archive_back: string;
+    archive_empty: string;
+    archive_error: string;
+    archive_day: string;
+    archive_reflection: string;
     verify_eyebrow: string;
     verify_title: string;
     verify_detail: string;

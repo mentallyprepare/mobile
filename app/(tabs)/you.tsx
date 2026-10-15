@@ -135,6 +135,12 @@ export default function Profile() {
         ) : null}
 
         <SectionHeader title={t('you.section_account')} />
+        <ActionRow
+          eyebrow={t('you.archive_eyebrow')}
+          title={t('you.archive_title')}
+          detail={t('you.archive_detail')}
+          onPress={() => router.push('/archive' as Href)}
+        />
         {data?.user && !data.user.emailVerified ? (
           <ActionRow
             eyebrow={t('you.verify_eyebrow')}

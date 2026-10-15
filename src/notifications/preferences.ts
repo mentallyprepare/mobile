@@ -1,5 +1,6 @@
 export type NotificationPreferences = {
   enabled: boolean;
+  emailReminders: boolean;
   morningReminder: boolean;
   eveningReminder: boolean;
   dailyReflection: boolean;
@@ -9,6 +10,7 @@ export type NotificationPreferences = {
 
 export const DEFAULT_NOTIFICATION_PREFERENCES: NotificationPreferences = {
   enabled: true,
+  emailReminders: false,
   morningReminder: false,
   eveningReminder: true,
   dailyReflection: true,
@@ -22,6 +24,7 @@ export function cleanNotificationPreferences(
   const enabled = input?.enabled !== false;
   return {
     enabled,
+    emailReminders: input?.emailReminders === true,
     morningReminder: enabled && input?.morningReminder === true,
     eveningReminder: enabled && input?.eveningReminder !== false,
     dailyReflection: enabled && input?.dailyReflection !== false,

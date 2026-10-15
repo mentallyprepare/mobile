@@ -13,6 +13,8 @@ export type DraftScope = {
   userId: number;
   /** Which of the 21 nights this draft belongs to. */
   night: number;
+  /** The specific journey; an older night one must never enter a new match. */
+  matchId: number;
 };
 
 export type DraftIO = {
@@ -38,6 +40,8 @@ export function isValidScope(scope: DraftScope | null | undefined): boolean {
   return (
     isWholeNumber(scope.userId) &&
     scope.userId > 0 &&
+    isWholeNumber(scope.matchId) &&
+    scope.matchId > 0 &&
     isWholeNumber(scope.night) &&
     scope.night > 0
   );
@@ -46,7 +50,7 @@ export function isValidScope(scope: DraftScope | null | undefined): boolean {
 /** The file name carries the scope and nothing else — never any of the text. */
 export function draftFileName(scope: DraftScope): string | null {
   if (!isValidScope(scope)) return null;
-  return `${PREFIX}${scope.userId}-${scope.night}${SUFFIX}`;
+  return `${PREFIX}${scope.userId}-${scope.matchId}-${scope.night}${SUFFIX}`;
 }
 
 export function isDraftFileName(name: string): boolean {

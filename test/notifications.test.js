@@ -35,15 +35,17 @@ test('every notification uses a safe allowlisted route and contains no private f
   }
 });
 
-test('disabled notifications disable every category', () => {
+test('disabled push turns off push categories while email can be managed separately', () => {
   assert.deepStrictEqual(cleanNotificationPreferences({ enabled: false }), {
     enabled: false,
+    emailReminders: false,
     morningReminder: false,
     eveningReminder: false,
     dailyReflection: false,
     streakReminder: false,
     silentRoomReminder: false,
   });
+  assert.strictEqual(cleanNotificationPreferences({ enabled: false, emailReminders: true }).emailReminders, true);
 });
 
 test('defaults keep morning and retired Silent Room reminders off', () => {

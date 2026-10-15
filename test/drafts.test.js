@@ -42,7 +42,7 @@ let passed = 0;
 const tests = [];
 const test = (name, fn) => tests.push([name, fn]);
 
-const ANNA = { userId: 7, night: 3 };
+const ANNA = { userId: 7, matchId: 12, night: 3 };
 const NOTE = 'the thing I could not say out loud today';
 
 test('a draft written tonight is still there after a restart', async () => {
@@ -56,9 +56,9 @@ test('a draft written tonight is still there after a restart', async () => {
 test('drafts never cross between accounts', async () => {
   const io = memoryIO();
   const store = createDraftStore(io);
-  await store.save({ userId: 7, night: 3 }, 'mine');
+  await store.save({ userId: 7, matchId: 12, night: 3 }, 'mine');
   assert.strictEqual(
-    await store.load({ userId: 8, night: 3 }),
+    await store.load({ userId: 8, matchId: 12, night: 3 }),
     null,
     'another account on the same device must see nothing',
   );
@@ -67,9 +67,15 @@ test('drafts never cross between accounts', async () => {
 test('drafts never cross between nights', async () => {
   const io = memoryIO();
   const store = createDraftStore(io);
-  await store.save({ userId: 7, night: 3 }, 'night three');
-  assert.strictEqual(await store.load({ userId: 7, night: 4 }), null);
-  assert.strictEqual(await store.load({ userId: 7, night: 3 }), 'night three');
+  await store.save({ userId: 7, matchId: 12, night: 3 }, 'night three');
+  assert.strictEqual(await store.load({ userId: 7, matchId: 12, night: 4 }), null);
+  assert.strictEqual(await store.load({ userId: 7, matchId: 12, night: 3 }), 'night three');
+});
+
+test('drafts never cross into a new journey on the same night', async () => {
+  const store = createDraftStore(memoryIO());
+  await store.save({ userId: 7, matchId: 12, night: 1 }, 'old journey');
+  assert.strictEqual(await store.load({ userId: 7, matchId: 13, night: 1 }), null);
 });
 
 test('sealing the note removes the local copy', async () => {
@@ -84,9 +90,9 @@ test('sealing the note removes the local copy', async () => {
 test('signing out clears every draft on the device', async () => {
   const io = memoryIO();
   const store = createDraftStore(io);
-  await store.save({ userId: 7, night: 3 }, 'one');
-  await store.save({ userId: 7, night: 4 }, 'two');
-  await store.save({ userId: 9, night: 1 }, 'three');
+  await store.save({ userId: 7, matchId: 12, night: 3 }, 'one');
+  await store.save({ userId: 7, matchId: 12, night: 4 }, 'two');
+  await store.save({ userId: 9, matchId: 13, night: 1 }, 'three');
   await store.discardAll();
   assert.strictEqual(io.files.size, 0, 'the next account sees nothing');
 });
@@ -104,11 +110,12 @@ test('an unknown account is never written to disk', async () => {
   const io = memoryIO();
   const store = createDraftStore(io);
   for (const scope of [
-    { userId: 0, night: 3 },
-    { userId: -1, night: 3 },
-    { userId: 7, night: 0 },
-    { userId: 1.5, night: 3 },
-    { userId: NaN, night: 3 },
+    { userId: 0, matchId: 12, night: 3 },
+    { userId: -1, matchId: 12, night: 3 },
+    { userId: 7, matchId: 12, night: 0 },
+    { userId: 7, matchId: 0, night: 3 },
+    { userId: 1.5, matchId: 12, night: 3 },
+    { userId: NaN, matchId: 12, night: 3 },
   ]) {
     assert.strictEqual(isValidScope(scope), false, JSON.stringify(scope));
     assert.strictEqual(await store.save(scope, NOTE), false);
@@ -134,7 +141,7 @@ test('a device that cannot write never stops the writing', async () => {
 
 test('the file name carries the scope and none of the writing', () => {
   const name = draftFileName(ANNA);
-  assert.strictEqual(name, 'night-7-3.txt');
+  assert.strictEqual(name, 'night-7-12-3.txt');
   assert.ok(!name.includes(NOTE));
   assert.ok(!/[a-z]{5,}/.test(name.replace('night', '').replace('txt', '')));
 });
