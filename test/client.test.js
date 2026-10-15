@@ -106,9 +106,11 @@ test('on 401 it refreshes, stores the new pair, and retries once', async () => {
 
 test('a rejected refresh token clears the session and surfaces 401', async () => {
   const storage = memoryStorage({ [ACCESS_KEY]: 'stale', [REFRESH_KEY]: 'dead' });
+  let expired = 0;
   const api = createApiClient({
     baseUrl: 'https://x.test',
     storage,
+    onSessionExpired: () => expired++,
     fetchImpl: async (url) =>
       url.endsWith('/api/auth/token/refresh')
         ? json(401, { error: 'Invalid or expired refresh token' })
@@ -118,6 +120,7 @@ test('a rejected refresh token clears the session and surfaces 401', async () =>
   await assert.rejects(() => api.request('/api/me'), (e) => e.status === 401);
   assert.strictEqual(await storage.get(ACCESS_KEY), null, 'tokens cleared');
   assert.strictEqual(await storage.get(REFRESH_KEY), null);
+  assert.strictEqual(expired, 1, 'app is sent back to sign-in once');
 });
 
 test('it does not retry more than once', async () => {
@@ -160,9 +163,11 @@ test('concurrent 401s collapse into a single refresh', async () => {
 
 test('a network failure during refresh keeps the tokens', async () => {
   const storage = memoryStorage({ [ACCESS_KEY]: 'a', [REFRESH_KEY]: 'r' });
+  let expired = 0;
   const api = createApiClient({
     baseUrl: 'https://x.test',
     storage,
+    onSessionExpired: () => expired++,
     fetchImpl: async (url) => {
       if (url.endsWith('/api/auth/token/refresh')) throw new Error('offline');
       return json(401, {});
@@ -170,6 +175,7 @@ test('a network failure during refresh keeps the tokens', async () => {
   });
   await assert.rejects(() => api.request('/api/me'));
   assert.strictEqual(await storage.get(REFRESH_KEY), 'r', 'offline must not sign the user out');
+  assert.strictEqual(expired, 0, 'offline does not redirect to sign-in');
 });
 
 test('204 responses resolve to null instead of throwing', async () => {

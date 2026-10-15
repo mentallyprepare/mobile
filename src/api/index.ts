@@ -10,10 +10,17 @@ export const API_BASE_URL = (
   process.env.EXPO_PUBLIC_API_URL || 'https://mymentallyprepare.com'
 ).replace(/\/$/, '');
 
+const sessionExpiredListeners = new Set<() => void>();
+export function onSessionExpired(listener: () => void) {
+  sessionExpiredListeners.add(listener);
+  return () => { sessionExpiredListeners.delete(listener); };
+}
+
 export const api = createApiClient({
   baseUrl: API_BASE_URL,
   storage: secureStorage,
   fetchImpl: fetch,
+  onSessionExpired: () => { for (const listener of sessionExpiredListeners) listener(); },
 });
 
 export { ApiError } from './client';

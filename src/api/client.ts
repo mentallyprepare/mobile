@@ -24,6 +24,7 @@ type ClientOptions = {
   baseUrl: string;
   storage: TokenStorage;
   fetchImpl: FetchLike;
+  onSessionExpired?: () => void;
 };
 
 /**
@@ -32,21 +33,29 @@ type ClientOptions = {
  * Deliberately free of react-native imports so the retry logic can be tested
  * in plain Node: storage and fetch are injected.
  */
-export function createApiClient({ baseUrl, storage, fetchImpl }: ClientOptions) {
+export function createApiClient({ baseUrl, storage, fetchImpl, onSessionExpired }: ClientOptions) {
   const root = baseUrl.replace(/\/$/, '');
+  let sessionExpiredNotified = false;
 
   // Collapse concurrent refreshes. Several requests can 401 at once on app
   // resume; without this they would each burn a refresh round-trip.
   let refreshInFlight: Promise<boolean> | null = null;
+  let refreshNetworkFailed = false;
 
   async function saveTokens(pair: AuthPair): Promise<void> {
     await storage.set(ACCESS_KEY, pair.accessToken);
     await storage.set(REFRESH_KEY, pair.refreshToken);
+    sessionExpiredNotified = false;
   }
 
-  async function clearTokens(): Promise<void> {
+  async function clearTokens(notify = false): Promise<void> {
+    const hadSession = !!(await storage.get(ACCESS_KEY)) || !!(await storage.get(REFRESH_KEY));
     await storage.remove(ACCESS_KEY);
     await storage.remove(REFRESH_KEY);
+    if (notify && hadSession && !sessionExpiredNotified) {
+      sessionExpiredNotified = true;
+      onSessionExpired?.();
+    }
   }
 
   async function hasSession(): Promise<boolean> {
@@ -55,9 +64,13 @@ export function createApiClient({ baseUrl, storage, fetchImpl }: ClientOptions) 
 
   async function refresh(): Promise<boolean> {
     if (refreshInFlight) return refreshInFlight;
+    refreshNetworkFailed = false;
     refreshInFlight = (async () => {
       const refreshToken = await storage.get(REFRESH_KEY);
-      if (!refreshToken) return false;
+      if (!refreshToken) {
+        await clearTokens(true);
+        return false;
+      }
       let res: any;
       try {
         res = await fetchImpl(`${root}/api/auth/token/refresh`, {
@@ -68,16 +81,17 @@ export function createApiClient({ baseUrl, storage, fetchImpl }: ClientOptions) 
         });
       } catch {
         // Network failure is not an auth failure — keep the tokens.
+        refreshNetworkFailed = true;
         return false;
       }
       if (!res.ok) {
         // The refresh token itself is bad or revoked: this session is over.
-        await clearTokens();
+        await clearTokens(true);
         return false;
       }
       const body = await res.json().catch(() => null);
       if (!body?.auth?.accessToken || !body?.auth?.refreshToken) {
-        await clearTokens();
+        await clearTokens(true);
         return false;
       }
       await saveTokens(body.auth);
@@ -117,6 +131,7 @@ export function createApiClient({ baseUrl, storage, fetchImpl }: ClientOptions) 
 
     const body = await res.json().catch(() => null);
     if (!res.ok) {
+      if (res.status === 401 && !refreshNetworkFailed) await clearTokens(true);
       const message =
         (body && (body.error || body.message)) || `Request failed (${res.status})`;
       throw new ApiError(res.status, message, body);

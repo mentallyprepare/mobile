@@ -1,6 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 import { login as apiLogin, logout as apiLogout, hasSession } from './api/auth';
+import { onSessionExpired } from './api';
 
 type SessionValue = {
   /** null while we are still reading storage on cold start. */
@@ -27,6 +28,8 @@ export function SessionProvider({ children }: { children: ReactNode }) {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => onSessionExpired(() => setSignedIn(false)), []);
 
   const signIn = useCallback(async (email: string, password: string) => {
     await apiLogin(email, password);
