@@ -58,9 +58,10 @@ export default function Night() {
   useLanguage();
   const { data, loading, error: loadError, hasLoaded, reload } = useMeShared();
   const userId = data?.user?.id ?? 0;
+  const matchId = data?.match?.id ?? 0;
   const activeNight = data?.match?.day ?? 0;
-  const scopeKey = `${userId}:${activeNight}`;
-  const scope = { userId, night: activeNight };
+  const scopeKey = `${userId}:${matchId}:${activeNight}`;
+  const scope = { userId, matchId, night: activeNight };
   const [draftState, setDraftState] = useState({ scopeKey: '', text: '' });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -98,7 +99,7 @@ export default function Night() {
   // Restore anything left unsealed on this device for this night.
   useEffect(() => {
     let alive = true;
-    void drafts.load({ userId, night: activeNight }).then((saved) => {
+    void drafts.load({ userId, matchId, night: activeNight }).then((saved) => {
       if (!alive) return;
       // Never overwrite something already being typed: if the editor has
       // content, whatever is on disk is older than what is on screen.
@@ -108,16 +109,16 @@ export default function Night() {
     return () => {
       alive = false;
     };
-  }, [userId, activeNight, scopeKey, setDraft]);
+  }, [userId, matchId, activeNight, scopeKey, setDraft]);
 
   // Autosave, debounced, and only once we know what was already stored.
   useEffect(() => {
     if (!draftRestored) return;
     const handle = setTimeout(() => {
-      void drafts.save({ userId, night: activeNight }, draft);
+      void drafts.save({ userId, matchId, night: activeNight }, draft);
     }, 800);
     return () => clearTimeout(handle);
-  }, [draft, draftRestored, userId, activeNight]);
+  }, [draft, draftRestored, userId, matchId, activeNight]);
 
   /**
    * Brings the editor and the seal control into view when the keyboard opens.

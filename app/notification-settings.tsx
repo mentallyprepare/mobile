@@ -46,6 +46,7 @@ function setupMessage(reason: NotificationSetupFailure): string {
 }
 
 type PreferenceKey =
+  | 'emailReminders'
   | 'morningReminder'
   | 'eveningReminder'
   | 'dailyReflection'
@@ -54,6 +55,7 @@ type PreferenceKey =
 // Title/body live in i18n keyed by `slug`; only the preference wiring is
 // structural, so it stays a module constant.
 const ROWS: { key: PreferenceKey; slug: string }[] = [
+  { key: 'emailReminders', slug: 'email_reminder' },
   { key: 'dailyReflection', slug: 'tonight_open' },
   { key: 'eveningReminder', slug: 'room_activity' },
   { key: 'streakReminder', slug: 'gentle_return' },
@@ -117,6 +119,7 @@ export default function NotificationSettingsScreen() {
     const next = {
       ...preferences,
       enabled: false,
+      emailReminders: false,
       morningReminder: false,
       eveningReminder: false,
       dailyReflection: false,
@@ -216,7 +219,7 @@ export default function NotificationSettingsScreen() {
               <Switch
                 value={preferences[row.key]}
                 onValueChange={(value) => void toggle(row.key, value)}
-                disabled={!subscribed || busy}
+                disabled={(row.key !== 'emailReminders' && !subscribed) || busy}
                 accessibilityLabel={rowTitle}
                 trackColor={{ false: daylight.inkLow, true: daylight.accentMoss }}
                 thumbColor={preferences[row.key] ? daylight.ink : daylight.bg}
