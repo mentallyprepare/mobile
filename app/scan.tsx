@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { View, Text, Pressable, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -15,7 +15,7 @@ import {
   scoreQuiz,
   type ArchetypeKey,
 } from '../src/quiz';
-import { submitScan } from '../src/api/scan';
+import { markScanStarted, submitScan } from '../src/api/scan';
 import { useMeShared } from '../src/api/me-provider';
 import { t } from '../src/i18n';
 import { useLanguage } from '../src/i18n/react';
@@ -39,8 +39,13 @@ export default function ScanScreen() {
     () => Array(QUESTIONS.length).fill(null),
   );
   const [stage, setStage] = useState<Stage>({ kind: 'intro' });
+  const startTracked = useRef(false);
 
   function pick(index: number, value: number) {
+    if (!startTracked.current) {
+      startTracked.current = true;
+      void markScanStarted().catch(() => { startTracked.current = false; });
+    }
     setAnswers((prev) => {
       const next = [...prev];
       next[index] = value;
