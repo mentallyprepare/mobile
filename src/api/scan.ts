@@ -10,6 +10,10 @@ export type ScanPayload = {
 
 export type { ScanResponse };
 
+export async function markScanStarted(): Promise<void> {
+  await api.request<unknown>('/api/scan/start', { method: 'POST' });
+}
+
 /**
  * POST /api/scan. Server re-validates every field and refuses if the user is
  * already in a match (retaking after matching is not allowed).
